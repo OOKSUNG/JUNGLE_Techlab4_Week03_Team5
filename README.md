@@ -1,7 +1,7 @@
 # GAMETECHLAB04 Week02 Team10 Project
 
 ## 팀원
-박석원 권성욱 황혜진
+권성욱 정상윤 조영호 유채영
 
 ## 코딩 규약 (Coding Convention)
 
