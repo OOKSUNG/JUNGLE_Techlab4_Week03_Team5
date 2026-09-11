@@ -1,6 +1,14 @@
+// World Transform Matrix
 cbuffer constants : register(b0)
 {
     matrix MVP;
+};
+
+// View Mode Constants
+cbuffer viewModeConstants : register(b1)
+{
+     uint ViewMode;
+     float3 _Pad;
 };
 
 struct VS_INPUT
@@ -27,5 +35,13 @@ PS_INPUT mainVS(VS_INPUT input)
 
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
-    return input.color + float4(0.5f, 0.5f, 0.5f, 0.0f);
+    // 기본 색상에서 살짝 밝게 처리  + 0.0~1.0 clamp 
+    float4 BaseColor = saturate(input.color + float4(0.5f, 0.5f, 0.5f, 0.0f));
+    if (ViewMode == 0)  // Lit
+    {
+        // TODO: 조명 구현 후 라이팅 연산으로 교체. 현재는 Unlit과 동일
+        return BaseColor;
+    }
+
+    return BaseColor;
 }
