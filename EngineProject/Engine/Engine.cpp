@@ -111,10 +111,9 @@ void Engine::Run()
 
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
-			Renderer->RenderAll(RenderQueue, VP, Editor->GetOutline().GetTarget());
+			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
+
 		// Editor
-		FVector4 CamLoc = World->GetMainCamera()->GetCameraComponent()->GetLocation();
-		if (Editor->GetOutline().GetTarget() && Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 		Editor->OnRender(VP, Camera, Renderer.get());
 
 		Renderer->EndFrame();

@@ -24,6 +24,7 @@ public:
 	void Shutdown();
 	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
 	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
+	UPrimitiveComponent* GetSelectedTarget() const { return Outline->GetTarget(); }
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:

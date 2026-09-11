@@ -33,6 +33,7 @@ bool FRenderer::Init(HWND hWindow)
 
 	// View Mode 상태 저장
 	ViewModeState = MakeShared<FViewModeState>(this);
+	
 	return true;
 }
 
@@ -374,52 +375,34 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitive
 
 	ViewModeState->Apply(this);
 
-	while (true)
+	while (!InQueue.empty())
 	{
-		if (InQueue.empty())
-		{
-			return;
-		}
-
 		FRenderPacket Packet = InQueue.front();
-
-		DrawPacket(Packet, VP);
-
-		//BindShader(rp.shader);
-		//BindMesh(rp.mesh);
-
-		//// rp.Transform 과 Camera VP 행렬 곱
-		//// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
-		//FMatrix MVP;
-		//MVP = rp.model * VP;
-		//UpdateConstantBuffer(MVP);
-		//SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
-
+		DrawPacket(Packet, VP, SelectedTarget);
 		InQueue.pop();
 	}
 }
 
-void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP)
+void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget)
 {
-	if (Packet.bIsVisible)
+	if (!Packet.bIsVisible)
 	{
-		BindShader(Packet.shader);
-		BindMesh(Packet.mesh);
-
-		FMatrix MVP;
-		MVP = Packet.model * VP;
-
-		// WireFrame  Mode 일 때 해당 객체가 선택되었을 때 true
-		bool bHighlight = (ViewModeState->GetMode () == EViewModeIndex::Wireframe)
-						&& Packet.Owner != nullptr
-						&& Packet.Owner == SelectedTarget;
-
-		// bHighlight true 이면 반영할 색상도 함께 전달하기
-		UpdateConstantBuffer(MVP, bHighlight, FVector(1.0f, 0.7f, 0.0f));
-		SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+		return;
 	}
+
+	BindShader(Packet.shader);
+	BindMesh(Packet.mesh);
+
+	FMatrix MVP = Packet.model * VP;
+
+	bool bHighlight = (ViewModeState->GetMode() == EViewModeIndex::Wireframe)
+					&& Packet.Owner != nullptr
+					&& Packet.Owner == SelectedTarget;
+
+	UpdateConstantBuffer(MVP, bHighlight, FVector(1.0f, 0.7f, 0.0f));
+	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+
 }
 
 void FRenderer::Shutdown()

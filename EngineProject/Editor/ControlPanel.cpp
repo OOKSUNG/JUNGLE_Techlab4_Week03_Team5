@@ -90,8 +90,10 @@ void FControlPanel::OnRender()
 	}
 
 	ImGui::Separator();
+	
+	// Camera Editor
 	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();
-
+	
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
 	FTransform* transform = CamCom->GetTransform();
@@ -135,6 +137,7 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
+	// Gizmo Select
 	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
 	{

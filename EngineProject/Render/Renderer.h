@@ -71,8 +71,9 @@ public:
 
 	/*void Prepare();*/
 
-	void DrawPacket(const FRenderPacket& Packet, FMatrix VP);
 	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitiveComponent* SelectedTarget);
+	void DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget);
+
 	void Shutdown();
 
 	// ViewMode Setter
