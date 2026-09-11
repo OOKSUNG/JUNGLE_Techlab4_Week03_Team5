@@ -10,6 +10,7 @@
 
 #include "RenderPacket.h"
 #include "Render/Buffer.h"
+#include "GeometryGenerator.h"
 
 enum EShaderBindFlagBits : uint32
 {
@@ -35,6 +36,8 @@ public:
 	void CreateRasterizerState();
 	void CreateDepthStencilBufferAndState();
 	void CreateConstantBuffer();
+	void CreateDefaultShader();
+
 
 	inline ID3D11Device* GetDevice() const { return Device.Get(); }
 	ID3D11DeviceContext* GetDeviceContext();
@@ -68,6 +71,7 @@ public:
 	/*void Prepare();*/
 
 	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP);
+	void DrawPacket(const FRenderPacket& Packet, FMatrix VP);
 	void Shutdown();
 
 private:
@@ -97,6 +101,8 @@ private:
 
 	uint32 Width;
 	uint32 Height;
+
+	TSharedPtr<FShader> DefaultShader;
 
 	FLOAT ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 };

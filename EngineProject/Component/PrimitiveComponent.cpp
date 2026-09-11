@@ -17,8 +17,10 @@ void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue
 		rp.mesh = Mesh;
 		rp.shader = Shader;
 		rp.model = GetWorldMatrix();
+		rp.bIsVisible = bIsVisible;
 		RenderQueue.push(rp);
 	}
+
 }
 
 void UPrimitiveComponent::SetMesh(FMesh* InMesh)

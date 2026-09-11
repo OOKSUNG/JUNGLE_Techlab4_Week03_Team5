@@ -1,4 +1,5 @@
 #pragma once
+#include "../Component/PrimitiveComponent.h"
 
 class FOutline
 {
