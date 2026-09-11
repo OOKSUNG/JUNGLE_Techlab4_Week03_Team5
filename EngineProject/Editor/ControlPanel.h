@@ -36,6 +36,12 @@ public:
 		"Plane",
 	};
 
+	// View Mode
+	FRenderer* Renderer;
+	inline void SetRenderer(FRenderer* InRenderer) { Renderer = InRenderer; };
+	int32 ViewModeIndex = 1; 	// Unlit
+
+	// Gizmo
 	FGizmo* Gizmo;
 
 	int32 GizmoSelectedIndex = 0;

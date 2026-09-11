@@ -29,6 +29,9 @@ bool FRenderer::Init(HWND hWindow)
 	CreateDepthStencilBufferAndState();
 	CreateConstantBuffer();
 
+	// View Mode 상태 저장
+	ViewModeState = MakeShared<FViewModeState>(this);
+
 	// 임시 셰이더 프로그램 컴파일 로직
 	/*D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
@@ -346,6 +349,8 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
 {
 	//DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffff'ffff);
 	//DeviceContext->OMSetDepthStencilState(nullptr, 0);
+
+	ViewModeState->Apply(this);
 
 	while (true)
 	{

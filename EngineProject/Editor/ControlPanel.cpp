@@ -40,9 +40,13 @@ void FControlPanel::OnRender()
 	ImGui::Begin("Jungle Control Panel");
 
 	ImGui::Text("Hello Jungle World");
+
+	// FPS 출력
 	ImGui::Text("FPS: %.2f (%.0f ms)", 1.0f / DeltaTime, DeltaTime * 1000.0f);
 
 	ImGui::Separator();
+
+	// Primitive Spawn
 	ImGui::SetNextItemWidth(130.0f);
 	ImGui::Combo("Actor", &SelectedIndex, Items, IM_ARRAYSIZE(Items));
 	ImGui::SameLine();
@@ -56,6 +60,7 @@ void FControlPanel::OnRender()
 	ImGui::Text("Number of spawn");
 
 	ImGui::Separator();
+
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
 	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
@@ -77,11 +82,13 @@ void FControlPanel::OnRender()
 		ActorNum = World->GetActorNum() - 1;
 		if (Callback)Callback();
 	}
+
 	ImGui::Separator();
+
+	// Camera Editor
 	UCameraComponent* CamCom = World->GetMainCamera()->GetCameraComponent();
 
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
-
 
 	FTransform* transform = CamCom->GetTransform();
 
@@ -112,6 +119,7 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
+	// Gizmo Select
 	GizmoSelectedIndex = static_cast<int32>(Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
 	{
@@ -122,6 +130,14 @@ void FControlPanel::OnRender()
 	{
 		Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
 	}
+
+	// View Mode Select
+	ViewModeIndex = static_cast<int32>(Renderer->GetViewMode());
+	if (ImGui::RadioButton("Lit", &ViewModeIndex, 0)) Renderer->SetViewMode(EViewModeIndex::Lit);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Unlit", &ViewModeIndex, 1)) Renderer->SetViewMode(EViewModeIndex::Unlit);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
 
 	ImGui::End();
 }

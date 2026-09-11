@@ -73,6 +73,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	// PropertyPanel Add
 	PropertyPanel = EditorUI->AddEditorPanel<FPropertyPanel>();
 	ControlPanel = EditorUI->AddEditorPanel<FControlPanel>();
+	ControlPanel->SetRenderer(Renderer.get());
 
 	// Resource Manager 
 

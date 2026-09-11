@@ -10,6 +10,7 @@
 
 #include "RenderPacket.h"
 #include "Render/Buffer.h"
+#include "Render/ViewModeState.h"
 
 enum EShaderBindFlagBits : uint32
 {
@@ -70,6 +71,12 @@ public:
 	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP);
 	void Shutdown();
 
+	// ViewMode Setter
+	inline void SetViewMode(EViewModeIndex Mode) { ViewModeState->SetMode(Mode); };
+	
+	// ViewMode Getter
+	inline EViewModeIndex GetViewMode() const { return ViewModeState->GetMode(); };
+
 private:
 	// Camera 
 	struct FConstants
@@ -99,4 +106,6 @@ private:
 	uint32 Height;
 
 	FLOAT ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+
+	TSharedPtr<FViewModeState> ViewModeState;
 };
