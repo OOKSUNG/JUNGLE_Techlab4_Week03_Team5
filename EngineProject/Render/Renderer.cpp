@@ -251,20 +251,25 @@ void FRenderer::UpdateConstantBufferData(FConstantBuffer* InBuffer, const void* 
 	DeviceContext->Unmap(Buffer, 0);
 }
 
-void FRenderer::UpdateConstantBuffer(const FMatrix& MVP)
+void FRenderer::UpdateConstantBuffer(const FMatrix& MVP, bool bHighlightEdge, const FVector& EdgeColor)
 {
 	if (ConstantBuffer)
 	{
 		D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
-		FConstants constants;
 		DeviceContext->Map(ConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
 		FConstants* constant = (FConstants*)constantbufferMSR.pData;
 		{
 			FMatrix TransMVP = MVP.GetTransposed();
 			constant->MVP = TransMVP;
+			constant->bHighlightEdge = bHighlightEdge? 1 : 0;
+			constant->EdgeColor[0] = EdgeColor.X;
+			constant->EdgeColor[1] = EdgeColor.Y;
+			constant->EdgeColor[2] = EdgeColor.Z;
+
 		}
 		DeviceContext->Unmap(ConstantBuffer.Get(), 0);
 		DeviceContext->VSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
+		DeviceContext->PSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
 	}
 }
 
@@ -345,7 +350,7 @@ void FRenderer::DrawIndexed(uint32 IndexCount)
 //}
 
 
-void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
+void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitiveComponent* SelectedTarget)
 {
 	//DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffff'ffff);
 	//DeviceContext->OMSetDepthStencilState(nullptr, 0);
@@ -368,7 +373,14 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
 		// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
 		FMatrix MVP;
 		MVP = rp.model * VP;
-		UpdateConstantBuffer(MVP);
+
+		// WireFrame  Mode 일 때 해당 객체가 선택되었을 때 true
+		bool bHighlight = (ViewModeState->GetMode () == EViewModeIndex::Wireframe)
+						&& rp.Owner != nullptr
+						&& rp.Owner == SelectedTarget;
+
+		// bHighlight true 이면 반영할 색상도 함께 전달하기
+		UpdateConstantBuffer(MVP, bHighlight, FVector(1.0f, 0.7f, 0.0f));
 		SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
 

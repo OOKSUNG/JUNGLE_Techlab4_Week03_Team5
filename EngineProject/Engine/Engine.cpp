@@ -187,9 +187,9 @@ void Engine::Run()
 		Renderer->BeginFrame();
 		Renderer->BindShader(Shader.get());
 		GridRenderer->OnRender(VP, World->GetMainCamera()->GetCameraComponent()->GetLocation());
-		Renderer->RenderAll(RenderQueue, VP);
+		Renderer->RenderAll(RenderQueue, VP, Outline->GetTarget());
 		FVector4 CamLoc = World->GetMainCamera()->GetCameraComponent()->GetLocation();
-		if (Outline->GetTarget())
+		if (Outline->GetTarget() && Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 			OutlineRenderer->OnRender(*Outline, VP, CamLoc);
 
 		if (Gizmo->GetTarget())

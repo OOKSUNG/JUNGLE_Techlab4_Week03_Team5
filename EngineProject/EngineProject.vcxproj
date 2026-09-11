@@ -194,6 +194,7 @@
     <ClCompile Include="ObjectSystem\Object.cpp" />
     <ClCompile Include="ObjectSystem\ObjectFactory.cpp" />
     <ClCompile Include="Render\Buffer.cpp" />
+    <ClCompile Include="Render\FViewModeState.cpp" />
     <ClCompile Include="Render\GeometryGenerator.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
@@ -292,6 +293,7 @@
     <ClInclude Include="Render\RenderPacket.h" />
     <ClInclude Include="Render\Shader.h" />
     <ClInclude Include="Render\Vertex.h" />
+    <ClInclude Include="Render\ViewModeState.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_win32.h" />

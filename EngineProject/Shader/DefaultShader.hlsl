@@ -2,6 +2,8 @@
 cbuffer constants : register(b0)
 {
     matrix MVP;
+    uint bHighlightEdge;
+    float3 EdgeColor;
 };
 
 // View Mode Constants
@@ -35,8 +37,17 @@ PS_INPUT mainVS(VS_INPUT input)
 
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
+    if (ViewMode == 2)  // WireFrame
+    {   
+        // 선택하면 형광 주황
+        if (bHighlightEdge) return float4(EdgeColor, 1.0f);
+        // 형광 초록
+        return float4(0.25f, 0.80f, 0.35f, 1.0f);
+    }
+
     // 기본 색상에서 살짝 밝게 처리  + 0.0~1.0 clamp 
     float4 BaseColor = saturate(input.color + float4(0.5f, 0.5f, 0.5f, 0.0f));
+    
     if (ViewMode == 0)  // Lit
     {
         // TODO: 조명 구현 후 라이팅 연산으로 교체. 현재는 Unlit과 동일

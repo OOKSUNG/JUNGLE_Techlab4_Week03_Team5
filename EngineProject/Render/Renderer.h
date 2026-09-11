@@ -51,7 +51,7 @@ public:
 
 	void UpdateConstantBufferData(FConstantBuffer* Buffer, const void* Data, uint32 DataSize);
 
-	void UpdateConstantBuffer(const FMatrix& MVP);
+	void UpdateConstantBuffer(const FMatrix& MVP, bool bHighlightEdge, const FVector& EdgeColor);
 	void BindVertexBuffer(FVertexBuffer* VertexBuffer);
 	void BindIndexBuffer(FIndexBuffer* IndexBuffer);
 	void BindConstantBuffer(uint32 Slot, FConstantBuffer* ConstantBuffer, EShaderBindFlagBits FlagBits = None);
@@ -68,7 +68,7 @@ public:
 
 	/*void Prepare();*/
 
-	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP);
+	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitiveComponent* SelectedTarget);
 	void Shutdown();
 
 	// ViewMode Setter
@@ -81,7 +81,9 @@ private:
 	// Camera 
 	struct FConstants
 	{
-		FMatrix MVP;
+		FMatrix MVP; 			// 64 byte
+		uint32 bHighlightEdge;	// 4  byte
+		float EdgeColor[3]; 	// 12 byte
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
