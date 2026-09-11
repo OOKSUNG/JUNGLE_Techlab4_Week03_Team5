@@ -42,8 +42,12 @@ public:
 		"Cone",
 		"Plane",
 	};
+	// View Mode
+	FRenderer* Renderer;
+	inline void SetRenderer(FRenderer* InRenderer) { Renderer = InRenderer; };
+	int32 ViewModeIndex = 1; 	// Unlit
 
-	// FGizmo* Gizmo;
+	// Gizmo
 
 	int32 GizmoSelectedIndex = 0;
 

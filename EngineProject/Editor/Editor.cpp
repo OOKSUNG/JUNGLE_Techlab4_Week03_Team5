@@ -33,6 +33,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	}
 	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
 	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
+	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
 	// 씬 클리어 호출 시 콜백 함수
@@ -80,14 +81,17 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 		GridRenderer->OnRender(VP, CamLoc);
 
-	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives))
-		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
+	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
+	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
+		OutlineRenderer->OnRender(*Outline, VP, CamLoc);	
 
 	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
 	{
 		Renderer->SetDepthStencilEnabled(false);
 		GizmoRenderer->OnRender(*Gizmo, VP);
 	}
+
+
 
 	ImGuiRenderer->Begin();
 

@@ -42,9 +42,14 @@ bool FGizmoRenderer::Init(FRenderer* InRenderer)
 	AxisDataArray.push_back({ FRotator(0.0f, 0.0f, 0.0f) ,FVector4(0.0f, 0.0f, 1.0f, 1.0f) });
 	AxisDataArray.push_back({ FRotator(0.0f, 0.0f, 0.0f) ,FVector4(1.0f, 1.0f, 1.0f, 1.0f) }); // ScreenAxis
 
+	D3D11_RASTERIZER_DESC RasterizerDesc = {};
+	RasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	RasterizerDesc.CullMode = D3D11_CULL_BACK;
+	Renderer->GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
+
 	Shader = Renderer->CreateShader(L"Shader/GizmoShader.hlsl", FVertex::GetLayout());
 
-	return false;
+	return true;
 }
 
 void FGizmoRenderer::OnRender(const FGizmo& Gizmo, const FMatrix& ViewProj)
@@ -52,6 +57,9 @@ void FGizmoRenderer::OnRender(const FGizmo& Gizmo, const FMatrix& ViewProj)
 	if (!Gizmo.GetTarget())
 		return;
 
+	// 래스터라이저 Set
+	Renderer->GetDeviceContext()->RSSetState(RasterizerState.Get());
+	
 	FMesh* AxisMesh = nullptr;
 	switch (Gizmo.GetMode())
 	{

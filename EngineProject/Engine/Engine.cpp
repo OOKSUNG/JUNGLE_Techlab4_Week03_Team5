@@ -111,7 +111,7 @@ void Engine::Run()
 
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
-			Renderer->RenderAll(RenderQueue, VP);
+			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
 
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());

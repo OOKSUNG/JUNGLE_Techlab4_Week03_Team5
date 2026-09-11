@@ -3,9 +3,12 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+class UPrimitiveComponent;
+
 struct FRenderPacket {
 	FMatrix model;
 	FMesh* mesh;
 	FShader* shader;
 	bool bIsVisible;
+	UPrimitiveComponent* Owner = nullptr; // WireFrame 모드 시, 선택 객체 판별용
 };
