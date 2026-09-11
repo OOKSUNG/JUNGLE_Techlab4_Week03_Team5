@@ -118,7 +118,7 @@
       <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Manifest>
@@ -173,6 +173,7 @@
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\ResourceManager.cpp" />
     <ClCompile Include="Engine\World.cpp" />
+    <ClCompile Include="Editor\Editor.cpp" />
     <ClCompile Include="GameFramework\Actor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -193,6 +194,7 @@
     <ClCompile Include="ObjectSystem\Class.cpp" />
     <ClCompile Include="ObjectSystem\Object.cpp" />
     <ClCompile Include="ObjectSystem\ObjectFactory.cpp" />
+    <ClCompile Include="Component\PlaneComponent.cpp" />
     <ClCompile Include="Render\Buffer.cpp" />
     <ClCompile Include="Render\GeometryGenerator.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
@@ -230,6 +232,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Component\ConeComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera\CameraActor.h" />
@@ -245,6 +248,7 @@
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="Editor\ConsolePanel.h" />
     <ClInclude Include="Editor\ControlPanel.h" />
+    <ClInclude Include="Editor\EditorContext.h" />
     <ClInclude Include="Editor\EditorPanel.h" />
     <ClInclude Include="Editor\EditorUI.h" />
     <ClInclude Include="Editor\Gizmo.h" />
@@ -257,6 +261,7 @@
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Engine\World.h" />
+    <ClInclude Include="Editor\Editor.h" />
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="Input\InputSystem.h" />
@@ -285,6 +290,7 @@
     <ClInclude Include="Component\SphereComponent.h" />
     <ClInclude Include="EnginePCH.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="Component\PlaneComponent.h" />
     <ClInclude Include="Render\Buffer.h" />
     <ClInclude Include="Render\GeometryGenerator.h" />
     <ClInclude Include="Render\Mesh.h" />
@@ -301,6 +307,7 @@
     <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Component\ConeComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\DefaultShader.hlsl">

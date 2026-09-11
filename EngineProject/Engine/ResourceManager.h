@@ -16,7 +16,7 @@ private:
 public:
 	static FResourceManager& GetInstance();
 
-	void Init(FRenderer* renderer);
+	bool Init(FRenderer* renderer);
 	
 	void SetRenderer(FRenderer* InRenderer);
 	

@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "GeometryGenerator.h"
 
 void FRenderer::BeginFrame()
 {
@@ -28,19 +29,19 @@ bool FRenderer::Init(HWND hWindow)
 	CreateRasterizerState();
 	CreateDepthStencilBufferAndState();
 	CreateConstantBuffer();
+	CreateDefaultShader();
 
-	// 임시 셰이더 프로그램 컴파일 로직
-	/*D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-	FShader* shader = CreateShader(L"Shader/DefaultShader.hlsl", layout, 2);
-
-	DeviceContext->VSSetShader(shader->VertexShader.Get(), nullptr, 0);
-	DeviceContext->PSSetShader(shader->PixelShader.Get(), nullptr, 0);
-	DeviceContext->IASetInputLayout(shader->InputLayout.Get());*/
 	return true;
+}
+
+void FRenderer::CreateDefaultShader() 
+{
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	DefaultShader = CreateShader(L"Shader/DefaultShader.hlsl", layout, 2);
 }
 
 
@@ -105,6 +106,11 @@ void FRenderer::CreateDepthStencilBufferAndState()
 	DepthDesc.CPUAccessFlags = 0;
 	DepthDesc.MiscFlags = 0;
 	HRESULT hr = Device->CreateTexture2D(&DepthDesc, NULL, DepthStencilBuffer.GetAddressOf());
+
+	if (FAILED(hr))
+	{
+		return;
+	}
 
 	Device->CreateDepthStencilView(DepthStencilBuffer.Get(), nullptr, FrameBufferDSV.GetAddressOf());
 
@@ -176,7 +182,19 @@ TSharedPtr<FShader> FRenderer::CreateShader(const wchar_t* FileName, D3D11_INPUT
 	hr = Device->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, Shader->VertexShader.GetAddressOf());
 
 	ID3DBlob* PixelShaderCSO;
-	D3DCompileFromFile(FileName, nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &PixelShaderCSO, nullptr);
+	hr = D3DCompileFromFile(FileName, nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &PixelShaderCSO, nullptr);
+	
+	if (FAILED(hr))
+	{
+		if (ErrorBlob)
+		{
+			OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+			ErrorBlob->Release();
+		}
+		assert(false && "Pixel shader compile failed");
+		return nullptr; // 혹은 적절한 실패 처리
+	}
+	
 	Device->CreatePixelShader(PixelShaderCSO->GetBufferPointer(), PixelShaderCSO->GetBufferSize(), nullptr, Shader->PixelShader.GetAddressOf());
 
 	if (InLayoutSize > 0)
@@ -354,21 +372,35 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
 			return;
 		}
 
-		FRenderPacket rp = InQueue.front();
+		FRenderPacket Packet = InQueue.front();
 
-		BindShader(rp.shader);
-		BindMesh(rp.mesh);
+		DrawPacket(Packet, VP);
 
-		// rp.Transform 과 Camera VP 행렬 곱
-		// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
-		FMatrix MVP;
-		MVP = rp.model * VP;
-		UpdateConstantBuffer(MVP);
-		SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
+		//BindShader(rp.shader);
+		//BindMesh(rp.mesh);
+
+		//// rp.Transform 과 Camera VP 행렬 곱
+		//// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
+		//FMatrix MVP;
+		//MVP = rp.model * VP;
+		//UpdateConstantBuffer(MVP);
+		//SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
 
 		InQueue.pop();
 	}
+}
+
+void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP)
+{
+	BindShader(Packet.shader);
+	BindMesh(Packet.mesh);
+	
+	FMatrix MVP;
+	MVP = Packet.model * VP;
+	UpdateConstantBuffer(MVP);
+	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
 }
 
 void FRenderer::Shutdown()
@@ -416,7 +448,7 @@ void FRenderer::Resize(int32 InWidth, int32 InHeight)
 
 	DepthDesc.MipLevels = 1;
 	DepthDesc.ArraySize = 1;
-	DepthDesc.Format = DXGI_FORMAT_D32_FLOAT;	// 24비트 깊이, 8비트 스텐실
+	DepthDesc.Format = DXGI_FORMAT_D32_FLOAT;	// 32비트 깊이
 	DepthDesc.SampleDesc.Count = 1;
 	DepthDesc.SampleDesc.Quality = 0;
 	DepthDesc.Usage = D3D11_USAGE_DEFAULT;
