@@ -53,7 +53,7 @@ void FConsolePanel::OnRender()
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 		if (copy_to_clipboard)
 			ImGui::LogToClipboard();
-		for (const FLogData& item : Items)
+		/*for (const FLogData& item : Items)
 		{
 			if (!Filter.PassFilter(item.message.c_str()))
 				continue;
@@ -62,7 +62,19 @@ void FConsolePanel::OnRender()
 			ImGui::PushStyleColor(ImGuiCol_Text, color);
 			ImGui::TextUnformatted(item.message.c_str());
 			ImGui::PopStyleColor();
+		}*/
+		for (const FLogMessage& Log : FLogger::GetLogs())
+		{
+			if (!Filter.PassFilter(Log.Message.c_str()))
+			{
+				continue;
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Text, GetLogColor(Log.Verbosity));
+			ImGui::Text("[%s] [%s] %s", GetCategoryName(Log.Category), GetVerbosityName(Log.Verbosity), Log.Message.c_str());
+			ImGui::PopStyleColor();
 		}
+
 		if (copy_to_clipboard)
 			ImGui::LogFinish();
 		if (ScrollToBottom || (AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
@@ -92,14 +104,87 @@ void FConsolePanel::OnRender()
 	ImGui::End();
 }
 
+ImVec4 FConsolePanel::GetLogColor(ELogVerbosity Verbosity) const
+{
+	switch (Verbosity)
+	{
+	case ELogVerbosity::Input:
+		return ImVec4(
+			1.0f, 0.8f, 0.6f, 1.0f);
+
+	case ELogVerbosity::Info:
+		return ImVec4(
+			1.0f, 1.0f, 1.0f, 1.0f);
+
+	case ELogVerbosity::Warning:
+		return ImVec4(
+			1.0f, 0.75f, 0.2f, 1.0f);
+
+	case ELogVerbosity::Error:
+		return ImVec4(
+			1.0f, 0.4f, 0.4f, 1.0f);
+	}
+
+	return ImVec4(
+		1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+const char* FConsolePanel::GetCategoryName(ELogCategory Category) const
+{
+	switch (Category)
+	{
+	case ELogCategory::Engine:
+		return "Engine";
+
+	case ELogCategory::World:
+		return "World";
+
+	case ELogCategory::Renderer:
+		return "Renderer";
+
+	case ELogCategory::Object:
+		return "Object";
+
+	case ELogCategory::Editor:
+		return "Editor";
+
+	default:
+		return "Unknown";
+	}
+}
+
+const char* FConsolePanel::GetVerbosityName(ELogVerbosity Verbosity) const
+{
+	switch (Verbosity)
+	{
+	case ELogVerbosity::Input:
+		return "Input";
+
+	case ELogVerbosity::Info:
+		return "Info";
+
+	case ELogVerbosity::Warning:
+		return "Warning";
+
+	case ELogVerbosity::Error:
+		return "Error";
+
+	default:
+		return "Unknown";
+	}
+}
+
+
 void FConsolePanel::ClearLog()
 {
-	Items.clear();
+	FLogger::Clear();
+	// Items.clear();
 }
 
 void FConsolePanel::ExecCommand(const FString& CommandLine)
 {
-	AddLog(ELogVerbosity::Input, "# {}\n", CommandLine);
+	// AddLog(ELogVerbosity::Input, "# {}\n", CommandLine);
+	LOG(Editor, Input, "# {}", CommandLine);
 
 	// Insert into history. First find match and delete it so it can be pushed to the back.
 	// This isn't trying to be smart or optimal.
@@ -119,19 +204,23 @@ void FConsolePanel::ExecCommand(const FString& CommandLine)
 	}
 	else if (CommandLine == "HELP")
 	{
-		AddLog(ELogVerbosity::Info, "Commands:");
+		// AddLog(ELogVerbosity::Info, "Commands:");
+		LOG(Editor, Info, "Commands: ");
 		for (const FString& Command : Commands)
-			AddLog(ELogVerbosity::Info, "- {}", Command);
+			LOG(Editor, Info, "- {}", Command);
+			//AddLog(ELogVerbosity::Info, "- {}", Command);
 	}
 	else if (CommandLine == "HISTORY")
 	{
 		int first = History.size() - 10;
 		for (int i = first > 0 ? first : 0; i < History.size(); i++)
-			AddLog(ELogVerbosity::Info, "{:03d}: %s\n", i, History[i]);
+			LOG(Editor, Info, "{:03d}: {}\n", i, History[i]);
+			// AddLog(ELogVerbosity::Info, "{:03d}: %s\n", i, History[i]);
 	}
 	else
 	{
-		AddLog(ELogVerbosity::Info, "Unknown command: '{}'\n", CommandLine);
+		LOG(Editor, Info, "Unknown command: '{}'\n", CommandLine);
+		// AddLog(ELogVerbosity::Info, "Unknown command: '{}'\n", CommandLine);
 	}
 
 	// On command input, we scroll to bottom even if AutoScroll==false
@@ -167,7 +256,9 @@ int FConsolePanel::TextEditCallback(ImGuiInputTextCallbackData* data)
 		if (candidates.Size == 0)
 		{
 			// No match
-			AddLog(ELogVerbosity::Input, "No match for \"{}\"!\n", word_start);
+			// AddLog(ELogVerbosity::Input, "No match for \"{}\"!\n", word_start);
+			LOG(Editor, Input, "No match for \"{}\"!\n", word_start);
+
 		}
 		else if (candidates.Size == 1)
 		{
@@ -202,9 +293,11 @@ int FConsolePanel::TextEditCallback(ImGuiInputTextCallbackData* data)
 			}
 
 			// List matches
-			AddLog(ELogVerbosity::Info, "Possible matches:\n");
+			// AddLog(ELogVerbosity::Info, "Possible matches:\n");
+			LOG(Editor, Info, "Possible matches:\n");
 			for (int i = 0; i < candidates.Size; i++)
-				AddLog(ELogVerbosity::Info, "- {}\n", candidates[i]);
+				LOG(Editor, Info, "- {}\n", candidates[i]);
+				//AddLog(ELogVerbosity::Info, "- {}\n", candidates[i]);
 		}
 
 		break;

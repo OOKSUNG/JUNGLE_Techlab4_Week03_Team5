@@ -91,11 +91,13 @@ namespace
 bool FPropertyPanel::Init()
 {
 	//transform = new FTransform(FVector(), FVector(), FRotator());
+
 	return true;
 }
 
 void FPropertyPanel::Tick(float DeltaTime)
 {
+
 }
 
 

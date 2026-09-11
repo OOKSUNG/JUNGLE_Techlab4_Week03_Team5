@@ -4,7 +4,6 @@
 #include "String.h"
 #include "Core/Types.h"
 #include "Core/Containers.h"
-#include "ShowFlags.h"
 
 #include "World.h"
 #include "Render/Renderer.h"
@@ -19,6 +18,7 @@
 
 #include "Editor/Outline.h"
 #include "Editor/OutLineRenderer.h"
+#include "Editor/Editor.h"
 
 class Engine
 {
@@ -26,13 +26,17 @@ public:
 	bool Init(HINSTANCE hInstance);
 	void Run();
 	void Shutdown();
+	void HandleResize();
+	void UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP);
+	// void RenderWorld(TQueue<FRenderPacket> RenderQueue, FMatrix VP, UCameraComponent* Camera);
+	// void RenderEditor(FMatrix VP, UCameraComponent* Camera);
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 
+	// inline static FEditorUI* GetEditorUI() { return EditorUI.get(); }
+
 	void OnWindowResized(uint32 Width, uint32 Height);
 
-	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
-	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 private:
 	bool bIsRunning = false;
 	bool bIsResized = false;
@@ -41,25 +45,28 @@ private:
 
 	UWorld* World;
 
-	TUniquePtr<FEditorUI> EditorUI;
+	// TUniquePtr<FEditorUI> EditorUI;
 	TUniquePtr<FRenderer> Renderer;
-	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
-	TUniquePtr<FGridRenderer> GridRenderer;
-	TUniquePtr<FGizmoRenderer> GizmoRenderer;
-	//TUniquePtr<FGizmo> Gizmo;
-	TSharedPtr<FGizmo> Gizmo;
-	TUniquePtr<FOutline> Outline;
-	TUniquePtr<FOutlineRenderer> OutlineRenderer;
+
+	// TUniquePtr<FEditor> Editor;
+
+	//TUniquePtr<FImGuiRenderer> ImGuiRenderer;
+	//TUniquePtr<FGridRenderer> GridRenderer;
+	//TUniquePtr<FGizmoRenderer> GizmoRenderer;
+	////TUniquePtr<FGizmo> Gizmo;
+	//TSharedPtr<FGizmo> Gizmo;
+	//TUniquePtr<FOutline> Outline;
+	//TUniquePtr<FOutlineRenderer> OutlineRenderer;
+
+	TUniquePtr<FEditor> Editor;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
-	inline static FPropertyPanel* PropertyPanel = nullptr;
-	inline static FControlPanel* ControlPanel = nullptr;
+	// inline static FPropertyPanel* PropertyPanel = nullptr;
+	// inline static FControlPanel* ControlPanel = nullptr;
 
 	TSharedPtr<FVertexBuffer> vb;
 	TSharedPtr<FIndexBuffer> ib;
 	TSharedPtr<FMesh> Mesh;
 	TSharedPtr<FShader> Shader;
-
-	FEngineShowFlags ShowFlags;
 };
 

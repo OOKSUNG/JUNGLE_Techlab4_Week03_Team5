@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d11.h>
+#include <wrl/client.h>
 
 class FTexture2D
 {
@@ -15,5 +16,5 @@ private:
 	uint32 Width;
 	uint32 Height;
 
-	ComPtr<ID3D11Texture2D> Texture2D;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture2D;
 };

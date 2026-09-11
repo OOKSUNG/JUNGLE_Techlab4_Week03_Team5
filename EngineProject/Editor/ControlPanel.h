@@ -1,6 +1,8 @@
 #pragma once
 #include <format>
 #include "EditorPanel.h"
+#include "../Editor/EditorContext.h"
+#include "ShowFlags.h"
 
 #include <functional>
 
@@ -13,16 +15,18 @@ public:
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
 
-	inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
+	//inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
 	inline void SetSceneClearCallback(SceneClearCallback InCallback) { Callback = InCallback; }
 
+	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	inline FEditorContext GetContext() { return Context; }
+
 	float DeltaTime = 1.0f;
-	UWorld* World; // SpawnActor MainCamera
+	// UWorld* World; // SpawnActor MainCamera
 	char SceneName[128] = "";
 
 	FEngineShowFlags* ShowFlags = nullptr;
-	TSharedPtr<FMesh> Mesh;
-	FShader* Shader;
+
 
 	void AddActor(EPrimitiveType Type);
 
@@ -37,7 +41,7 @@ public:
 		"Plane",
 	};
 
-	FGizmo* Gizmo;
+	// FGizmo* Gizmo;
 
 	int32 GizmoSelectedIndex = 0;
 
@@ -58,5 +62,8 @@ public:
 
 	SceneClearCallback Callback = nullptr;
 	
+
+private:
+	FEditorContext Context;
 };
 
