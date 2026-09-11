@@ -55,4 +55,12 @@ struct FEngineShowFlags
 	{
 		Flags = static_cast<uint64>(EShowFlagBits::Default);
 	}
+	/**
+	* @brief Flags를 세팅된 프리셋으로 설정합니다
+	* @param FlagPreset 설정할 프리셋
+	*/
+	void SetFlagPreset(EShowFlagBits FlagPreset)
+	{
+		Flags = static_cast<uint64>(FlagPreset);
+	}
 };

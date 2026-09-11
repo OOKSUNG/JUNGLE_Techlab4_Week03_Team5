@@ -130,21 +130,34 @@ void FControlPanel::OnRender()
 	{
 		ShowFlags->Set(EShowFlagBits::Grid, bGrid);
 	}
+	ImGui::SameLine();
 	bool bPrimitives = ShowFlags->IsSet(EShowFlagBits::Primitives);
 	if (ImGui::Checkbox("Primitives", &bPrimitives))
 	{
 		ShowFlags->Set(EShowFlagBits::Primitives, bPrimitives);
 	}
+	ImGui::SameLine();
 	bool bOutLine = ShowFlags->IsSet(EShowFlagBits::OutLine);
 	if (ImGui::Checkbox("OutLine", &bOutLine))
 	{
 		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
 	}
+	ImGui::SameLine();
 	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
-
 	if (ImGui::Checkbox("Gizmo", &bGizmo))
 	{
 		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
 	}
+	ImGui::Text("ShowFlagPreset");
+	if (ImGui::Button("Default"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::Default);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("None"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::None);
+	}
+
 	ImGui::End();
 }
