@@ -356,16 +356,19 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
 
 		FRenderPacket rp = InQueue.front();
 
-		BindShader(rp.shader);
-		BindMesh(rp.mesh);
+		if (rp.bIsVisible)
+		{
+			BindShader(rp.shader);
+			BindMesh(rp.mesh);
 
-		// rp.Transform 과 Camera VP 행렬 곱
-		// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
-		FMatrix MVP;
-		MVP = rp.model * VP;
-		UpdateConstantBuffer(MVP);
-		SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
+			// rp.Transform 과 Camera VP 행렬 곱
+			// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
+			FMatrix MVP;
+			MVP = rp.model * VP;
+			UpdateConstantBuffer(MVP);
+			SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
+		}
 
 		InQueue.pop();
 	}
