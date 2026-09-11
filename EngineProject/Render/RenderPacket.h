@@ -7,4 +7,5 @@ struct FRenderPacket {
 	FMatrix model;
 	FMesh* mesh;
 	FShader* shader;
+	bool bIsVisible;
 };

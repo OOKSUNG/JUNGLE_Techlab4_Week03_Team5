@@ -91,11 +91,13 @@ namespace
 bool FPropertyPanel::Init()
 {
 	//transform = new FTransform(FVector(), FVector(), FRotator());
+
 	return true;
 }
 
 void FPropertyPanel::Tick(float DeltaTime)
 {
+
 }
 
 
@@ -116,6 +118,14 @@ void FPropertyPanel::OnRender()
 		DrawVector3Controller("Rotation", Rotation, 0.0f, 10.0f);
 		transform->Rotation = FRotator(Rotation.Y, Rotation.Z, Rotation.X);
 		DrawVector3Controller("Scale", transform->Scale, 0.0f, 10.0f);
+		if (UPrimitiveComponent* TargetPrimitive = Cast<UPrimitiveComponent>(Target))
+		{
+			bool bIsVisible = TargetPrimitive->GetVisible();
+			if (ImGui::Checkbox("IsVisible", &bIsVisible))
+			{
+				TargetPrimitive->SetVisible(bIsVisible);
+			}
+		}
 	}
 
 	ImGui::End();

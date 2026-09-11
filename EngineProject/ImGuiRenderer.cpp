@@ -40,11 +40,9 @@ void FImGuiRenderer::Begin()
 void FImGuiRenderer::End()
 {
 	ImGuiIO& io = ImGui::GetIO();
-
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-	ImGui::UpdatePlatformWindows();
+	ImGui::UpdatePlatformWindows(); 
 	ImGui::RenderPlatformWindowsDefault();
 }
 

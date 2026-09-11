@@ -4,8 +4,11 @@
 #include "../ObjectSystem/ObjectFactory.h"
 #include "../Engine/World.h"
 
+// 컴포넌트 헤더를 따로 만들어야 할까?
 #include "../Component/CubeComponent.h"
 #include "../Component/SphereComponent.h"
+#include "../Component/ConeComponent.h"
+#include "../Component/PlaneComponent.h"
 #include "../Engine/ResourceManager.h"
 
 AActor::AActor()
@@ -56,15 +59,11 @@ void AActor::AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform)
 		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
 		break;
 	case EPrimitiveType::Cone:
-		RootComponent = FObjectFactory::ConstructObject<UPrimitiveComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetMesh(FResourceManager::GetInstance().GetMesh("Cone"));
-		Cast<UPrimitiveComponent>(RootComponent)->SetMeshData(FGeometryGenerator::GetMeshData("Cone"));
+		RootComponent = FObjectFactory::ConstructObject<UConeComponent>();
 		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
 		break;
 	case EPrimitiveType::Plane:
-		RootComponent = FObjectFactory::ConstructObject<UPrimitiveComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetMesh(FResourceManager::GetInstance().GetMesh("Plane"));
-		Cast<UPrimitiveComponent>(RootComponent)->SetMeshData(FGeometryGenerator::GetMeshData("Plane"));
+		RootComponent = FObjectFactory::ConstructObject<UPlaneComponent>();
 		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
 		break;
 	default:

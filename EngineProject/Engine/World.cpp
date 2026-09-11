@@ -224,11 +224,11 @@ bool UWorld::LoadScene(const FString& Path)
 
 	if (!std::filesystem::exists(FullPath))
 	{
-		LOG(Warning, "{} is Not Exist!", FullPath);
+		LOG(World, Warning, "{} is Not Exist!", FullPath);
 		return false;
 	}
 
-	ClearScene();
+	// ClearScene();
 
 	if (!File.is_open())
 	{
