@@ -19,29 +19,34 @@ void UCameraComponent::TickComponent(float DeltaTime)
 
     FQuat Q = transform.Rotation.Quaternion().Normalize();
 
+    float CurrentSpeed = CameraSpeed;
+
+    if (FInputSystem::IsKeyDown(EKeyCode::Shift))
+        CurrentSpeed *= 10.0f;
+
     if (FInputSystem::IsKeyDown(EKeyCode::W))
     {
-        transform.Location += transform.GetForward() * CameraSpeed * DeltaTime;
+        transform.Location += transform.GetForward() * CurrentSpeed * DeltaTime;
     }
     if (FInputSystem::IsKeyDown(EKeyCode::A))
     {
-        transform.Location -= transform.GetRight() * CameraSpeed * DeltaTime;
+        transform.Location -= transform.GetRight() * CurrentSpeed * DeltaTime;
     }
     if (FInputSystem::IsKeyDown(EKeyCode::S))
     {
-        transform.Location -= transform.GetForward() * CameraSpeed * DeltaTime;
+        transform.Location -= transform.GetForward() * CurrentSpeed * DeltaTime;
     }
     if (FInputSystem::IsKeyDown(EKeyCode::D))
     {
-        transform.Location += transform.GetRight() * CameraSpeed * DeltaTime;
+        transform.Location += transform.GetRight() * CurrentSpeed * DeltaTime;
     }
     if (FInputSystem::IsKeyDown(EKeyCode::Q))
     {
-        transform.Location -= transform.GetUp() * CameraSpeed * DeltaTime;
+        transform.Location -= transform.GetUp() * CurrentSpeed * DeltaTime;
     }
     if (FInputSystem::IsKeyDown(EKeyCode::E))
     {
-        transform.Location += transform.GetUp() * CameraSpeed * DeltaTime;
+        transform.Location += transform.GetUp() * CurrentSpeed * DeltaTime;
     }
 
     if (FInputSystem::IsMouseDown(EMouseButton::Right))
