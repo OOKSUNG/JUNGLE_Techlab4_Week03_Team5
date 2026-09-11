@@ -194,6 +194,7 @@
     <ClCompile Include="ObjectSystem\Class.cpp" />
     <ClCompile Include="ObjectSystem\Object.cpp" />
     <ClCompile Include="ObjectSystem\ObjectFactory.cpp" />
+    <ClCompile Include="Component\PlaneComponent.cpp" />
     <ClCompile Include="Render\Buffer.cpp" />
     <ClCompile Include="Render\GeometryGenerator.cpp" />
     <ClCompile Include="Render\Mesh.cpp" />
@@ -231,6 +232,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Component\ConeComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera\CameraActor.h" />
@@ -288,6 +290,7 @@
     <ClInclude Include="Component\SphereComponent.h" />
     <ClInclude Include="EnginePCH.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="Component\PlaneComponent.h" />
     <ClInclude Include="Render\Buffer.h" />
     <ClInclude Include="Render\GeometryGenerator.h" />
     <ClInclude Include="Render\Mesh.h" />
@@ -304,6 +307,7 @@
     <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Component\ConeComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\DefaultShader.hlsl">

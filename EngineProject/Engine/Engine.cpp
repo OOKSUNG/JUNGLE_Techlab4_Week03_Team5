@@ -43,7 +43,11 @@ bool Engine::Init(HINSTANCE hInstance)
 
 
 	LOG(Engine, Info, "Initialize ResourceManager...");
-	FResourceManager::GetInstance().Init(Renderer.get());
+	if (!FResourceManager::GetInstance().Init(Renderer.get()))
+	{
+		LOG(Engine, Info, "Failed To Initialize ResourceManager");
+		return false;
+	}
 	LOG(Engine, Info, "Success!");
 
 	// Do Sth

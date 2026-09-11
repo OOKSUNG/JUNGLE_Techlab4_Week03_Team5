@@ -221,7 +221,7 @@ bool UWorld::LoadScene(const FString& Path)
 		return false;
 	}
 
-	ClearScene();
+	// ClearScene();
 
 	if (!File.is_open())
 	{

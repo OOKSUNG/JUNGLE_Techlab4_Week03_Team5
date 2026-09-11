@@ -9,13 +9,13 @@ FResourceManager& FResourceManager::GetInstance()
     return instance;
 }
 
-void FResourceManager::Init(FRenderer* InRenderer)
+bool FResourceManager::Init(FRenderer* InRenderer)
 {
     Renderer = InRenderer;
 
     if (!Renderer)
     {
-        return;
+        return false;
     }
 
     // 메시 데이터 업로드
@@ -30,6 +30,8 @@ void FResourceManager::Init(FRenderer* InRenderer)
 
     FMeshData PlaneData = FGeometryGenerator::CreatePlane(1.0f,FVector4(1.0f, 1.0f, 1.0f, 1.0f));
     MeshMap[FString("Plane")] = Renderer->CreateMesh(PlaneData);
+
+    return true;
 }
 
 void FResourceManager::SetRenderer(FRenderer* InRenderer)

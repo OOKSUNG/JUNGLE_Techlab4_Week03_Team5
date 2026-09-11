@@ -72,13 +72,15 @@ void FControlPanel::OnRender()
 	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
 	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
-		
-		if (Context.World->LoadScene(SceneName))
+		printf("Buttonstart");
+		// Context.World->ClearScene();
+		if (!Context.World->LoadScene(SceneName))
 		{
 			return;
 		}
 		ActorNum = Context.World->GetActorNum() - 1;
 		if (Callback)Callback();
+		printf("Buttonend");
 	}
 	ImGui::Separator();
 	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();

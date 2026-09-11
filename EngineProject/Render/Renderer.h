@@ -71,6 +71,7 @@ public:
 	/*void Prepare();*/
 
 	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP);
+	void DrawPacket(const FRenderPacket& Packet, FMatrix VP);
 	void Shutdown();
 
 private:
