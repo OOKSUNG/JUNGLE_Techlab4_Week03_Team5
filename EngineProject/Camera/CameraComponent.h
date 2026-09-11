@@ -36,11 +36,16 @@ public:
 	void SetNearClipPlane(float NearPlane);
 	void SetFarClipPlane(float FarPlane);
 
+	void SetSpeed(float Speed);
+	void SetSensitivity(float Sensitivity);
+
 	float* GetFOV();
 
 	FVector GetLocation() const;
 	FVector GetScale() const;
 	FRotator GetRotation() const;
+	float GetSensitivity() const;
+	float GetSpeed() const;
 
 	FRay DeProjection(int32 MouseX, int32 MouseY, uint32 ScreenW, uint32 ScreenH);
 
@@ -50,8 +55,8 @@ public:
 	FMatrix GetViewProjectionMatrix() const;
 
 private:
-	const float CameraSpeed = 10.0f;
-	const float MouseSensitivity = 0.05f;
-	const float WheelSpeed = 0.1f;
+	float CameraSpeed = 10.0f;
+	float MouseSensitivity = 0.05f;
+	float WheelSpeed = 0.1f;
 };
 

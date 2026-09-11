@@ -2,8 +2,10 @@
 #include "ControlPanel.h"
 #include "../Camera/CameraActor.h"
 #include "../Camera/CameraComponent.h"
-
+#include "../Core/EngineTimer.h"
+#include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
+#include "ShowFlags.h"
 
 bool FControlPanel::Init()
 {
@@ -19,18 +21,20 @@ void FControlPanel::Tick(float DeltaTime)
 	{
 		static int ModeIndex = 0;
 		ModeIndex = (ModeIndex + 1) % 3;
-		Gizmo->SetMode(static_cast<EGizmoMode>(ModeIndex));
+		Context.Gizmo->SetMode(static_cast<EGizmoMode>(ModeIndex));
 	}
+
+	FControlPanel::DeltaTime = DeltaTime;
 }
 
 void FControlPanel::AddActor(EPrimitiveType Type)
 {
 	FTransform Transform;
-	AActor* Actor = World->SpawnActor(AActor::StaticClass(), &Transform);
+	AActor* Actor = Context.World->SpawnActor(AActor::StaticClass(), &Transform);
 	Actor->AddPrimitiveComponent(Type, Transform);
 
 
-	ActorNum = World->GetActorNum() - 1;
+	ActorNum = Context.World->GetActorNum() - 1;
 }
 
 
@@ -66,31 +70,33 @@ void FControlPanel::OnRender()
 	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
 	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
 	{
-		World->ClearScene();
-		World->NewScene(SceneName);
-		ActorNum = World->GetActorNum() - 1; 
+		Context.World->ClearScene();
+		Context.World->NewScene(SceneName);
+		ActorNum = Context.World->GetActorNum() - 1;
 		if (Callback) Callback();
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { World->SaveScene(SceneName); ActorNum = World->GetActorNum() - 1; }
+	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
 	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
-		
-		if (World->LoadScene(SceneName))
+		printf("Buttonstart");
+		// Context.World->ClearScene();
+		if (!Context.World->LoadScene(SceneName))
 		{
 			return;
 		}
-		ActorNum = World->GetActorNum() - 1;
+		ActorNum = Context.World->GetActorNum() - 1;
 		if (Callback)Callback();
+		printf("Buttonend");
 	}
 
 	ImGui::Separator();
-
-	// Camera Editor
-	UCameraComponent* CamCom = World->GetMainCamera()->GetCameraComponent();
+	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();
 
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
 	FTransform* transform = CamCom->GetTransform();
+	float MouseSensitivity = CamCom->GetSensitivity();
+	float CameraSpeed = CamCom->GetSpeed();
 
 	ImGui::SetNextItemWidth(255.0f);
 	ImGui::InputFloat("##FOV", &CamCom->FOV);
@@ -116,19 +122,63 @@ void FControlPanel::OnRender()
 	ImGui::InputFloat("##Roll", &transform->Rotation.Roll);
 	ImGui::SameLine();
 	ImGui::Text("Camera Rotation");
+	if (ImGui::SliderFloat("Camera Sensitivity", &MouseSensitivity, 0.01f, 0.5f, "%.2f"))
+	{
+		CamCom->SetSensitivity(MouseSensitivity);
+		FEditorSettings::Get().CameraSensitivity = MouseSensitivity;
+	}
+	if (ImGui::SliderFloat("Camera Speed", &CameraSpeed, 1.0f, 50.0f))
+	{
+		CamCom->SetSpeed(CameraSpeed);
+		FEditorSettings::Get().CameraMoveSpeed = CameraSpeed;
+	}
 
 	ImGui::Separator();
 
-	// Gizmo Select
-	GizmoSelectedIndex = static_cast<int32>(Gizmo->GetMode());
+	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
 	{
-		Gizmo->SetMode(static_cast<EGizmoMode>(GizmoSelectedIndex));
+		Context.Gizmo->SetMode(static_cast<EGizmoMode>(GizmoSelectedIndex));
 	}
 
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##SpaceCombo", &SpaceSelectedIndex, SpaceItems, IM_ARRAYSIZE(SpaceItems)))
 	{
-		Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
+		Context.Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
+	}
+
+	ImGui::Text("Show Flags");
+	bool bGrid = ShowFlags->IsSet(EShowFlagBits::Grid);
+	if (ImGui::Checkbox("World Grid", &bGrid))
+	{
+		ShowFlags->Set(EShowFlagBits::Grid, bGrid);
+	}
+	ImGui::SameLine();
+	bool bPrimitives = ShowFlags->IsSet(EShowFlagBits::Primitives);
+	if (ImGui::Checkbox("Primitives", &bPrimitives))
+	{
+		ShowFlags->Set(EShowFlagBits::Primitives, bPrimitives);
+	}
+	ImGui::SameLine();
+	bool bOutLine = ShowFlags->IsSet(EShowFlagBits::OutLine);
+	if (ImGui::Checkbox("OutLine", &bOutLine))
+	{
+		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
+	}
+	ImGui::SameLine();
+	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
+	if (ImGui::Checkbox("Gizmo", &bGizmo))
+	{
+		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
+	}
+	ImGui::Text("ShowFlagPreset");
+	if (ImGui::Button("Default"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::Default);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("None"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::None);
 	}
 
 	// View Mode Select

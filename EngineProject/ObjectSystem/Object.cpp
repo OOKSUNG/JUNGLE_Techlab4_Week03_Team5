@@ -12,7 +12,7 @@ UObject::UObject()
 	UUID = FEngineStatics::GetUUID();
 	InternalIndex = GUObjectArray.size();
 	GUObjectArray.push_back(this);
-	LOG(Info, "UUID : {}", UUID);
+	LOG(Object, Info, "UUID : {}", UUID);
 }
 
 UObject::UObject(bool bRegister)

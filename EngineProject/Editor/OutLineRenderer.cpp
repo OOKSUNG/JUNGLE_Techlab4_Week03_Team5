@@ -21,7 +21,8 @@ void FOutlineRenderer::SetMesh(FMesh* InMesh)
 
 void FOutlineRenderer::OnRender(const FOutline& InOutline, const FMatrix& InViewProj, const FVector4& CameraPos) 
 {
-	if (!InOutline.GetTarget())
+	UPrimitiveComponent* Target = InOutline.GetTarget();
+	if (!Target || !Target->GetVisible() )
 	{
 		return;
 	}

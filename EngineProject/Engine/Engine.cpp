@@ -16,114 +16,58 @@
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/ResourceManager.h"
-
+#include "Editor/EditorUI.h"
 
 
 bool Engine::Init(HINSTANCE hInstance)
 {
-	EditorUI = MakeUnique<FEditorUI>();
-	EditorUI->Init();
-
-	ConsolePanel = EditorUI->AddEditorPanel<FConsolePanel>();
-	ConsolePanel->AddLog(ELogVerbosity::Info, "Engine Initialize...");
-
 	// Create Main Window
-	LOG(Info, "Create Main Window...");
+	LOG(Engine, Info, "Create Main Window...");
 	MainWindow = MakeUnique<Window>();
 	if (!MainWindow->Create(hInstance, 1280, 720, L"Engine"))
 	{
-		LOG(Error, "Failed To Create Main Window!");
+		LOG(Engine, Error, "Failed To Create Main Window!");
 		return false;
 	}
-	LOG(Info, "Success!");
+	LOG(Engine, Info, "Success!");
 
-	LOG(Info, "Initialize Renderer...");
+	LOG(Engine, Info, "Initialize Renderer...");
 	Renderer = MakeUnique<FRenderer>();
 	if (!Renderer->Init(MainWindow->GetHandle()))
 	{
-		LOG(Error, "Failed To Initialize Renderer!");
-
+		LOG(Engine, Error, "Failed To Initialize Renderer!");
+		return false;
 	}
-	LOG(Info, "Success!");
-
-
-	LOG(Info, "Initialize ResourceManager...");
-	FResourceManager::GetInstance().Init(Renderer.get());
-	LOG(Info, "Success!");
+	LOG(Engine, Info, "Success!");
 
 
 
-	LOG(Info, "Initialize ImGui...");
-	ImGuiRenderer = MakeUnique<FImGuiRenderer>();
-	if (!ImGuiRenderer->Init(MainWindow->GetHandle(), Renderer->GetDevice(), Renderer->GetDeviceContext()))
+	LOG(Engine, Info, "Initialize ResourceManager...");
+	if (!FResourceManager::GetInstance().Init(Renderer.get()))
 	{
-		LOG(Error, "Failed To Initialize ImGui!");
-
+		LOG(Engine, Info, "Failed To Initialize ResourceManager");
+		return false;
 	}
-	LOG(Info, "Success!");
-
-	GridRenderer = MakeUnique<FGridRenderer>();
-	GridRenderer->Init(Renderer.get());
-
-	GizmoRenderer = MakeUnique<FGizmoRenderer>();
-	GizmoRenderer->Init(Renderer.get());
-
-	Gizmo = MakeUnique<FGizmo>();
-
-	// PropertyPanel Add
-	PropertyPanel = EditorUI->AddEditorPanel<FPropertyPanel>();
-	ControlPanel = EditorUI->AddEditorPanel<FControlPanel>();
-	ControlPanel->SetRenderer(Renderer.get());
-
-	// Resource Manager 
-
-	// OutLine
-	OutlineRenderer = MakeUnique<FOutlineRenderer>();
-	OutlineRenderer->Init(Renderer.get());
-
-	Outline = MakeUnique<FOutline>();
+	LOG(Engine, Info, "Success!");
 
 	// Do Sth
+	LOG(Engine, Info, "Initialize World...");
 	World = FObjectFactory::ConstructObject<UWorld>();
-	World->Init();	//return bool
-
-	FTransform Transform;
-	AActor* Actor = World->SpawnActor(AActor::StaticClass(), &Transform);
-	Actor->AddPrimitiveComponent(EPrimitiveType::Cube, Transform);
-
-	FMeshData Data = FGeometryGenerator::CreateCube(1.0f);
-	//FMeshData Data = FGeometryGenerator::CreateCylinder(1.0f, 3.0f, 20, FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-	//FMeshData Data = FGeometryGenerator::CreateCone(1.0f, 3.0f, 20, FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-	//FMeshData Data = FGeometryGenerator::CreateArrow(0.1f, 1.0f, 0.2f, 0.5f, 20, FVector4(1.0f, 0.0f, 0.0f, 1.0f));
-	vb = Renderer->CreateVertexBuffer(Data.Vertices.data(), sizeof(FVertex) * (UINT)Data.Vertices.size(), sizeof(FVertex));
-	ib = Renderer->CreateIndexBuffer(Data.Indices.data(), Data.Indices.size());
-
-	Mesh = MakeShared<FMesh>();
-	Mesh->VertexBuffer = vb;
-	Mesh->IndexBuffer = ib;
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+	if (!World->Init())
 	{
-		{ "POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	Shader = Renderer->CreateShader(L"Shader/DefaultShader.hlsl", layout, 2);
+		LOG(Engine, Info, "Failed To Initialize World");
+		return false;
+	}
+	LOG(Engine, Info, "Success!");
+	Editor = MakeUnique<FEditor>();
 
-	Actor->GetPrimitiveComponent()->SetMeshShader(Mesh.get(), Shader.get());
-	Actor->GetPrimitiveComponent()->SetMeshData(Data);
-
-	PropertyPanel->FPropertyPanel::World = World;
-	ControlPanel->FControlPanel::World = World;
-	ControlPanel->FControlPanel::Mesh = Mesh;
-	ControlPanel->FControlPanel::Shader = Shader.get();
-	ControlPanel->SetGizmo(Gizmo.get());
-
-	ControlPanel->SetSceneClearCallback([&]() {
-		Gizmo->SetTarget(nullptr);
-		Outline->SetTarget(nullptr);
-		PropertyPanel->SetTarget(nullptr);
-		}
-	);
+	LOG(Engine, Info, "Initialize Editor...");
+	if (!Editor->Init(Renderer.get(), World, MainWindow->GetHandle()))
+	{
+		LOG(Engine, Info, "Failed To Initialize Editor");
+		return false;
+	}
+	LOG(Engine, Info, "Success!");
 
 	bIsRunning = true;
 
@@ -132,87 +76,75 @@ bool Engine::Init(HINSTANCE hInstance)
 
 void Engine::Run()
 {
-	EngineTimer::Init();
+	EngineTimer::Init(); // return bool
 
-	LOG(Info, "{}", "Hello, World!");
+	LOG(Engine, Info, "{}", "Hello, World!");
 
 	FMatrix Mat;
 	Mat.SetIdentity();
 
-	UPrimitiveComponent* OutlineComponent = nullptr;
+	FMatrix VP;
 
 	while (bIsRunning)
 	{
 		EngineTimer::Tick();
 		float DeltaTime = EngineTimer::GetDeltaTime();
-		ControlPanel->FControlPanel::DeltaTime = DeltaTime;
 
 		//Check Swapchain Resize
 		MainWindow->ProcessMessage(bIsRunning);
-		if (MainWindow->CheckResized())
-		{
-			Renderer->Resize(MainWindow->GetWidth(), MainWindow->GetHeight());
-			World->GetMainCamera()->GetCameraComponent()->SetAspectRatio((float)MainWindow->GetWidth() / MainWindow->GetHeight());
-		}
+		HandleResize();
 
-		//Update World
+		//Update World / UI
 		World->Tick(DeltaTime);
 
-		EditorUI->Tick(DeltaTime);
+		ACameraActor* MainCamera = World->GetMainCamera();
+		UCameraComponent* Camera = MainCamera->GetCameraComponent();
+		VP = Camera->GetViewProjectionMatrix();
 
-		FMatrix VP = World->GetMainCamera()->GetCameraComponent()->GetViewProjectionMatrix();
-
-		FRay ray = World->GetMainCamera()->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), MainWindow->GetWidth(), MainWindow->GetHeight());
-		FVector2 mousePos(FInputSystem::GetMouseX(), FInputSystem::GetMouseY());
-		bool bMouseDown = FInputSystem::IsMouseDown(EMouseButton::Left);
-
-		Gizmo->Update(ray, mousePos, VP, MainWindow->GetWidth(), MainWindow->GetHeight(), bMouseDown, World->GetMainCamera()->GetCameraComponent());
-
-		if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
-		{
-			UPrimitiveComponent* PickedComponent = World->GetPickingPrimitive(MainWindow->GetWidth(), MainWindow->GetHeight());
-			OutlineComponent = PickedComponent;
-			Gizmo->SetTarget(PickedComponent);
-			Outline->SetTarget(OutlineComponent);
-			PropertyPanel->SetTarget(PickedComponent);
-		}
-
-
+		UpdateEditor(DeltaTime, Camera, VP);
 
 		TQueue<FRenderPacket> RenderQueue;
 		World->GatherRenderPackets(RenderQueue);
 		FInputSystem::UpdateInputStates();
-
-		//BeginRendering
+	
 		Renderer->BeginFrame();
-		Renderer->BindShader(Shader.get());
-		GridRenderer->OnRender(VP, World->GetMainCamera()->GetCameraComponent()->GetLocation());
-		Renderer->RenderAll(RenderQueue, VP, Outline->GetTarget());
+
+		// World
+		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
+			Renderer->RenderAll(RenderQueue, VP, Editor->GetOutline().GetTarget());
+		// Editor
 		FVector4 CamLoc = World->GetMainCamera()->GetCameraComponent()->GetLocation();
-		if (Outline->GetTarget() && Renderer->GetViewMode() != EViewModeIndex::Wireframe)
-			OutlineRenderer->OnRender(*Outline, VP, CamLoc);
-
-		if (Gizmo->GetTarget())
-		{
-			Renderer->SetDepthStencilEnabled(false);
-			GizmoRenderer->OnRender(*Gizmo, VP);
-		}
-
-		ImGuiRenderer->Begin();
-
-		EditorUI->OnRender();
-
-		ImGuiRenderer->End();
+		if (Editor->GetOutline().GetTarget() && Renderer->GetViewMode() != EViewModeIndex::Wireframe)
+		Editor->OnRender(VP, Camera, Renderer.get());
 
 		Renderer->EndFrame();
+	
 	}
+}
+
+void Engine::HandleResize()
+{
+	if (MainWindow->CheckResized())
+	{
+		Renderer->Resize(MainWindow->GetWidth(), MainWindow->GetHeight());
+		World->GetMainCamera()->GetCameraComponent()->SetAspectRatio((float)MainWindow->GetWidth() / MainWindow->GetHeight());
+	}
+}
+
+void Engine::UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP)
+{
+	uint32 WinWidth = MainWindow->GetWidth();
+	uint32 WinHeight = MainWindow->GetHeight();
+
+	Editor->Update(DeltaTime, Camera, VP, WinWidth, WinHeight);
 }
 
 void Engine::Shutdown()
 {
+	FEditorSettings::Get().SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
 		delete Object;
-	ImGuiRenderer->Shutdown();
+	Editor->Shutdown();
 	Renderer->Shutdown();
 }
 
