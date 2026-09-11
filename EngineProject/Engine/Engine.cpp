@@ -40,8 +40,6 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 	LOG(Engine, Info, "Success!");
 
-
-
 	LOG(Engine, Info, "Initialize ResourceManager...");
 	if (!FResourceManager::GetInstance().Init(Renderer.get()))
 	{

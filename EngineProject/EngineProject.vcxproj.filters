@@ -407,5 +407,8 @@
     <ClInclude Include="Component\PlaneComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Math\FMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

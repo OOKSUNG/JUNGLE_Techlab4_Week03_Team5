@@ -99,4 +99,3 @@ inline static const FMatrix Identity = FMatrix(
 std::ostream& operator << (std::ostream& OS, const FMatrix& M);
 
 FRotator MatrixToRotator(const FMatrix& M);
-
