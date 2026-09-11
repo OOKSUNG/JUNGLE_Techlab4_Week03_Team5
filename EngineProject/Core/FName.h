@@ -1,3 +1,4 @@
+#pragma once
 #include "EngineString.h"
 #include "Core/Containers.h"
 
