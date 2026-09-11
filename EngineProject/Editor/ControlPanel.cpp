@@ -2,6 +2,7 @@
 #include "ControlPanel.h"
 #include "../Camera/CameraActor.h"
 #include "../Camera/CameraComponent.h"
+#include "../Core/EngineTimer.h"
 
 #include "Input/InputSystem.h"
 
@@ -19,18 +20,20 @@ void FControlPanel::Tick(float DeltaTime)
 	{
 		static int ModeIndex = 0;
 		ModeIndex = (ModeIndex + 1) % 3;
-		Gizmo->SetMode(static_cast<EGizmoMode>(ModeIndex));
+		Context.Gizmo->SetMode(static_cast<EGizmoMode>(ModeIndex));
 	}
+
+	FControlPanel::DeltaTime = DeltaTime;
 }
 
 void FControlPanel::AddActor(EPrimitiveType Type)
 {
 	FTransform Transform;
-	AActor* Actor = World->SpawnActor(AActor::StaticClass(), &Transform);
+	AActor* Actor = Context.World->SpawnActor(AActor::StaticClass(), &Transform);
 	Actor->AddPrimitiveComponent(Type, Transform);
 
 
-	ActorNum = World->GetActorNum() - 1;
+	ActorNum = Context.World->GetActorNum() - 1;
 }
 
 
@@ -61,24 +64,24 @@ void FControlPanel::OnRender()
 	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
 	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
 	{
-		World->ClearScene();
-		World->NewScene(SceneName);
-		ActorNum = World->GetActorNum() - 1; 
+		Context.World->ClearScene();
+		Context.World->NewScene(SceneName);
+		ActorNum = Context.World->GetActorNum() - 1;
 		if (Callback) Callback();
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { World->SaveScene(SceneName); ActorNum = World->GetActorNum() - 1; }
+	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
 	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
 		
-		if (World->LoadScene(SceneName))
+		if (Context.World->LoadScene(SceneName))
 		{
 			return;
 		}
-		ActorNum = World->GetActorNum() - 1;
+		ActorNum = Context.World->GetActorNum() - 1;
 		if (Callback)Callback();
 	}
 	ImGui::Separator();
-	UCameraComponent* CamCom = World->GetMainCamera()->GetCameraComponent();
+	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();
 
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
@@ -112,15 +115,15 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
-	GizmoSelectedIndex = static_cast<int32>(Gizmo->GetMode());
+	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
 	{
-		Gizmo->SetMode(static_cast<EGizmoMode>(GizmoSelectedIndex));
+		Context.Gizmo->SetMode(static_cast<EGizmoMode>(GizmoSelectedIndex));
 	}
 
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##SpaceCombo", &SpaceSelectedIndex, SpaceItems, IM_ARRAYSIZE(SpaceItems)))
 	{
-		Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
+		Context.Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
 	}
 
 	ImGui::End();

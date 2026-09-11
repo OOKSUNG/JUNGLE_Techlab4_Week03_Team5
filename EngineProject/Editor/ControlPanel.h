@@ -13,15 +13,15 @@ public:
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
 
-	inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
+	//inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
 	inline void SetSceneClearCallback(SceneClearCallback InCallback) { Callback = InCallback; }
 
-	float DeltaTime = 1.0f;
-	UWorld* World; // SpawnActor MainCamera
-	char SceneName[128] = "";
+	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	inline FEditorContext GetContext() { return Context; }
 
-	TSharedPtr<FMesh> Mesh;
-	FShader* Shader;
+	float DeltaTime = 1.0f;
+	// UWorld* World; // SpawnActor MainCamera
+	char SceneName[128] = "";
 
 	void AddActor(EPrimitiveType Type);
 
@@ -36,7 +36,7 @@ public:
 		"Plane",
 	};
 
-	FGizmo* Gizmo;
+	// FGizmo* Gizmo;
 
 	int32 GizmoSelectedIndex = 0;
 
@@ -57,5 +57,8 @@ public:
 
 	SceneClearCallback Callback = nullptr;
 	
+
+private:
+	FEditorContext Context;
 };
 

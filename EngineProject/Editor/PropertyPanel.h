@@ -2,6 +2,7 @@
 
 #include <format>
 #include "EditorPanel.h"
+#include "EditorContext.h"
 
 struct FTransform;
 
@@ -15,9 +16,15 @@ public:
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
 	
+	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	inline FEditorContext GetContext() { return Context; }
+
 	void SetTarget(USceneComponent* InTarget) { Target = InTarget; }
 
-	UWorld* World;
+private:
+	FEditorContext Context;
+
+	//UWorld* World;
 
 	USceneComponent* Target;
 };

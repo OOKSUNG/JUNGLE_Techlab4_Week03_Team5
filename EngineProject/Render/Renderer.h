@@ -35,6 +35,8 @@ public:
 	void CreateRasterizerState();
 	void CreateDepthStencilBufferAndState();
 	void CreateConstantBuffer();
+	void CreateDefaultShader();
+
 
 	inline ID3D11Device* GetDevice() const { return Device.Get(); }
 	ID3D11DeviceContext* GetDeviceContext();
@@ -97,6 +99,8 @@ private:
 
 	uint32 Width;
 	uint32 Height;
+
+	TSharedPtr<FShader> DefaultShader;
 
 	FLOAT ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 };
