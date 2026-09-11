@@ -1,7 +1,7 @@
 #pragma once
 
-class UWorld;
-class FGizmo;
+#include "../Engine/World.h"
+#include "Gizmo.h"
 
 struct FEditorContext
 {

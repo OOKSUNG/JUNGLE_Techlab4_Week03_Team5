@@ -1,6 +1,7 @@
 #pragma once
 #include <format>
 #include "EditorPanel.h"
+#include "../Editor/EditorContext.h"
 
 #include <functional>
 

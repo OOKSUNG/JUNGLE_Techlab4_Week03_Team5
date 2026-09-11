@@ -10,6 +10,7 @@
 
 #include "RenderPacket.h"
 #include "Render/Buffer.h"
+#include "GeometryGenerator.h"
 
 enum EShaderBindFlagBits : uint32
 {

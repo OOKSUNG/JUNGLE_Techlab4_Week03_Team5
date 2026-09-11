@@ -3,6 +3,7 @@
 #include <format>
 #include "EditorPanel.h"
 #include "EditorContext.h"
+#include "../Component/SceneComponent.h"
 
 struct FTransform;
 

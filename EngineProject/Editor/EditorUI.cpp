@@ -1,5 +1,9 @@
 #include "EnginePCH.h"
 #include "EditorUI.h"
+#include "ConsolePanel.h"
+#include "ControlPanel.h"
+#include "PropertyPanel.h"
+
 
 bool FEditorUI::Init(const FEditorContext& InContext)
 {
@@ -14,8 +18,6 @@ bool FEditorUI::Init(const FEditorContext& InContext)
 	GetEditorPanel<FPropertyPanel>()->FPropertyPanel::SetContext(InContext);
 	GetEditorPanel<FControlPanel>()->FControlPanel::SetContext(InContext);
 
-
-	GetEditorPanel<FConsolePanel>()->AddLog(ELogVerbosity::Info, "Engine Initialize...");
 
 	return true;
 }

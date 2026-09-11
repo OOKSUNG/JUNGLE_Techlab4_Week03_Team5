@@ -3,7 +3,7 @@
 #include "../Camera/CameraActor.h"
 #include "../Camera/CameraComponent.h"
 #include "../Core/EngineTimer.h"
-
+#include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
 
 bool FControlPanel::Init()
