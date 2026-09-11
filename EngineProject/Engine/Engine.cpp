@@ -27,6 +27,8 @@ bool Engine::Init(HINSTANCE hInstance)
 	ConsolePanel = EditorUI->AddEditorPanel<FConsolePanel>();
 	ConsolePanel->AddLog(ELogVerbosity::Info, "Engine Initialize...");
 
+	FEditorSettings::Get().LoadEditorSetting();
+
 	// Create Main Window
 	LOG(Info, "Create Main Window...");
 	MainWindow = MakeUnique<Window>();
@@ -85,6 +87,15 @@ bool Engine::Init(HINSTANCE hInstance)
 	// Do Sth
 	World = FObjectFactory::ConstructObject<UWorld>();
 	World->Init();	//return bool
+
+	if (World && World->GetMainCamera())
+	{
+		if (UCameraComponent* CameraComponent = World->GetMainCamera()->GetCameraComponent())
+		{
+			CameraComponent->SetSpeed(FEditorSettings::Get().CameraMoveSpeed);
+			CameraComponent->SetSensitivity(FEditorSettings::Get().CameraSensitivity);
+		}
+	}
 
 	FTransform Transform;
 	AActor* Actor = World->SpawnActor(AActor::StaticClass(), &Transform);
@@ -209,6 +220,7 @@ void Engine::Run()
 
 void Engine::Shutdown()
 {
+	FEditorSettings::Get().SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
 		delete Object;
 	ImGuiRenderer->Shutdown();

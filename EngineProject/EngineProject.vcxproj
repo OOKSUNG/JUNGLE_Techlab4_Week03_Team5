@@ -158,6 +158,7 @@
     <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="Editor\ConsolePanel.cpp" />
     <ClCompile Include="Editor\ControlPanel.cpp" />
+    <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
     <ClCompile Include="Editor\GizmoRenderer.cpp" />
@@ -246,6 +247,7 @@
     <ClInclude Include="Editor\ConsolePanel.h" />
     <ClInclude Include="Editor\ControlPanel.h" />
     <ClInclude Include="Editor\EditorPanel.h" />
+    <ClInclude Include="Editor\EditorSetting.h" />
     <ClInclude Include="Editor\EditorUI.h" />
     <ClInclude Include="Editor\Gizmo.h" />
     <ClInclude Include="Editor\GizmoRenderer.h" />

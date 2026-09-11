@@ -123,6 +123,16 @@ void UCameraComponent::SetFarClipPlane(float FarPlane)
 	FarClipPlane = FarPlane;
 }
 
+void UCameraComponent::SetSpeed(float Speed)
+{
+    CameraSpeed = Speed;
+}
+
+void UCameraComponent::SetSensitivity(float Sensitivity)
+{
+    MouseSensitivity = Sensitivity;
+}
+
 FVector UCameraComponent::GetLocation() const
 {
 	return transform.Location;
@@ -136,6 +146,16 @@ FVector UCameraComponent::GetScale() const
 FRotator UCameraComponent::GetRotation() const
 {
     return transform.Rotation;
+}
+
+float UCameraComponent::GetSensitivity() const
+{
+    return MouseSensitivity;
+}
+
+float UCameraComponent::GetSpeed() const
+{
+    return CameraSpeed;
 }
 
 FRay UCameraComponent::DeProjection(int32 MouseX, int32 MouseY, uint32 ScreenW, uint32 ScreenH)

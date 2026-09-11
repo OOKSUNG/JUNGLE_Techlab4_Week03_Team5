@@ -19,6 +19,8 @@
 #include "Editor/Outline.h"
 #include "Editor/OutLineRenderer.h"
 
+#include "Editor/EditorSetting.h"
+
 class Engine
 {
 public:
