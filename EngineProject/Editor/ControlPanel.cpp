@@ -90,6 +90,8 @@ void FControlPanel::OnRender()
 
 
 	FTransform* transform = CamCom->GetTransform();
+	float MouseSensitivity = CamCom->GetSensitivity();
+	float CameraSpeed = CamCom->GetSpeed();
 
 	ImGui::SetNextItemWidth(255.0f);
 	ImGui::InputFloat("##FOV", &CamCom->FOV);
@@ -115,6 +117,16 @@ void FControlPanel::OnRender()
 	ImGui::InputFloat("##Roll", &transform->Rotation.Roll);
 	ImGui::SameLine();
 	ImGui::Text("Camera Rotation");
+	if (ImGui::SliderFloat("Camera Sensitivity", &MouseSensitivity, 0.01f, 0.5f, "%.2f"))
+	{
+		CamCom->SetSensitivity(MouseSensitivity);
+		FEditorSettings::Get().CameraSensitivity = MouseSensitivity;
+	}
+	if (ImGui::SliderFloat("Camera Speed", &CameraSpeed, 1.0f, 50.0f))
+	{
+		CamCom->SetSpeed(CameraSpeed);
+		FEditorSettings::Get().CameraMoveSpeed = CameraSpeed;
+	}
 
 	ImGui::Separator();
 

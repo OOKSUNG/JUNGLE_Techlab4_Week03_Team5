@@ -3,6 +3,8 @@
 #include "EditorPanel.h"
 #include "../Editor/EditorContext.h"
 #include "ShowFlags.h"
+#include "EditorSetting.h"
+
 
 #include <functional>
 

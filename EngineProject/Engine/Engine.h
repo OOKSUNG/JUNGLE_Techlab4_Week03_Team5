@@ -20,6 +20,8 @@
 #include "Editor/OutLineRenderer.h"
 #include "Editor/Editor.h"
 
+#include "Editor/EditorSetting.h"
+
 class Engine
 {
 public:
