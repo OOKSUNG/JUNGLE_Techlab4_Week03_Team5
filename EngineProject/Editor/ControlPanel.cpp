@@ -4,6 +4,7 @@
 #include "../Camera/CameraComponent.h"
 
 #include "Input/InputSystem.h"
+#include "Engine/ShowFlags.h"
 
 bool FControlPanel::Init()
 {
@@ -123,5 +124,27 @@ void FControlPanel::OnRender()
 		Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
 	}
 
+	ImGui::Text("Show Flags");
+	bool bGrid = ShowFlags->IsSet(EShowFlagBits::Grid);
+	if (ImGui::Checkbox("World Grid", &bGrid))
+	{
+		ShowFlags->Set(EShowFlagBits::Grid, bGrid);
+	}
+	bool bPrimitives = ShowFlags->IsSet(EShowFlagBits::Primitives);
+	if (ImGui::Checkbox("Primitives", &bPrimitives))
+	{
+		ShowFlags->Set(EShowFlagBits::Primitives, bPrimitives);
+	}
+	bool bOutLine = ShowFlags->IsSet(EShowFlagBits::OutLine);
+	if (ImGui::Checkbox("OutLine", &bOutLine))
+	{
+		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
+	}
+	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
+
+	if (ImGui::Checkbox("Gizmo", &bGizmo))
+	{
+		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
+	}
 	ImGui::End();
 }

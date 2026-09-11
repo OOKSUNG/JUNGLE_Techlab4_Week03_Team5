@@ -4,6 +4,7 @@
 #include "String.h"
 #include "Core/Types.h"
 #include "Core/Containers.h"
+#include "ShowFlags.h"
 
 #include "World.h"
 #include "Render/Renderer.h"
@@ -30,6 +31,8 @@ public:
 
 	void OnWindowResized(uint32 Width, uint32 Height);
 
+	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
+	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 private:
 	bool bIsRunning = false;
 	bool bIsResized = false;
@@ -56,5 +59,7 @@ private:
 	TSharedPtr<FIndexBuffer> ib;
 	TSharedPtr<FMesh> Mesh;
 	TSharedPtr<FShader> Shader;
+
+	FEngineShowFlags ShowFlags;
 };
 

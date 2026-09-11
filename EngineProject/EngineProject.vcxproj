@@ -256,6 +256,7 @@
     <ClInclude Include="Editor\PropertyPanel.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
+    <ClInclude Include="Engine\ShowFlags.h" />
     <ClInclude Include="Engine\World.h" />
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="ImGuiRenderer.h" />

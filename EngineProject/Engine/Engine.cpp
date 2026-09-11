@@ -116,11 +116,13 @@ bool Engine::Init(HINSTANCE hInstance)
 	ControlPanel->FControlPanel::Mesh = Mesh;
 	ControlPanel->FControlPanel::Shader = Shader.get();
 	ControlPanel->SetGizmo(Gizmo.get());
+	ControlPanel->FControlPanel::ShowFlags = &ShowFlags;
 
 	ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
 		Outline->SetTarget(nullptr);
 		PropertyPanel->SetTarget(nullptr);
+		ShowFlags.SetDefault();
 		}
 	);
 
@@ -184,17 +186,21 @@ void Engine::Run()
 
 		//BeginRendering
 		Renderer->BeginFrame();
+		if (ShowFlags.IsSet(EShowFlagBits::Primitives))
+			Renderer->RenderAll(RenderQueue, VP);
 		Renderer->BindShader(Shader.get());
-		GridRenderer->OnRender(VP, World->GetMainCamera()->GetCameraComponent()->GetLocation());
-		Renderer->RenderAll(RenderQueue, VP);
+		if (ShowFlags.IsSet(EShowFlagBits::Grid))
+			GridRenderer->OnRender(VP, World->GetMainCamera()->GetCameraComponent()->GetLocation());
 		FVector4 CamLoc = World->GetMainCamera()->GetCameraComponent()->GetLocation();
-		if (Outline->GetTarget())
+		if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives))
 			OutlineRenderer->OnRender(*Outline, VP, CamLoc);
-
-		if (Gizmo->GetTarget())
+		if (ShowFlags.IsSet(EShowFlagBits::Gizmo))
 		{
-			Renderer->SetDepthStencilEnabled(false);
-			GizmoRenderer->OnRender(*Gizmo, VP);
+			if (Gizmo->GetTarget())
+			{
+				Renderer->SetDepthStencilEnabled(false);
+				GizmoRenderer->OnRender(*Gizmo, VP);
+			}
 		}
 
 		ImGuiRenderer->Begin();

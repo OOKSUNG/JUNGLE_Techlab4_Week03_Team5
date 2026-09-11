@@ -20,6 +20,7 @@ public:
 	UWorld* World; // SpawnActor MainCamera
 	char SceneName[128] = "";
 
+	FEngineShowFlags* ShowFlags = nullptr;
 	TSharedPtr<FMesh> Mesh;
 	FShader* Shader;
 
