@@ -393,14 +393,17 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
 
 void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP)
 {
-	BindShader(Packet.shader);
-	BindMesh(Packet.mesh);
-	
-	FMatrix MVP;
-	MVP = Packet.model * VP;
-	UpdateConstantBuffer(MVP);
-	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+	if (Packet.bIsVisible)
+	{
+		BindShader(Packet.shader);
+		BindMesh(Packet.mesh);
+
+		FMatrix MVP;
+		MVP = Packet.model * VP;
+		UpdateConstantBuffer(MVP);
+		SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+	}
 }
 
 void FRenderer::Shutdown()

@@ -32,12 +32,15 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 		return false;
 	}
 	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
+	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
 
+	ControlPanel->ShowFlags = &GetShowFlags();
 	// 씬 클리어 호출 시 콜백 함수
-	EditorUI->GetEditorPanel<FControlPanel>()->SetSceneClearCallback([&]() {
+	ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
 		Outline->SetTarget(nullptr);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+		ShowFlags.SetDefault();
 		}
 	);
 
@@ -70,17 +73,17 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	}
 }
 
-
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
 {
 	const FVector CamLoc = Camera->GetLocation();
+	
+	if (ShowFlags.IsSet(EShowFlagBits::Grid))
+		GridRenderer->OnRender(VP, CamLoc);
 
-	GridRenderer->OnRender(VP, CamLoc);
-
-	if (Outline->GetTarget())
+	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives))
 		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
 
-	if (Gizmo->GetTarget())
+	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
 	{
 		Renderer->SetDepthStencilEnabled(false);
 		GizmoRenderer->OnRender(*Gizmo, VP);

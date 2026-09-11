@@ -5,6 +5,7 @@
 #include "../Core/EngineTimer.h"
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
+#include "ShowFlags.h"
 
 bool FControlPanel::Init()
 {
@@ -126,6 +127,41 @@ void FControlPanel::OnRender()
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##SpaceCombo", &SpaceSelectedIndex, SpaceItems, IM_ARRAYSIZE(SpaceItems)))
 	{
 		Context.Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
+	}
+
+	ImGui::Text("Show Flags");
+	bool bGrid = ShowFlags->IsSet(EShowFlagBits::Grid);
+	if (ImGui::Checkbox("World Grid", &bGrid))
+	{
+		ShowFlags->Set(EShowFlagBits::Grid, bGrid);
+	}
+	ImGui::SameLine();
+	bool bPrimitives = ShowFlags->IsSet(EShowFlagBits::Primitives);
+	if (ImGui::Checkbox("Primitives", &bPrimitives))
+	{
+		ShowFlags->Set(EShowFlagBits::Primitives, bPrimitives);
+	}
+	ImGui::SameLine();
+	bool bOutLine = ShowFlags->IsSet(EShowFlagBits::OutLine);
+	if (ImGui::Checkbox("OutLine", &bOutLine))
+	{
+		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
+	}
+	ImGui::SameLine();
+	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
+	if (ImGui::Checkbox("Gizmo", &bGizmo))
+	{
+		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
+	}
+	ImGui::Text("ShowFlagPreset");
+	if (ImGui::Button("Default"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::Default);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("None"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::None);
 	}
 
 	ImGui::End();

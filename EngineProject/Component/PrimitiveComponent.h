@@ -34,9 +34,13 @@ public:
 
 	void SetType(EPrimitiveType Ptype) { Type = Ptype; }
 	EPrimitiveType GetType() const { return Type; }
+
+	void SetVisible(bool Visible) { bIsVisible = Visible; };
+	bool GetVisible() { return bIsVisible; };
 protected:
 	EPrimitiveType Type = EPrimitiveType::Cube;
 	FShader* Shader = nullptr;
 	FMesh* Mesh = nullptr;
 	FMeshData MeshData;
+	bool bIsVisible = TRUE;
 };

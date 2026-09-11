@@ -7,10 +7,12 @@
 
 #include "EditorUI.h"
 #include "ConsolePanel.h"
+#include "ControlPanel.h"
 
 
 #include "Outline.h"
 #include "OutLineRenderer.h"
+#include "ShowFlags.h"
 
 class FEditor
 {
@@ -20,6 +22,8 @@ public:
 	void Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight);
 	void OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* InRenderer);
 	void Shutdown();
+	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
+	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
@@ -30,11 +34,13 @@ private:
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
 	TUniquePtr<FOutlineRenderer> OutlineRenderer;
+	FEngineShowFlags ShowFlags;
 
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
+	inline static FControlPanel* ControlPanel = nullptr;
 
 };
 

@@ -2,6 +2,7 @@
 #include <format>
 #include "EditorPanel.h"
 #include "../Editor/EditorContext.h"
+#include "ShowFlags.h"
 
 #include <functional>
 
@@ -23,6 +24,9 @@ public:
 	float DeltaTime = 1.0f;
 	// UWorld* World; // SpawnActor MainCamera
 	char SceneName[128] = "";
+
+	FEngineShowFlags* ShowFlags = nullptr;
+
 
 	void AddActor(EPrimitiveType Type);
 

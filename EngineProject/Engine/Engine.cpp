@@ -110,7 +110,8 @@ void Engine::Run()
 		Renderer->BeginFrame();
 
 		// World
-		Renderer->RenderAll(RenderQueue, VP);
+		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
+			Renderer->RenderAll(RenderQueue, VP);
 
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
