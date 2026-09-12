@@ -5,7 +5,6 @@
 #include "../Core/EngineTimer.h"
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
-#include "ShowFlags.h"
 
 bool FControlPanel::Init()
 {
@@ -13,6 +12,12 @@ bool FControlPanel::Init()
 
 
 	return true;
+}
+
+void FControlPanel::TestFont()
+{
+	FontTexture.Init(Renderer);
+	FontTexture.LoadTexture("Font//Default.png");
 }
 
 void FControlPanel::Tick(float DeltaTime)
@@ -191,6 +196,11 @@ void FControlPanel::OnRender()
 	if (ImGui::RadioButton("Unlit", &ViewModeIndex, 1)) Renderer->SetViewMode(EViewModeIndex::Unlit);
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
+	
+	ImVec2 ImageSize(200.0f, 200.0f);
+	ID3D11ShaderResourceView* SRV = FontTexture.GetTextureSRV();
+	ImGui::Image((ImTextureID)SRV, ImageSize);
 
+	
 	ImGui::End();
 }

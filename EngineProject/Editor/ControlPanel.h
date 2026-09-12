@@ -4,6 +4,7 @@
 #include "../Editor/EditorContext.h"
 #include "ShowFlags.h"
 #include "EditorSetting.h"
+#include "FontTexture.h"
 
 
 #include <functional>
@@ -16,6 +17,7 @@ public:
 	bool Init() override;
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
+	void TestFont();
 
 	//inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
 	inline void SetSceneClearCallback(SceneClearCallback InCallback) { Callback = InCallback; }
@@ -71,5 +73,6 @@ public:
 
 private:
 	FEditorContext Context;
+	FFontTexture FontTexture;
 };
 

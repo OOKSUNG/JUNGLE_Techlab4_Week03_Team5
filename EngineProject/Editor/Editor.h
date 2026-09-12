@@ -4,6 +4,7 @@
 #include "ImGuiRenderer.h"
 #include "GridRenderer.h"
 #include "GizmoRenderer.h"
+#include "FontRenderer.h"
 
 #include "EditorUI.h"
 #include "ConsolePanel.h"
@@ -39,6 +40,8 @@ private:
 
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
+
+	TUniquePtr<FFontRenderer> FontRenderer;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;

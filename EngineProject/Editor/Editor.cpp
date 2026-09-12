@@ -5,6 +5,8 @@
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
 #include "EditorContext.h"
+#include "FontRenderer.h"
+#include "FontManager.h"
 
 bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 {
@@ -36,6 +38,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
+	ControlPanel->TestFont();
 	// 씬 클리어 호출 시 콜백 함수
 	ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
@@ -53,6 +56,12 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
+
+	FontRenderer = MakeUnique<FFontRenderer>();
+	FontRenderer->Init(InRenderer);
+
+	FFontManager::GetIntance().Init(InRenderer);
+	FFontManager::GetIntance().LoadFontAtlas("Default", "Font//Default", 16, 16);
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
