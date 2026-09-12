@@ -34,6 +34,14 @@ bool FRenderer::Init(HWND hWindow)
 	// View Mode 상태 저장
 	ViewModeState = MakeShared<FViewModeState>(this);
 	
+	// LineRenderer = MakeUnique<FLineRenderer>();
+	
+	//LOG(ELogCategory::Renderer, ELogVerbosity::info, "LineRenderer Initializing...");
+	/*if (!LineRenderer->Init(this))
+	{
+		return false;
+	}*/
+
 	return true;
 }
 
@@ -111,7 +119,7 @@ void FRenderer::CreateDepthStencilBufferAndState()
 	HRESULT hr = Device->CreateTexture2D(&DepthDesc, NULL, DepthStencilBuffer.GetAddressOf());
 
 	if (FAILED(hr))
-	{
+	{                
 		return;
 	}
 
@@ -291,7 +299,7 @@ void FRenderer::UpdateConstantBuffer(const FMatrix& MVP, bool bHighlightEdge, co
 	}
 }
 
-void FRenderer::BindVertexBuffer(FVertexBuffer* VertexBuffer)
+void FRenderer::BindVertexBuffer(FVertexBufferBase* VertexBuffer)
 {
 	if (VertexBuffer == nullptr)
 	{
@@ -308,7 +316,7 @@ void FRenderer::BindVertexBuffer(FVertexBuffer* VertexBuffer)
 	DeviceContext->IASetVertexBuffers(0, 1, &Buffer, &Stride, &offset);
 }
 
-void FRenderer::BindIndexBuffer(FIndexBuffer* IndexBuffer)
+void FRenderer::BindIndexBuffer(FIndexBufferBase* IndexBuffer)
 {
 	DeviceContext->IASetIndexBuffer(IndexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 }
@@ -381,6 +389,11 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitive
 		DrawPacket(Packet, VP, SelectedTarget);
 		InQueue.pop();
 	}
+
+	// Line Rendering
+	//LineRenderer->DebugDraw();
+
+	//LineRenderer->Flush(this, VP);
 }
 
 void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget)

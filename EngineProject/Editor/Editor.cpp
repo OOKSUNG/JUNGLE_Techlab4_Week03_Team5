@@ -22,8 +22,6 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	Context.World = World;
 	Context.Gizmo = Gizmo.get();
 
-
-
 	// UI 생성 및 초기화, 컨텍스트 전달
 	EditorUI = MakeUnique<FEditorUI>();
 
@@ -45,6 +43,9 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 		}
 	);
 
+	LineRenderer = MakeUnique<FLineRenderer>();
+	LineRenderer->Init(InRenderer);
+
 	GridRenderer = MakeUnique<FGridRenderer>();
 	GridRenderer->Init(InRenderer);
 
@@ -53,6 +54,9 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
+
+	
+
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -91,7 +95,9 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 		GizmoRenderer->OnRender(*Gizmo, VP);
 	}
 
-
+	// Line Rendering
+	LineRenderer->DebugDraw();
+	LineRenderer->Flush(Renderer, VP);
 
 	ImGuiRenderer->Begin();
 

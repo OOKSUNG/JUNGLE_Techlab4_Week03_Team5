@@ -1,5 +1,6 @@
 #include "EnginePCH.h"
 #include "Math/MatrixRegister.h"
+#include "Matrix.h"
 
 using namespace VectorSIMD;
 
