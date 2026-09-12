@@ -14,6 +14,8 @@
 #include "OutLineRenderer.h"
 #include "ShowFlags.h"
 
+#include "LineRenderer.h"
+
 class FEditor
 {
 
@@ -39,6 +41,8 @@ private:
 
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
+
+	TUniquePtr<FLineRenderer> LineRenderer;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;

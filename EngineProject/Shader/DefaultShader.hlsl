@@ -29,8 +29,8 @@ PS_INPUT mainVS(VS_INPUT input)
 {
 	PS_INPUT output;
     
-    output.position = mul(float4(input.position, 1.0f), MVP);
-    //output.position = float4(input.position, 1.0f);
+    output.position = mul(float4(input.position, 1.0f), MVP); // 행벡터 연산임 but 
+    //output.position = float4(input.position, 1.0f);   //셰이더는 행렬의 메모리 구조가 다르므로 전치한 결과가 돼서 한번더 전치해야함
     output.color = float4(input.position, 1.0f);
 	return output;
 }
