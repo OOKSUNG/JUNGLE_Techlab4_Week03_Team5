@@ -108,7 +108,8 @@ void Engine::Run()
 		Renderer->BeginFrame();
 
 		// World
-		Renderer->RenderAll(RenderQueue, VP);
+		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
+			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
 
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
@@ -137,6 +138,7 @@ void Engine::UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP)
 
 void Engine::Shutdown()
 {
+	FEditorSettings::Get().SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
 		delete Object;
 	Editor->Shutdown();

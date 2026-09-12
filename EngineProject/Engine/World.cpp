@@ -69,8 +69,13 @@ UWorld::~UWorld()
 
 bool UWorld::Init()
 {
+
 	// Spawn Actor로 카메라 생성하고 세팅하기
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
+
+	// Camera 초기 위치 수정
+	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);
@@ -135,6 +140,9 @@ void UWorld::ClearScene()
 bool UWorld::NewScene(const FString& Path)
 {
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
+	// Camera 초기 위치 수정
+	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);

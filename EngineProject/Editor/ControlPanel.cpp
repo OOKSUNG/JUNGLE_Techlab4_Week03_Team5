@@ -5,6 +5,7 @@
 #include "../Core/EngineTimer.h"
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
+#include "ShowFlags.h"
 
 bool FControlPanel::Init()
 {
@@ -43,9 +44,13 @@ void FControlPanel::OnRender()
 	ImGui::Begin("Jungle Control Panel");
 
 	ImGui::Text("Hello Jungle World");
+
+	// FPS 출력
 	ImGui::Text("FPS: %.2f (%.0f ms)", 1.0f / DeltaTime, DeltaTime * 1000.0f);
 
 	ImGui::Separator();
+
+	// Primitive Spawn
 	ImGui::SetNextItemWidth(130.0f);
 	ImGui::Combo("Actor", &SelectedIndex, Items, IM_ARRAYSIZE(Items));
 	ImGui::SameLine();
@@ -59,6 +64,7 @@ void FControlPanel::OnRender()
 	ImGui::Text("Number of spawn");
 
 	ImGui::Separator();
+
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
 	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
@@ -82,13 +88,17 @@ void FControlPanel::OnRender()
 		if (Callback)Callback();
 		printf("Buttonend");
 	}
-	ImGui::Separator();
-	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();
 
+	ImGui::Separator();
+	
+	// Camera Editor
+	UCameraComponent* CamCom = Context.World->GetMainCamera()->GetCameraComponent();
+	
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
-
 	FTransform* transform = CamCom->GetTransform();
+	float MouseSensitivity = CamCom->GetSensitivity();
+	float CameraSpeed = CamCom->GetSpeed();
 
 	ImGui::SetNextItemWidth(255.0f);
 	ImGui::InputFloat("##FOV", &CamCom->FOV);
@@ -114,9 +124,20 @@ void FControlPanel::OnRender()
 	ImGui::InputFloat("##Roll", &transform->Rotation.Roll);
 	ImGui::SameLine();
 	ImGui::Text("Camera Rotation");
+	if (ImGui::SliderFloat("Camera Sensitivity", &MouseSensitivity, 0.01f, 0.5f, "%.2f"))
+	{
+		CamCom->SetSensitivity(MouseSensitivity);
+		FEditorSettings::Get().CameraSensitivity = MouseSensitivity;
+	}
+	if (ImGui::SliderFloat("Camera Speed", &CameraSpeed, 1.0f, 50.0f))
+	{
+		CamCom->SetSpeed(CameraSpeed);
+		FEditorSettings::Get().CameraMoveSpeed = CameraSpeed;
+	}
 
 	ImGui::Separator();
 
+	// Gizmo Select
 	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
 	{
@@ -127,6 +148,49 @@ void FControlPanel::OnRender()
 	{
 		Context.Gizmo->SetSpace(static_cast<EGizmoSpace>(SpaceSelectedIndex));
 	}
+
+	ImGui::Text("Show Flags");
+	bool bGrid = ShowFlags->IsSet(EShowFlagBits::Grid);
+	if (ImGui::Checkbox("World Grid", &bGrid))
+	{
+		ShowFlags->Set(EShowFlagBits::Grid, bGrid);
+	}
+	ImGui::SameLine();
+	bool bPrimitives = ShowFlags->IsSet(EShowFlagBits::Primitives);
+	if (ImGui::Checkbox("Primitives", &bPrimitives))
+	{
+		ShowFlags->Set(EShowFlagBits::Primitives, bPrimitives);
+	}
+	ImGui::SameLine();
+	bool bOutLine = ShowFlags->IsSet(EShowFlagBits::OutLine);
+	if (ImGui::Checkbox("OutLine", &bOutLine))
+	{
+		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
+	}
+	ImGui::SameLine();
+	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
+	if (ImGui::Checkbox("Gizmo", &bGizmo))
+	{
+		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
+	}
+	ImGui::Text("ShowFlagPreset");
+	if (ImGui::Button("Default"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::Default);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("None"))
+	{
+		ShowFlags->SetFlagPreset(EShowFlagBits::None);
+	}
+
+	// View Mode Select
+	ViewModeIndex = static_cast<int32>(Renderer->GetViewMode());
+	if (ImGui::RadioButton("Lit", &ViewModeIndex, 0)) Renderer->SetViewMode(EViewModeIndex::Lit);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Unlit", &ViewModeIndex, 1)) Renderer->SetViewMode(EViewModeIndex::Unlit);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
 
 	ImGui::End();
 }

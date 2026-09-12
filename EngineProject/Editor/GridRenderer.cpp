@@ -69,6 +69,6 @@ void FGridRenderer::OnRender(const FMatrix& ViewProj, const FVector& CameraPos)
 	Renderer->BindVertexBuffer(VB.get());
 	Renderer->BindIndexBuffer(IB.get());
 	Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	Renderer->UpdateConstantBuffer(Identity * ViewProj);
+	Renderer->UpdateConstantBuffer(Identity * ViewProj, false, ZeroVector);
 	Renderer->DrawIndexed(6);
 }

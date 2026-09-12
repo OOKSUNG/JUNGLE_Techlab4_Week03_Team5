@@ -31,6 +31,9 @@ bool FRenderer::Init(HWND hWindow)
 	CreateConstantBuffer();
 	CreateDefaultShader();
 
+	// View Mode 상태 저장
+	ViewModeState = MakeShared<FViewModeState>(this);
+	
 	return true;
 }
 
@@ -266,20 +269,25 @@ void FRenderer::UpdateConstantBufferData(FConstantBuffer* InBuffer, const void* 
 	DeviceContext->Unmap(Buffer, 0);
 }
 
-void FRenderer::UpdateConstantBuffer(const FMatrix& MVP)
+void FRenderer::UpdateConstantBuffer(const FMatrix& MVP, bool bHighlightEdge, const FVector& EdgeColor)
 {
 	if (ConstantBuffer)
 	{
 		D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
-		FConstants constants;
 		DeviceContext->Map(ConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
 		FConstants* constant = (FConstants*)constantbufferMSR.pData;
 		{
 			FMatrix TransMVP = MVP.GetTransposed();
 			constant->MVP = TransMVP;
+			constant->bHighlightEdge = bHighlightEdge? 1 : 0;
+			constant->EdgeColor[0] = EdgeColor.X;
+			constant->EdgeColor[1] = EdgeColor.Y;
+			constant->EdgeColor[2] = EdgeColor.Z;
+
 		}
 		DeviceContext->Unmap(ConstantBuffer.Get(), 0);
 		DeviceContext->VSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
+		DeviceContext->PSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
 	}
 }
 
@@ -360,47 +368,41 @@ void FRenderer::DrawIndexed(uint32 IndexCount)
 //}
 
 
-void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP)
+void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitiveComponent* SelectedTarget)
 {
 	//DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffff'ffff);
 	//DeviceContext->OMSetDepthStencilState(nullptr, 0);
 
-	while (true)
+	ViewModeState->Apply(this);
+
+	while (!InQueue.empty())
 	{
-		if (InQueue.empty())
-		{
-			return;
-		}
-
 		FRenderPacket Packet = InQueue.front();
-
-		DrawPacket(Packet, VP);
-
-		//BindShader(rp.shader);
-		//BindMesh(rp.mesh);
-
-		//// rp.Transform 과 Camera VP 행렬 곱
-		//// 행렬곱의 결과 (MVP Matrix) Constant Buffer 업데이트 필요
-		//FMatrix MVP;
-		//MVP = rp.model * VP;
-		//UpdateConstantBuffer(MVP);
-		//SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//DrawIndexed(rp.mesh->IndexBuffer->GetIndexCount());
-
+		DrawPacket(Packet, VP, SelectedTarget);
 		InQueue.pop();
 	}
 }
 
-void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP)
+void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget)
 {
+	if (!Packet.bIsVisible)
+	{
+		return;
+	}
+
 	BindShader(Packet.shader);
 	BindMesh(Packet.mesh);
-	
-	FMatrix MVP;
-	MVP = Packet.model * VP;
-	UpdateConstantBuffer(MVP);
+
+	FMatrix MVP = Packet.model * VP;
+
+	bool bHighlight = (ViewModeState->GetMode() == EViewModeIndex::Wireframe)
+					&& Packet.Owner != nullptr
+					&& Packet.Owner == SelectedTarget;
+
+	UpdateConstantBuffer(MVP, bHighlight, FVector(1.0f, 0.7f, 0.0f));
 	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+
 }
 
 void FRenderer::Shutdown()

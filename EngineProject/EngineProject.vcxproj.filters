@@ -186,6 +186,9 @@
     <ClCompile Include="Component\PlaneComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\FName.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera\CameraActor.h">
@@ -407,7 +410,11 @@
     <ClInclude Include="Component\PlaneComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Math\FMath.h">
+=======
+    <ClInclude Include="Core\FName.h">
+>>>>>>> c11320c55c3e3523225d403edd4a38a7240504aa
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

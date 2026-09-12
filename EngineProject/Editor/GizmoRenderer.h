@@ -43,5 +43,7 @@ private:
 	TSharedPtr<FMesh> SphereMesh;
 	TSharedPtr<FConstantBuffer> CB;
 
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;
+
 	//EGizmoMode Mode = EGizmoMode::Scale;
 };

@@ -2,6 +2,9 @@
 #include <format>
 #include "EditorPanel.h"
 #include "../Editor/EditorContext.h"
+#include "ShowFlags.h"
+#include "EditorSetting.h"
+
 
 #include <functional>
 
@@ -24,6 +27,9 @@ public:
 	// UWorld* World; // SpawnActor MainCamera
 	char SceneName[128] = "";
 
+	FEngineShowFlags* ShowFlags = nullptr;
+
+
 	void AddActor(EPrimitiveType Type);
 
 	int32 SelectedIndex = 0;
@@ -36,8 +42,12 @@ public:
 		"Cone",
 		"Plane",
 	};
+	// View Mode
+	FRenderer* Renderer;
+	inline void SetRenderer(FRenderer* InRenderer) { Renderer = InRenderer; };
+	int32 ViewModeIndex = 1; 	// Unlit
 
-	// FGizmo* Gizmo;
+	// Gizmo
 
 	int32 GizmoSelectedIndex = 0;
 

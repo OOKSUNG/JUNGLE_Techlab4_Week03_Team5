@@ -17,8 +17,11 @@ void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue
 		rp.mesh = Mesh;
 		rp.shader = Shader;
 		rp.model = GetWorldMatrix();
+		rp.bIsVisible = bIsVisible;
+		rp.Owner = this;  // WireFrame 모드 시, 선택 객체 판별용
 		RenderQueue.push(rp);
 	}
+
 }
 
 void UPrimitiveComponent::SetMesh(FMesh* InMesh)
