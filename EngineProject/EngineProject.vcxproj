@@ -256,6 +256,7 @@
     <ClInclude Include="Core\EngineStatics.h" />
     <ClInclude Include="Core\EngineString.h" />
     <ClInclude Include="Core\EngineTimer.h" />
+    <ClInclude Include="Core\FBoxBounds.h" />
     <ClInclude Include="Core\FName.h" />
     <ClInclude Include="Core\FNamePool.h" />
     <ClInclude Include="Core\Types.h" />
