@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Math/EngineMath.h"
+#include "Math/Vector.h"
+#include "Math/Vector2.h"
+#include "Math/Matrix.h"
 
 struct FBoxBounds;
 struct FRay

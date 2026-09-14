@@ -67,26 +67,20 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
 	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
 	{
-		Context.World->ClearScene();
-		Context.World->NewScene(SceneName);
+		if (NewSceneCallback) NewSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback) Callback();
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
+	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) 
+	{ 
+		if (SaveSceneCallback) SaveSceneCallback();
+		ActorNum = Context.World->GetActorNum() - 1; 
+	}
 	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
-		printf("Buttonstart");
-		// Context.World->ClearScene();
-		if (!Context.World->LoadScene(SceneName))
-		{
-			return;
-		}
+		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback)Callback();
-		printf("Buttonend");
 	}
 
 	ImGui::Separator();
