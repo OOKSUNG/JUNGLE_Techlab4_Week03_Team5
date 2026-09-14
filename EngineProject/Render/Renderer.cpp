@@ -4,15 +4,18 @@
 #include "Mesh.h"
 #include "GeometryGenerator.h"
 
+void FRenderer::BindMainRenderTarget()
+{
+	DeviceContext->OMSetRenderTargets(1, FrameBufferRTV.GetAddressOf(), FrameBufferDSV.Get());
+}
+
 void FRenderer::BeginFrame()
 {
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV.Get(), ClearColor);
-	DeviceContext->ClearDepthStencilView(FrameBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+    DeviceContext->ClearDepthStencilView(FrameBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	DeviceContext->OMSetRenderTargets(1, FrameBufferRTV.GetAddressOf(), FrameBufferDSV.Get());
 	DeviceContext->OMSetDepthStencilState(DepthStencilState.Get(), 0);
 	DeviceContext->RSSetViewports(1, &ViewportInfo);
-	DeviceContext->RSSetState(RasterizerState.Get());
-
 }
 
 void FRenderer::EndFrame()
@@ -148,6 +151,14 @@ void FRenderer::CreateDepthStencilBufferAndState()
 	disabledDesc.DepthEnable = FALSE;
 	disabledDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	Device->CreateDepthStencilState(&disabledDesc, &DepthDisabledState);
+
+	// Depth Tesh ONLY 
+	D3D11_DEPTH_STENCIL_DESC testOnlyDesc = {};
+	testOnlyDesc.DepthEnable = TRUE;
+	testOnlyDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	testOnlyDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	Device->CreateDepthStencilState(&testOnlyDesc, &DepthTestOnlyState);
+
 }
 
 void FRenderer::CreateConstantBuffer()
