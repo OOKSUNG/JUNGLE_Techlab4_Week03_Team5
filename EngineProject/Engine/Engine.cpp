@@ -129,8 +129,8 @@ void Engine::Run()
 			FVector2(0.0f, 0.0f), FVector4(1.0f, 1.0f, 1.0f, 1.0f),
 			MainWindow->GetWidth(), MainWindow->GetHeight());
 		
-		// 한글 렌더링 아틀라스 보고 싶으면 주석 해제하고 해보세요
-		// atlas_dump.bup 에 저장됩니다
+		// 아틀라스 (atlas_dump.bup) 보면 "게임테크랩 하하하" 가 아니라 "게임테랩"까지만 저장되어 있는데
+		// 앞쪽에서 이미 '크'와 '하'를 래스터라이징 후 패킹해놓았기 때문에 캐싱 값을 사용해서 그렇습니다.
 		static bool bDumpedOnce = false;
 		if (!bDumpedOnce)
 		{
