@@ -137,6 +137,10 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
+	ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f);
+
+	ImGui::Separator();
+
 	// Gizmo Select
 	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
