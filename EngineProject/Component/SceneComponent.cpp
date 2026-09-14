@@ -35,6 +35,11 @@ FTransform* USceneComponent::GetTransform()
     return &transform;
 }
 
+const FBoxBounds& USceneComponent::GetBounds() const
+{
+    return Bounds;
+}
+
 void USceneComponent::SetTransform(FTransform Transform)
 {
     transform = Transform;
