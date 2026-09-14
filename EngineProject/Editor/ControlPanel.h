@@ -26,8 +26,7 @@ public:
 	inline FEditorContext GetContext() { return Context; }
 
 	float DeltaTime = 1.0f;
-	// UWorld* World; // SpawnActor MainCamera
-	char SceneName[128] = "";
+	// UWorld* World; // SpawnActor MainCamera;
 
 	FEngineShowFlags* ShowFlags = nullptr;
 

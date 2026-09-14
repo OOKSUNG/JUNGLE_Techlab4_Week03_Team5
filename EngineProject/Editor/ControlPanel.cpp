@@ -67,7 +67,6 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
 	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
 	{
 		if (NewSceneCallback) NewSceneCallback();
