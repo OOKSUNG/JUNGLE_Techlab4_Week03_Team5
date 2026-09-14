@@ -15,6 +15,7 @@
 #include "ShowFlags.h"
 #include "BoundingBox.h"
 #include "LineRenderer.h"
+#include "EditorFileUtils.h"
 
 class FEditor
 {
@@ -31,6 +32,8 @@ public:
 	void DrawGrid(const FVector& CameraPos);
 	void AxisDraw();
 
+	void ClearSceneTargetsAndFlags();
+
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
@@ -44,6 +47,8 @@ private:
 
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
+
+	TUniquePtr<FEditorFileUtils> EditorFileUtils;
 
 	TUniquePtr<FLineRenderer> LineRenderer;
 

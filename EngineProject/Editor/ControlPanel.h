@@ -8,7 +8,7 @@
 
 #include <functional>
 
-using SceneClearCallback = std::function<void()>;
+using CallbackFunc = std::function<void()>;
 
 class FControlPanel : public IEditorPanel
 {
@@ -18,7 +18,9 @@ public:
 	void OnRender() override;
 
 	//inline void SetGizmo(FGizmo* InGizmo) { Gizmo = InGizmo; }
-	inline void SetSceneClearCallback(SceneClearCallback InCallback) { Callback = InCallback; }
+	inline void SetNewSceneCallback(CallbackFunc InCallback) { NewSceneCallback = InCallback; }
+	inline void SetLoadSceneCallback(CallbackFunc InCallback) { LoadSceneCallback = InCallback; }
+	inline void SetSaveSceneCallback(CallbackFunc InCallback) { SaveSceneCallback = InCallback; }
 
 	inline void SetContext(FEditorContext InContext) { Context = InContext; }
 	inline FEditorContext GetContext() { return Context; }
@@ -66,7 +68,9 @@ public:
 		"World"
 	};
 
-	SceneClearCallback Callback = nullptr;
+	CallbackFunc NewSceneCallback = nullptr;
+	CallbackFunc LoadSceneCallback = nullptr;
+	CallbackFunc SaveSceneCallback = nullptr;
 	
 	// grid control
 	void SetGridSpace(float Grid) { GridSpace = Grid; }
