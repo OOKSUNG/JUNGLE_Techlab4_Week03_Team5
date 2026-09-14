@@ -4,6 +4,16 @@
 #include <d3d11.h>
 #include <cassert>
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
+#include <msdfgen.h>
+#include <msdfgen-ext.h>
+
 class FRenderer;
 
 struct FGlyphInfo

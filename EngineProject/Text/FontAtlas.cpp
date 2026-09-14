@@ -1,6 +1,7 @@
 #include "EnginePCH.h"
 #include "FontAtlas.h"
 #include "Render/Renderer.h"
+#include <algorithm>
 
 #pragma pack(push, 1)
 struct FBmpFileHeader
@@ -131,7 +132,7 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
 
     // 선반 커서 갱신
     CursorX += GlyphW + GlyphPadding;
-    CurrentShelfHeight = max(CurrentShelfHeight, GlyphH + GlyphPadding);
+    CurrentShelfHeight = std::max(CurrentShelfHeight, GlyphH + GlyphPadding);
 
     // GPU 텍스처에 업로드
     UploadAtlasToGPU(Context, DestX, DestY, GlyphW, GlyphH);
