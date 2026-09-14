@@ -16,6 +16,8 @@
 
 #include "LineRenderer.h"
 
+#include "EditorSetting.h"
+
 class FEditor
 {
 
@@ -53,5 +55,6 @@ private:
 	float GridSpacing = 10.0f;
 	int32 GridCount = 20;
 
+	FEditorSettings EditorSettings;
 };
 
