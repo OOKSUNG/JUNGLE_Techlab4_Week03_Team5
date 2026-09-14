@@ -9,10 +9,10 @@ enum class EShowFlagBits : uint64
 	OutLine = 1ULL << 2,
 	Gizmo = 1ULL <<3,
 	//UUID = 1ULL << 3,
-	//BoundingBox = 1ULL << 4,
+	BoundingBox = 1ULL << 4,
 
-	Default = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo),
-	All = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo)
+	Default = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo) | static_cast<uint64>(BoundingBox),
+	All = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo) | static_cast<uint64>(BoundingBox)
 };
 
 struct FEngineShowFlags

@@ -177,6 +177,12 @@ void FControlPanel::OnRender()
 	{
 		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
 	}
+	ImGui::SameLine();
+	bool bBoundingBox = ShowFlags->IsSet(EShowFlagBits::BoundingBox);
+	if (ImGui::Checkbox("Bounding Box", &bBoundingBox))
+	{
+		ShowFlags->Set(EShowFlagBits::BoundingBox, bBoundingBox);
+	}
 	ImGui::Text("ShowFlagPreset");
 	if (ImGui::Button("Default"))
 	{
