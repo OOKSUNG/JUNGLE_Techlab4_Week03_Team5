@@ -54,7 +54,5 @@ private:
 	float GridExtent = 1000.0f;
 	float GridSpacing = 10.0f;
 	int32 GridCount = 20;
-
-	FEditorSettings EditorSettings;
 };
 
