@@ -106,7 +106,7 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	// World 축 드로우
 	AxisDraw();
 
-	if (BoundingBox->GetTarget())
+	if (BoundingBox->GetTarget() && ShowFlags.IsSet(EShowFlagBits::BoundingBox))
 	{
 		LineRenderer->DrawBox(BoundingBox->GetTarget()->GetBounds());
 	}
