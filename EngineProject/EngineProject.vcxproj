@@ -164,6 +164,9 @@
     <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="Editor\ConsolePanel.cpp" />
     <ClCompile Include="Editor\ControlPanel.cpp" />
+    <ClCompile Include="Editor\EditorFileUtils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
@@ -265,6 +268,7 @@
     <ClInclude Include="Editor\ConsolePanel.h" />
     <ClInclude Include="Editor\ControlPanel.h" />
     <ClInclude Include="Editor\EditorContext.h" />
+    <ClInclude Include="Editor\EditorFileUtils.h" />
     <ClInclude Include="Editor\EditorPanel.h" />
     <ClInclude Include="Editor\EditorSetting.h" />
     <ClInclude Include="Editor\EditorUI.h" />
