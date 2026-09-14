@@ -56,4 +56,6 @@ private:
 	ACameraActor* MainCamera = nullptr;
 
 	// 피킹 프리미티브
+	bool AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT);
+	bool TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Primitive, float& MinT);
 };

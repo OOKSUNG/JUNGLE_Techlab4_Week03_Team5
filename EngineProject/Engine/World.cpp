@@ -9,6 +9,8 @@
 #include "Input/InputSystem.h"
 
 #include "Collision/Ray.h"
+#include "Core/FBoxBounds.h"
+
 
 namespace
 {
@@ -349,71 +351,77 @@ void UWorld::GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue)
 
 UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 {
-	FRay ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
+	FRay Ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
 
-	float minT{ FLT_MAX };
-	UPrimitiveComponent* PickingPrimitive = nullptr;		//UPrimitiveComponent*
+	UPrimitiveComponent* PickingPrimitive = nullptr;
+	float MinT{ FLT_MAX };
 
 	for (UPrimitiveComponent* Primitive : PrimitiveComponents)
 	{
-		// ray를 로컬공간으로
-		FMatrix invWorld = Primitive->GetWorldMatrix().Inverse();
-		FVector4 LocalRayOrigin = invWorld.TransformPosition(ray.Origin);
-		FVector4 LocalRayDir = invWorld.TransformVector(ray.Direction);
-
-		FRay LocalRay{};
-		LocalRay.Origin.X = LocalRayOrigin.X;
-		LocalRay.Origin.Y = LocalRayOrigin.Y;
-		LocalRay.Origin.Z = LocalRayOrigin.Z;
-
-		LocalRay.Direction.X = LocalRayDir.X;
-		LocalRay.Direction.Y = LocalRayDir.Y;
-		LocalRay.Direction.Z = LocalRayDir.Z;
-
 		if (!Primitive) continue;
-		const FMeshData& mesh = Primitive->GetMeshData();
-
-		FVector BoxMin, BoxMax;
-		mesh.GetAABB(BoxMin, BoxMax);
-		float rayT{};
-
-		if (!RayIntersectsAABB(LocalRay, BoxMin, BoxMax, rayT))
+		const FBoxBounds& Bounds = Primitive->GetBounds();
+		
+		if (AABBInspection(Ray, Bounds, MinT) && TriangleInspection(Ray, *Primitive, MinT))
 		{
-			continue;
-		}
-
-		if (rayT > minT)
-		{
-			continue;
-		}
-
-		// Broad Phase 통과하면 뮐러-트럼보르 알고리즘 수행
-		for (uint32 i = 0; i + 2 < mesh.Indices.size(); i += 3)
-		{
-			FVector vertices[3]{};	// 3 vertex
-			for (uint32 j = 0; j < 3; ++j)
-			{
-				uint32 index = mesh.Indices[i + j];
-
-				vertices[j].X = mesh.Vertices[index].Position.X;
-				vertices[j].Y = mesh.Vertices[index].Position.Y;
-				vertices[j].Z = mesh.Vertices[index].Position.Z;
-			}
-
-			if (!RayIntersectsTriangle(LocalRay, vertices[0], vertices[1], vertices[2], rayT))
-			{
-				continue;
-			}
-
-			if (rayT < minT)
-			{
-				PickingPrimitive = Primitive;
-				minT = rayT;
-			}
+			PickingPrimitive = Primitive;
 		}
 	}
 
 	return PickingPrimitive;
+}
+
+bool UWorld::AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT)
+{
+	float RayT{};
+
+	return (RayIntersectsAABB(Ray, Bounds, RayT) && RayT <= MinT);
+}
+
+bool UWorld::TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Primitive, float& MinT)
+{
+	float RayT{};
+	// ray를 로컬공간으로
+	FMatrix invWorld = Primitive.GetWorldMatrix().Inverse();
+	FVector4 LocalRayOrigin = invWorld.TransformPosition(Ray.Origin);
+	FVector4 LocalRayDir = invWorld.TransformVector(Ray.Direction);
+
+	FRay LocalRay{};
+	LocalRay.Origin.X = LocalRayOrigin.X;
+	LocalRay.Origin.Y = LocalRayOrigin.Y;
+	LocalRay.Origin.Z = LocalRayOrigin.Z;
+
+	LocalRay.Direction.X = LocalRayDir.X;
+	LocalRay.Direction.Y = LocalRayDir.Y;
+	LocalRay.Direction.Z = LocalRayDir.Z;
+
+	const FMeshData& Mesh = Primitive.GetMeshData();
+
+	// Broad Phase 통과하면 뮐러-트럼보르 알고리즘 수행
+	for (uint32 i = 0; i + 2 < Mesh.Indices.size(); i += 3)
+	{
+		FVector vertices[3]{};	// 3 vertex
+		for (uint32 j = 0; j < 3; ++j)
+		{
+			uint32 index = Mesh.Indices[i + j];
+
+			vertices[j].X = Mesh.Vertices[index].Position.X;
+			vertices[j].Y = Mesh.Vertices[index].Position.Y;
+			vertices[j].Z = Mesh.Vertices[index].Position.Z;
+		}
+
+		if (!RayIntersectsTriangle(LocalRay, vertices[0], vertices[1], vertices[2], RayT))
+		{
+			continue;
+		}
+
+		if (RayT < MinT)
+		{
+			MinT = RayT;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
