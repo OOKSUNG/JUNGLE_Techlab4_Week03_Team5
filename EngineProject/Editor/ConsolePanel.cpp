@@ -16,14 +16,20 @@ bool FConsolePanel::Init()
 	Commands.push_back("CLEAR");
 	Commands.push_back("CLASSIFY");
 
-	AutoScroll = true;       // √ﬂ∞°
-	ScrollToBottom = false;  // √ﬂ∞°
+	AutoScroll = true;       // ÔøΩﬂ∞ÔøΩ
+	ScrollToBottom = false;  // ÔøΩﬂ∞ÔøΩ
 
 	return true;
 }
 
 void FConsolePanel::Tick(float DeltaTime)
 {
+	if (bDebugTextActive)
+	{
+		DebugTextRemainingTime -= DeltaTime;
+		if (DebugTextRemainingTime <= 0.0f)
+			bDebugTextActive = false;
+	}
 }
 
 void FConsolePanel::OnRender()
@@ -41,7 +47,7 @@ void FConsolePanel::OnRender()
 
 	ImGuiStyle& style = ImGui::GetStyle();
 	const float footer_height_to_reserve = style.SeparatorSize + style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar)) // ImGui Window æ»ø° Child Window∏¶ ∏∏µÍ
+	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar)) // ImGui Window ÔøΩ»øÔøΩ Child WindowÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ
 	{
 		if (ImGui::BeginPopupContextWindow())
 		{
@@ -216,6 +222,40 @@ void FConsolePanel::ExecCommand(const FString& CommandLine)
 		for (int i = first > 0 ? first : 0; i < History.size(); i++)
 			LOG(Editor, Info, "{:03d}: {}\n", i, History[i]);
 			// AddLog(ELogVerbosity::Info, "{:03d}: %s\n", i, History[i]);
+	}
+	else if (CommandLine.rfind("show uuid ", 0) == 0)
+	{
+		FString Rest = CommandLine.substr(10); // Ïïû 10Í∏ÄÏûê ÎπºÍ≥† parsing
+		size_t SpacePos = Rest.find(' ');
+		size_t FirstQuote = (SpacePos != FString::npos)? Rest.find('\'', SpacePos) : FString::npos;
+		size_t LastQuote = Rest.rfind('\'');
+
+		if (SpacePos == FString::npos || FirstQuote == FString::npos || LastQuote <= FirstQuote)
+		{
+			LOG(Editor, Warning, "Usage: show uuid <id> '<text>'");
+		}
+		else
+		{
+			// UUID
+			FString IdStr = Rest.substr(0, SpacePos);
+			// TEXT
+			FString Text = Rest.substr(FirstQuote + 1, LastQuote - FirstQuote - 1);
+		
+			try
+			{
+				// UUID / TEXT / Timer Setting, Ïã§Ï†ú Actor Ï°∞ÌöåÎäî Render loopÏóêÏÑú Ïã§Ìñâ
+				DebugTextTargetUUID = static_cast<uint32>(std::stoul(IdStr));
+				DebugTextString = Text;
+				DebugTextRemainingTime = 5.0;
+				bDebugTextActive = true;
+				LOG(Editor, Info, "Showing text '{}' above actor UUID {}", Text, DebugTextTargetUUID);
+			}
+			catch(...)
+			{
+				LOG(Editor, Info, "Invalid UUID: '{}'", IdStr);
+			}
+			
+		}
 	}
 	else
 	{

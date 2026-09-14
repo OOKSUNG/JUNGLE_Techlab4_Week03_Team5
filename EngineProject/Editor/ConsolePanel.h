@@ -2,6 +2,7 @@
 
 #include "EditorPanel.h"
 #include "../Core/EngineLog.h"
+#include "EditorContext.h"
 
 class FConsolePanel : public IEditorPanel
 {
@@ -14,12 +15,23 @@ public:
 	void ExecCommand(const FString& CommandLine);
 	int TextEditCallback(ImGuiInputTextCallbackData* Data);
 
+	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+
+	bool HasActiveWorldText() const { return bDebugTextActive; }
+	uint32 GetDebugTextTargetUUID() const { return DebugTextTargetUUID; }
+	const FString& GetDebugTextString() const { return DebugTextString; }
+
 private:
 	ImVec4 GetLogColor(ELogVerbosity Verbosity) const;
 	const char* GetVerbosityName(ELogVerbosity Verbosity) const;
 	const char* GetCategoryName(ELogCategory Category) const;
+	
+	// Debugìš© ë³€ìˆ˜ë“¤
+	bool bDebugTextActive = false;
+	uint32 DebugTextTargetUUID = 0;
+	FString DebugTextString;
+	float DebugTextRemainingTime = 0.0f;
 
-private:
 
 	char InputBuf[256]{};
 
@@ -32,6 +44,8 @@ private:
 
 	bool AutoScroll = true;
 	bool ScrollToBottom = false;
+
+	FEditorContext Context;
 };
 
 
@@ -44,7 +58,7 @@ private:
 
 
 
-// ±âÁ¸ ÄÚµå
+// ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½
 
 //#pragma once
 //
@@ -80,7 +94,7 @@ private:
 //		FLogData LogData;
 //
 //
-//		// ¿©±â¼­ Category / Verbosity È°¿ë
+//		// ï¿½ï¿½ï¿½â¼­ Category / Verbosity È°ï¿½ï¿½
 //		switch (Verbosity)
 //		{
 //		case ELogVerbosity::Input:
