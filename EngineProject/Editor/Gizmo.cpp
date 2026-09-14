@@ -215,7 +215,7 @@ void FGizmo::UpdateDrag(const FRay& MouseRay, const FVector2& MousePos)
 	if (DraggingAxis == AXIS_SCREEN && Mode != EGizmoMode::Rotation)
 	{
 		if (Mode == EGizmoMode::Location)
-			Target->GetTransform()->Location = DragStartLocation + (current - DragStartPoint);
+			Target->SetLocation(DragStartLocation + (current - DragStartPoint));
 		else
 		{
 			float dx = MousePos.X - DragStartMousePos.X;
@@ -225,7 +225,7 @@ void FGizmo::UpdateDrag(const FRay& MouseRay, const FVector2& MousePos)
 			float factor = 1.0f + scaleDelta;
 			if (factor < 0.01f) factor = 0.01f;
 
-			Target->GetTransform()->Scale = DragStartScale * factor;
+			Target->SetScale(DragStartScale * factor);
 		}
 		return;
 	}
@@ -239,8 +239,7 @@ void FGizmo::UpdateDrag(const FRay& MouseRay, const FVector2& MousePos)
 		FQuat start = DragStartRotation.Quaternion();
 
 		FQuat result = delta * start;
-
-		Target->GetTransform()->Rotation = result.ToFRotator();
+		Target->SetRotation(result.ToFRotator());
 		return;
 	}
 
@@ -248,7 +247,7 @@ void FGizmo::UpdateDrag(const FRay& MouseRay, const FVector2& MousePos)
 	float amount = delta.Dot(DragAxisDirection);
 
 	if (Mode == EGizmoMode::Location)
-		Target->GetTransform()->Location = DragStartLocation + DragAxisDirection * amount;
+		Target->SetLocation(DragStartLocation + DragAxisDirection * amount);
 	else   // Scale
 	{
 		float factor = 1.0f + amount;
@@ -259,7 +258,7 @@ void FGizmo::UpdateDrag(const FRay& MouseRay, const FVector2& MousePos)
 		else if (DraggingAxis == 1) NewScale.Y *= factor;
 		else                        NewScale.Z *= factor;
 
-		Target->GetTransform()->Scale = NewScale;
+		Target->SetScale(NewScale);
 	}
 }
 

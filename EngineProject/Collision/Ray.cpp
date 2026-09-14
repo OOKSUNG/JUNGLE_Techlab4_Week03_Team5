@@ -1,9 +1,12 @@
 #include "EnginePCH.h"
 #include "Ray.h"
 #include "Math/EngineMath.h"
+#include "Core/FBoxBounds.h"
 
-bool RayIntersectsAABB(const FRay& Ray, const FVector& BoxMin, const FVector& BoxMax, float& OutT)
+bool RayIntersectsAABB(const FRay& Ray, const FBoxBounds& Bounds, float& OutT)
 {
+    const FVector BoxMin = Bounds.GetMin();
+    const FVector BoxMax = Bounds.GetMax();
     float invRayDir = 1.0f / Ray.Direction.X;
     float tX1 = (BoxMin.X - Ray.Origin.X) * invRayDir;
     float tX2 = (BoxMax.X - Ray.Origin.X) * invRayDir;

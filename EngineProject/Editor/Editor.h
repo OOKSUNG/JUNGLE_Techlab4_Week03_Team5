@@ -13,7 +13,7 @@
 #include "Outline.h"
 #include "OutLineRenderer.h"
 #include "ShowFlags.h"
-
+#include "BoundingBox.h"
 #include "LineRenderer.h"
 
 #include "EditorSetting.h"
@@ -41,6 +41,7 @@ private:
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
 	TUniquePtr<FOutlineRenderer> OutlineRenderer;
+	TUniquePtr<FBoundingBox> BoundingBox;
 	FEngineShowFlags ShowFlags;
 
 	TUniquePtr<FEditorUI> EditorUI;
