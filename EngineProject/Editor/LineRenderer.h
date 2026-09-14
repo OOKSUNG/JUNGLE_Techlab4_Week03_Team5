@@ -5,6 +5,12 @@
 struct LineData
 {
     FMatrix ViewProj;
+
+    //
+    FVector CameraPos;
+    float FadeStart;
+    float FadeEnd;
+    float Padding[3] = {};
 };
 
 class FLineRenderer
@@ -14,7 +20,7 @@ public:
 
     void AddLine( const FVector& Start, const FVector& End, const FVector4& Color);
 
-    bool Flush(FRenderer* Renderer, FMatrix VP);
+    bool Flush(FRenderer* Renderer, FVector CameraPos, FMatrix VP);
 
     void DebugDraw();
 
@@ -33,6 +39,10 @@ private:
 
     TArray<FVertex> Vertices;
     TArray<uint32> Indices;
+
+
+    float FadeStart = 10.0f;
+    float FadeEnd = 1000.0f;
 
 };
 

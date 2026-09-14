@@ -31,7 +31,7 @@ void FLineRenderer::AddLine(const FVector& Start, const FVector& End, const FVec
     Indices.push_back(BaseIndex + 1);
 }
 
-bool FLineRenderer::Flush(FRenderer* Renderer, FMatrix VP)
+bool FLineRenderer::Flush(FRenderer* Renderer,FVector CameraPos,  FMatrix VP)
 {
     if (!Vertices.empty())
     {
@@ -61,8 +61,13 @@ bool FLineRenderer::Flush(FRenderer* Renderer, FMatrix VP)
     // Constant Buffer
     LineData Data{};
     Data.ViewProj = VP.GetTransposed();
+    Data.CameraPos = CameraPos;
+    Data.FadeStart = FadeStart;
+    Data.FadeEnd = FadeEnd;
 
     Renderer->UpdateConstantBufferData(ConstantBuffer.get(), &Data, sizeof(LineData));
+    Renderer->BindConstantBuffer(0, ConstantBuffer.get(), EShaderBindFlagBits::Vertex);
+    Renderer->BindConstantBuffer(0, ConstantBuffer.get(), EShaderBindFlagBits::Pixel);
 
     // DrawIndexed()
     Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));

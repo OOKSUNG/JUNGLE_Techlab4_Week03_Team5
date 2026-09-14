@@ -68,8 +68,12 @@ public:
 
 	SceneClearCallback Callback = nullptr;
 	
+	// grid control
+	void SetGridSpace(float Grid) { GridSpace = Grid; }
+	float GetGridSpace() { return GridSpace; }
 
 private:
 	FEditorContext Context;
+	float GridSpace = 10.0f;
 };
 
