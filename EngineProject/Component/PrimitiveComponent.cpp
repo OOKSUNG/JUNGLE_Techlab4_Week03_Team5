@@ -24,6 +24,17 @@ void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue
 
 }
 
+void UPrimitiveComponent::UpdateBounds()
+{
+	Super::UpdateBounds();
+	const FMatrix& WorldMatrix = GetWorldMatrix();
+	const FMeshData& Mesh = GetMeshData();
+	FVector BoxMin, BoxMax;
+	Mesh.GetWorldAABB(BoxMin, BoxMax, WorldMatrix);
+	Bounds.Origin = (BoxMax + BoxMin) / 2.0f;
+	Bounds.BoxExtent = (BoxMax - BoxMin) / 2.0f;
+}
+
 void UPrimitiveComponent::SetMesh(FMesh* InMesh)
 {
 	Mesh = InMesh;

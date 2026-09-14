@@ -37,6 +37,8 @@ public:
 
 	void SetVisible(bool Visible) { bIsVisible = Visible; };
 	bool GetVisible() { return bIsVisible; };
+
+	void UpdateBounds() override;
 protected:
 	EPrimitiveType Type = EPrimitiveType::Cube;
 	FShader* Shader = nullptr;
