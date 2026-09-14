@@ -13,7 +13,7 @@
 #include "Outline.h"
 #include "OutLineRenderer.h"
 #include "ShowFlags.h"
-
+#include "BoundingBox.h"
 #include "LineRenderer.h"
 
 class FEditor
@@ -39,6 +39,7 @@ private:
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
 	TUniquePtr<FOutlineRenderer> OutlineRenderer;
+	TUniquePtr<FBoundingBox> BoundingBox;
 	FEngineShowFlags ShowFlags;
 
 	TUniquePtr<FEditorUI> EditorUI;
@@ -52,6 +53,5 @@ private:
 	float GridExtent = 1000.0f;
 	float GridSpacing = 10.0f;
 	int32 GridCount = 20;
-
 };
 

@@ -23,6 +23,7 @@ public:
     bool Flush(FRenderer* Renderer, FVector CameraPos, FMatrix VP);
 
     void DebugDraw();
+    void DrawBox(const FBoxBounds& Bounds);
 
 private:
 

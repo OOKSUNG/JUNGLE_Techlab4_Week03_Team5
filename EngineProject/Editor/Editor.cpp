@@ -5,12 +5,14 @@
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
 #include "EditorContext.h"
+#include "Core/FBoxBounds.h"
 
 
 bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 {
 	Gizmo = MakeUnique<FGizmo>();
 	Outline = MakeUnique<FOutline>();
+	BoundingBox = MakeUnique<FBoundingBox>();
 
 	ImGuiRenderer = MakeUnique<FImGuiRenderer>();
 	if (!ImGuiRenderer->Init(hwnd, InRenderer->GetDevice(), InRenderer->GetDeviceContext()))
@@ -39,6 +41,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
 		Outline->SetTarget(nullptr);
+		BoundingBox->SetTarget(nullptr);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
 		ShowFlags.SetDefault();
 		}
@@ -75,6 +78,7 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 		UPrimitiveComponent* PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
 		Gizmo->SetTarget(PickedComponent);
 		Outline->SetTarget(PickedComponent);
+		BoundingBox->SetTarget(PickedComponent);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
 	}
 }
@@ -93,6 +97,7 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 		GizmoRenderer->OnRender(*Gizmo, VP);
 	}
 
+
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 	{
 		DrawGrid(CamLoc);
@@ -100,6 +105,11 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	// World 축 드로우
 	AxisDraw();
+
+	if (BoundingBox->GetTarget() && ShowFlags.IsSet(EShowFlagBits::BoundingBox))
+	{
+		LineRenderer->DrawBox(BoundingBox->GetTarget()->GetBounds());
+	}
 
 	// Line Rendering
 	LineRenderer->Flush(Renderer, CamLoc, VP);
