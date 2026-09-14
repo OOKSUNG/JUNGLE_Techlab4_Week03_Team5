@@ -278,6 +278,7 @@
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Editor\ShowFlags.h" />
+    <ClInclude Include="Engine\SceneMetaData.h" />
     <ClInclude Include="Engine\World.h" />
     <ClInclude Include="Editor\Editor.h" />
     <ClInclude Include="GameFramework\Actor.h" />
