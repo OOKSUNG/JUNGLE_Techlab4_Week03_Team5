@@ -17,6 +17,8 @@
 #include "LineRenderer.h"
 #include "EditorFileUtils.h"
 
+#include "EditorSetting.h"
+
 class FEditor
 {
 
