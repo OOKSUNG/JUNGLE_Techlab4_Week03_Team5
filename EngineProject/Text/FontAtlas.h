@@ -30,7 +30,7 @@ public:
 
 private:
     const FGlyphInfo& RasterizeAndPack(uint32 Codepoint, ID3D11DeviceContext* Context);
-    void UploadAtlasToGPU(ID3D11DeviceContext* Context);
+    void UploadAtlasToGPU(ID3D11DeviceContext* Context, int DirtyX, int DirtyY, int DirtyW, int DirtyH);
 
     FT_Library FTLibrary = nullptr;
     FT_Face FTFace = nullptr;

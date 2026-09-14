@@ -61,11 +61,15 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
     Desc.ArraySize = 1;
     Desc.Format = DXGI_FORMAT_R8_UNORM;
     Desc.SampleDesc.Count = 1;
-    Desc.Usage = D3D11_USAGE_DYNAMIC;
+    Desc.Usage = D3D11_USAGE_DEFAULT;
     Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Desc.CPUAccessFlags = 0;
 
-    if (FAILED(Device->CreateTexture2D(&Desc, nullptr, &AtlasTexture))) return false;
+    D3D11_SUBRESOURCE_DATA InitData = {};
+    InitData.pSysMem = AtlasBuffer.data();
+    InitData.SysMemPitch = AtlasSize;
+
+    if (FAILED(Device->CreateTexture2D(&Desc, &InitData, &AtlasTexture))) return false;
     if (FAILED(Device->CreateShaderResourceView(AtlasTexture, nullptr, &AtlasSRV))) return false;
 
     // Shelf Packing 상태 초기화
@@ -87,6 +91,8 @@ const FGlyphInfo& FDynamicFontAtlas::GetOrCreateGlyph(uint32 Codepoint, ID3D11De
 
 const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11DeviceContext* Context)
 {
+    static constexpr int GlyphPadding = 1 ; // 인접 Glyph 블리딩 방지용 패딩
+    
     // Rasterizing
     FT_Load_Char(FTFace, Codepoint, FT_LOAD_RENDER);
     FT_GlyphSlot Slot = FTFace->glyph;
@@ -98,16 +104,21 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
     // Shelf Packing
 
     // 현재 선반이 꽉 찼을 경우
-    if (CursorX + GlyphW > AtlasSize)
+    if (CursorX + GlyphW + GlyphPadding > AtlasSize)
     {
         CursorX = 0;
         CursorY += CurrentShelfHeight;
         CurrentShelfHeight = 0;
     }
     // 전체 선반이 꽉 찼을 경우
-    if (CursorY + GlyphH > AtlasSize)
+    if (CursorY + GlyphH + GlyphPadding > AtlasSize)
     {
-        assert(false && "Font Atlas is full!");
+        LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render blank.", Codepoint);
+        
+        FGlyphInfo FallbackInfo{};
+        FallbackInfo.Advance = static_cast<float>(Slot->advance.x >> 6);
+        auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
+        return Result.first->second;
     }
 
     int DestX = CursorX;
@@ -119,11 +130,11 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
             AtlasBuffer[(DestY + y) * AtlasSize + (DestX + x)] = Bitmap.buffer[y * Bitmap.pitch + x];
 
     // 선반 커서 갱신
-    CursorX += GlyphW;
-    CurrentShelfHeight = max(CurrentShelfHeight, GlyphH);
+    CursorX += GlyphW + GlyphPadding;
+    CurrentShelfHeight = max(CurrentShelfHeight, GlyphH + GlyphPadding);
 
     // GPU 텍스처에 업로드
-    UploadAtlasToGPU(Context);
+    UploadAtlasToGPU(Context, DestX, DestY, GlyphW, GlyphH);
 
     // UV 계산 및 캐시에 등록
     FGlyphInfo Info;
@@ -143,17 +154,18 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
 
 }
 
-void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context)
+void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int DirtyX, int DirtyY, int DirtyW, int DirtyH)
 {
-    // 추후 D3D11_MAP_WRITE_NO_OVERWRITE, UpdateSubresource의 Box 파라미터로
-    // 변경된 영역만 갱신하는 최적화를 적용할 필요가 있음.
+    D3D11_BOX Box;
+    Box.left = DirtyX;
+    Box.top = DirtyY;
+    Box.front = 0;
+    Box.right = DirtyX + DirtyW;
+    Box.bottom = DirtyY + DirtyH;
+    Box.back = 1;
 
-    D3D11_MAPPED_SUBRESOURCE Mapped;
-    Context->Map(AtlasTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
-    uint8* Dst = static_cast<uint8*>(Mapped.pData);
-    for (int Row = 0; Row < AtlasSize; Row++)
-        memcpy(Dst + Row * Mapped.RowPitch, &AtlasBuffer[Row * AtlasSize], AtlasSize);
-    Context->Unmap(AtlasTexture, 0);
+    const uint8* SrcData = &AtlasBuffer[DirtyY * AtlasSize + DirtyX];
+    Context->UpdateSubresource(AtlasTexture, 0, &Box, SrcData, AtlasSize, 0);
 }
 
 

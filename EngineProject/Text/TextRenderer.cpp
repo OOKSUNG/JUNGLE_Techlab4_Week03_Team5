@@ -18,7 +18,7 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
     if (!TextShader)
         return false;
 
-    VB = MakeShared<FDynamicVertexBuffer>(Renderer->GetDevice(), MaxVertices, sizeof(FTextVertex));
+    VB = MakeShared<FDynamicVertexBuffer>(Renderer->GetDevice(), MaxVertices, static_cast<uint32>(sizeof(FTextVertex)));
     IB = MakeShared<FDynamicIndexBuffer>(Renderer->GetDevice(), MaxIndices);
     CB = Renderer->CreateConstantBuffer(sizeof(float) * 8); // ScreenOffset+ScreenSize+Colo
 
@@ -53,6 +53,23 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
     if (FAILED(Renderer->GetDevice()->CreateRasterizerState(&RasterDesc, &NoCullState)))
         return false;
     
+
+    
+    D3D11_INPUT_ELEMENT_DESC WorldLayout[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+
+    TextShaderWorld = Renderer->CreateShader(L"Shader/TextShaderWorld.hlsl", WorldLayout, 2);
+    if (!TextShaderWorld)
+        return false;
+
+    VBWorld = MakeShared<FDynamicVertexBuffer>(Renderer->GetDevice(), MaxVertices, static_cast<uint32>(sizeof(FTextVertexWorld)));
+    IBWorld = MakeShared<FDynamicIndexBuffer>(Renderer->GetDevice(), MaxIndices);
+    CBWorld = Renderer->CreateConstantBuffer(sizeof(float) * 20); // VP (16) + Color (4)
+
+
     return true;
 }
 
@@ -96,6 +113,38 @@ TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
     return Indices;
 }
 
+TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float Scale)
+{
+    TArray<FTextVertexWorld> Vertices;
+    TArray<uint32> Codepoints = DecodeUTF8(Utf8Text);
+
+    float PenX = 0.0f;
+
+    for (uint32 Codepoint : Codepoints)
+    {
+        const FGlyphInfo& Glyph = Atlas.GetOrCreateGlyph(Codepoint, Context);
+
+        float X0 = (PenX + Glyph.BearingX) * Scale;
+        float Y0 = static_cast<float>(Glyph.BearingY) * Scale;
+        float X1 = X0 + Glyph.BitmapWidth * Scale;
+        float Y1 = Y0 - Glyph.BitmapHeight * Scale;
+        
+        auto ToWorld = [&](float LocalX, float LocalY) -> FVector
+        {
+            return WorldPosition + Right * LocalX + Up * LocalY;
+        };
+
+        Vertices.push_back({ ToWorld(X0, Y0), {Glyph.U,               Glyph.V                }});
+        Vertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
+        Vertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
+        Vertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
+
+        PenX += Glyph.Advance;
+
+    }
+    return Vertices;
+}
+
 void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVector2 ScreenOffset, FVector4 Color, uint32 ScreenWidth, uint32 ScreenHeight)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
@@ -114,12 +163,15 @@ void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVe
 
     struct FTextCBData
     {
+        // float WorldPosition[3];
         float ScreenOffset[2];
         float ScreenSize[2];
         float Color[4]; } CBData;
 
-    CBData.ScreenOffset[0] = 0.0f;
-    CBData.ScreenOffset[1] = 0.0f;
+    // CBData.WorldPosition[0] = ScreenOffset.X;
+    // CBData.WorldPosition[1] = ScreenOffset.Y;
+    CBData.ScreenOffset[0] = ScreenOffset.X;
+    CBData.ScreenOffset[1] = ScreenOffset.Y;
     CBData.ScreenSize[0] = static_cast<float>(ScreenWidth);
     CBData.ScreenSize[1] = static_cast<float>(ScreenHeight);
 
@@ -149,6 +201,62 @@ void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVe
 
     Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
 
+    Renderer->SetDepthStencilEnabled(true);
+    Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+}
+
+void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text, const FVector& WorldPosition, const FVector& CameraRight, const FVector& CameraUp, float Scale, FVector4 Color, const FMatrix& VP)
+{
+    ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
+    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, Scale);
+    if (Vertices.empty())
+        return;
+
+    TArray<uint32> Indices = BuildQuadIndices(Vertices.size());
+
+    if (!VBWorld->Update(Context, Vertices.data(), static_cast<uint32>(sizeof(FTextVertexWorld) * Vertices.size())))
+        return;
+    if (!IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
+        return;
+    
+    struct FTextCBDataWorld
+    {
+        float VP[16];
+        float Color[4];
+    } CBData;
+
+    FMatrix TransposedVP = VP.GetTransposed();
+    memcpy(CBData.VP, &TransposedVP, sizeof(CBData.VP));
+
+    CBData.Color[0] = Color.X;
+    CBData.Color[1] = Color.Y;
+    CBData.Color[2] = Color.Z;
+    CBData.Color[3] = Color.W;
+
+    Renderer->UpdateConstantBufferData(CBWorld.get(), &CBData, sizeof(CBData));
+
+    float BlendFactor[4] = { 0,0,0,0 };
+
+    // 0xffffffff -> 전체 샘플에 다 적용
+    Context->OMSetBlendState(BlendState.Get(), BlendFactor, 0xffffffff);
+    // Test On, Write Off
+    Context->OMSetDepthStencilState(Renderer->GetDepthTestOnlyState(), 0);  
+    Context->RSSetState(NoCullState.Get());
+
+    Renderer->BindShader(TextShaderWorld.get());
+    Renderer->BindVertexBuffer(VBWorld.get());
+    Renderer->BindIndexBuffer(IBWorld.get());
+    Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Vertex);
+    Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Pixel);
+
+    ID3D11ShaderResourceView* AtlasSRV = Atlas.GetAtlasSRV();
+    ID3D11SamplerState* SamplerRaw = Sampler.Get();
+    Context->PSSetShaderResources(0, 1, &AtlasSRV);
+    Context->PSSetSamplers(0, 1, &SamplerRaw);
+
+    Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+    // Wtire On (다음 오브젝트를 위해 정상 depth 상태로 복귀)
     Renderer->SetDepthStencilEnabled(true);
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
