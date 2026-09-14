@@ -9,6 +9,12 @@ void UPrimitiveComponent::BeginPlay()
 	Shader = FResourceManager::GetInstance().GetShader("Shader/DefaultShader.hlsl");
 }
 
+void UPrimitiveComponent::SetMeshData(const FMeshData& data) 
+{ 
+	MeshData = data;
+	UpdateBounds();
+}
+
 void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue)
 {
 	if (Mesh && Shader)
@@ -22,6 +28,17 @@ void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue
 		RenderQueue.push(rp);
 	}
 
+}
+
+void UPrimitiveComponent::UpdateBounds()
+{
+	Super::UpdateBounds();
+	const FMatrix& WorldMatrix = GetWorldMatrix();
+	const FMeshData& Mesh = GetMeshData();
+	FVector BoxMin, BoxMax;
+	Mesh.GetWorldAABB(BoxMin, BoxMax, WorldMatrix);
+	Bounds.Origin = (BoxMax + BoxMin) / 2.0f;
+	Bounds.BoxExtent = (BoxMax - BoxMin) / 2.0f;
 }
 
 void UPrimitiveComponent::SetMesh(FMesh* InMesh)

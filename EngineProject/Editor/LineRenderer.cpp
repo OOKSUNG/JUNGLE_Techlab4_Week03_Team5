@@ -1,5 +1,6 @@
 #include "EnginePCH.h"
 #include "LineRenderer.h"
+#include "Core/FBoxBounds.h"
 
 
 bool FLineRenderer::Init(FRenderer* Renderer)
@@ -98,5 +99,30 @@ void FLineRenderer::DebugDraw()
         FVector(0.0f, 0.0f, 100.0f),
         FVector4(0.1f, 0.6f, 0.2f, 1.0f)
     );
+}
 
+void FLineRenderer::DrawBox(const FBoxBounds& Bounds)
+{
+    const int32 EdgePairs[12][2] = {
+        { 0, 1 },{ 1, 3 },{ 3, 2 },{ 2, 0 },
+        { 4, 5 },{ 5, 7 },{ 7, 6 },{ 6, 4 },
+        { 0, 4 },{ 1, 5 },{ 2, 6 },{ 3, 7 }
+    };
+    const FVector& Origin = Bounds.Origin;
+    const FVector& Extent = Bounds.BoxExtent;
+    FVector P[8];
+    for (int32 i = 0; i < 8; ++i)
+    {
+        P[i] = FVector{
+            (i & 2) ? (Origin.X + Extent.X) : (Origin.X - Extent.X),
+            (i & 1) ? (Origin.Y + Extent.Y) : (Origin.Y - Extent.Y),
+            (i & 4) ? (Origin.Z + Extent.Z) : (Origin.Z - Extent.Z)
+        };
+    }
+
+    FVector4 WhiteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    for (int32 i = 0; i < 12; ++i)
+    {
+        AddLine(P[EdgePairs[i][0]], P[EdgePairs[i][1]], WhiteColor);
+    }
 }

@@ -35,7 +35,31 @@ FTransform* USceneComponent::GetTransform()
     return &transform;
 }
 
+const FBoxBounds& USceneComponent::GetBounds() const
+{
+    return Bounds;
+}
+
 void USceneComponent::SetTransform(FTransform Transform)
 {
     transform = Transform;
+    UpdateBounds();
+}
+
+void USceneComponent::SetLocation(FVector NewLocation)
+{
+    transform.Location = NewLocation;
+    UpdateBounds();
+}
+
+void USceneComponent::SetScale(FVector NewScale)
+{
+    transform.Scale = NewScale;
+    UpdateBounds();
+}
+
+void USceneComponent::SetRotation(FRotator NewRotation)
+{
+    transform.Rotation = NewRotation;
+    UpdateBounds();
 }
