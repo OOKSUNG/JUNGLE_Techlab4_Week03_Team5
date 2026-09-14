@@ -141,23 +141,21 @@ void Engine::Run()
 				
 				FVector CamRight = Camera->GetTransform()->GetRight();
 				FVector CamUp = Camera->GetTransform()->GetUp();
-
+				
 				TextRenderer->RenderTextWorld(
 					Renderer.get(), Console->GetDebugTextString(),
 					TextWorldPos, CamRight, CamUp,
 					0.01f,
 					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
 					VP);
+
+				}
+				
 			}
-		}
 			
-		// 아틀라스 (atlas_dump.bup) 보면 "게임테크랩 하하하" 가 아니라 "게임테랩"까지만 저장되어 있는데
-		// 앞쪽에서 이미 '크'와 '하'를 래스터라이징 후 패킹해놓았기 때문에 캐싱 값을 사용해서 그렇습니다.
-		static bool bDumpedOnce = false;
-		if (!bDumpedOnce)
+		if (Console && Console->ConsumeAtlasDumpRequest())
 		{
 			TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
-			bDumpedOnce = true;
 		}
 
 		Renderer->EndFrame();

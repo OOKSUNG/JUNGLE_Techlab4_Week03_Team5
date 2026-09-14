@@ -21,6 +21,8 @@ public:
 	uint32 GetDebugTextTargetUUID() const { return DebugTextTargetUUID; }
 	const FString& GetDebugTextString() const { return DebugTextString; }
 
+	bool ConsumeAtlasDumpRequest();
+
 private:
 	ImVec4 GetLogColor(ELogVerbosity Verbosity) const;
 	const char* GetVerbosityName(ELogVerbosity Verbosity) const;
@@ -31,6 +33,7 @@ private:
 	uint32 DebugTextTargetUUID = 0;
 	FString DebugTextString;
 	float DebugTextRemainingTime = 0.0f;
+	bool bAtlasDumpRequested = false;
 
 
 	char InputBuf[256]{};

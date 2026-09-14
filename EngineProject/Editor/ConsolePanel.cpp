@@ -110,6 +110,13 @@ void FConsolePanel::OnRender()
 	ImGui::End();
 }
 
+bool FConsolePanel::ConsumeAtlasDumpRequest()
+{
+	bool Requested = bAtlasDumpRequested;
+	bAtlasDumpRequested = false;
+	return Requested;
+}
+
 ImVec4 FConsolePanel::GetLogColor(ELogVerbosity Verbosity) const
 {
 	switch (Verbosity)
@@ -257,6 +264,12 @@ void FConsolePanel::ExecCommand(const FString& CommandLine)
 			
 		}
 	}
+	else if (CommandLine == "dump atlas")
+	{
+		bAtlasDumpRequested = true;
+		LOG(Editor, Info, "Atlas dump requested.");
+	}
+	
 	else
 	{
 		LOG(Editor, Info, "Unknown command: '{}'\n", CommandLine);
