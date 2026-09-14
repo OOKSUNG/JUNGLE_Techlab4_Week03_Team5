@@ -137,7 +137,10 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
-	ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f);
+	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
+	{
+		FEditorSettings::Get().GridSpacing = GridSpace;
+	}
 
 	ImGui::Separator();
 

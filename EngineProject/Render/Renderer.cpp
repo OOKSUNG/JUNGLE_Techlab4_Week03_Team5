@@ -33,14 +33,6 @@ bool FRenderer::Init(HWND hWindow)
 
 	// View Mode 상태 저장
 	ViewModeState = MakeShared<FViewModeState>(this);
-	
-	// LineRenderer = MakeUnique<FLineRenderer>();
-	
-	//LOG(ELogCategory::Renderer, ELogVerbosity::info, "LineRenderer Initializing...");
-	/*if (!LineRenderer->Init(this))
-	{
-		return false;
-	}*/
 
 	return true;
 }
@@ -88,6 +80,10 @@ void FRenderer::CreateFrameBuffer()
 {
 	SwapChain->GetBuffer(0, IID_PPV_ARGS(FrameBuffer.GetAddressOf()));
 	Device->CreateRenderTargetView(FrameBuffer.Get(), nullptr, FrameBufferRTV.GetAddressOf());
+
+	// srv 추가
+	// Device->CreateShaderResourceView(FrameBuffer.Get(), nullptr, FrameBufferSRV.GetAddressOf());
+
 }
 
 

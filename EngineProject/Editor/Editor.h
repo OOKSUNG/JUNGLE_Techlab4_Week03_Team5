@@ -16,6 +16,8 @@
 #include "BoundingBox.h"
 #include "LineRenderer.h"
 
+#include "EditorSetting.h"
+
 class FEditor
 {
 
