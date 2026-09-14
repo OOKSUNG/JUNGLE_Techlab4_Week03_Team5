@@ -45,6 +45,8 @@ public:
 
 	int32 GetActorNum() const { return (int32)Actors.size(); }
 
+	TArray<AActor*> GetActors() const { return Actors; }
+
 private:
 	TArray<AActor*> Actors;
 
@@ -59,3 +61,49 @@ private:
 	bool AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT);
 	bool TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Primitive, float& MinT);
 };
+
+namespace
+{
+	FString PrimitiveTypeToString(EPrimitiveType Type)
+	{
+		switch (Type)
+		{
+		case EPrimitiveType::Sphere:
+			return "Sphere";
+			break;
+		case EPrimitiveType::Cube:
+			return "Cube";
+			break;
+		case EPrimitiveType::Cone:
+			return "Cone";
+			break;
+		case EPrimitiveType::Plane:
+			return "Plane";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	EPrimitiveType FStringToPrimitiveType(const FString& string)
+	{
+		if (string == "Sphere")
+		{
+			return EPrimitiveType::Sphere;
+		}
+		if (string == "Cube")
+		{
+			return EPrimitiveType::Cube;
+		}
+		if (string == "Cone")
+		{
+			return EPrimitiveType::Cone;
+		}
+		if (string == "Plane")
+		{
+			return EPrimitiveType::Plane;
+		}
+		return EPrimitiveType::Cube;
+	}
+}

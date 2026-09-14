@@ -21,9 +21,13 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 		return false;
 	}
 
+	EditorSettings = MakeUnique<FEditorSettings>();
+	EditorSettings->LoadEditorSetting();
+
 	// UI가 사용할 정보 저장
 	Context.World = World;
 	Context.Gizmo = Gizmo.get();
+	Context.EditorSettings = EditorSettings.get();
 
 	// UI 생성 및 초기화, 컨텍스트 전달
 	EditorUI = MakeUnique<FEditorUI>();
@@ -32,7 +36,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	{
 		return false;
 	}
-	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
+
 	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
 	ControlPanel->SetRenderer(InRenderer);
 
@@ -50,16 +54,13 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	LineRenderer = MakeUnique<FLineRenderer>();
 	LineRenderer->Init(InRenderer);
 
-	//GridRenderer = MakeUnique<FGridRenderer>();
-	//GridRenderer->Init(InRenderer);
-
 	GizmoRenderer = MakeUnique<FGizmoRenderer>();
 	GizmoRenderer->Init(InRenderer);
 
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
 
-	
+
 
 }
 
@@ -129,7 +130,7 @@ void FEditor::Shutdown()
 void FEditor::DrawGrid(const FVector& CameraPos)
 {
 	// Grid 그리기
-	GridSpacing = EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
+	float GridSpacing = EditorSettings->GetGridSpacing(); // EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
 	GridCount = static_cast<int32>(GridExtent / GridSpacing);
 	if (GridCount >= 100) GridCount = 100;
 

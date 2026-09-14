@@ -16,6 +16,7 @@ class AActor : public UObject
 		REFLECT_END()
 public:
 	AActor();
+	AActor(FString InName);
 	virtual ~AActor();
 
 	virtual void BeginPlay();

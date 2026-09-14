@@ -33,6 +33,13 @@ void FControlPanel::AddActor(EPrimitiveType Type)
 	AActor* Actor = Context.World->SpawnActor(AActor::StaticClass(), &Transform);
 	Actor->AddPrimitiveComponent(Type, Transform);
 
+	FString NewName = PrimitiveTypeToString(Type) + FString("_") + std::to_string(Actor->GetUUID());
+
+	Actor->SetFName(NewName);
+
+	// Actor->SetFName(PrimitiveTypeToString(Type) + FString("_") + std::to_string(Actor->GetUUID()));
+
+	LOG(Editor, Info, "Name : {}" , Actor->GetFName().GetString());
 
 	ActorNum = Context.World->GetActorNum() - 1;
 }
@@ -79,7 +86,7 @@ void FControlPanel::OnRender()
 	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
 		printf("Buttonstart");
-		// Context.World->ClearScene();
+		Context.World->ClearScene();
 		if (!Context.World->LoadScene(SceneName))
 		{
 			return;
@@ -97,8 +104,10 @@ void FControlPanel::OnRender()
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
 	FTransform* transform = CamCom->GetTransform();
-	float MouseSensitivity = CamCom->GetSensitivity();
-	float CameraSpeed = CamCom->GetSpeed();
+	float MouseSensitivity = Context.EditorSettings->GetCameraSensitivity();
+	float CameraSpeed = Context.EditorSettings->GetCameraMoveSpeed();
+
+	float GridSpace = Context.EditorSettings->GetGridSpacing();;
 
 	ImGui::SetNextItemWidth(255.0f);
 	ImGui::InputFloat("##FOV", &CamCom->FOV);
@@ -127,19 +136,19 @@ void FControlPanel::OnRender()
 	if (ImGui::SliderFloat("Camera Sensitivity", &MouseSensitivity, 0.01f, 0.5f, "%.2f"))
 	{
 		CamCom->SetSensitivity(MouseSensitivity);
-		FEditorSettings::Get().CameraSensitivity = MouseSensitivity;
+		Context.EditorSettings->SetCameraSensitivity(MouseSensitivity);
 	}
 	if (ImGui::SliderFloat("Camera Speed", &CameraSpeed, 1.0f, 50.0f))
 	{
 		CamCom->SetSpeed(CameraSpeed);
-		FEditorSettings::Get().CameraMoveSpeed = CameraSpeed;
+		Context.EditorSettings->SetCameraMoveSpeed(CameraSpeed);
 	}
 
 	ImGui::Separator();
 
 	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
 	{
-		FEditorSettings::Get().GridSpacing = GridSpace;
+		Context.EditorSettings->SetGridSpacing(GridSpace);
 	}
 
 	ImGui::Separator();

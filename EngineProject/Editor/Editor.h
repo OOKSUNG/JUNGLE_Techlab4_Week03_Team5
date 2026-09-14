@@ -29,14 +29,13 @@ public:
 	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
 	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 	UPrimitiveComponent* GetSelectedTarget() const { return Outline->GetTarget(); }
+	FEditorSettings* GetEditorSettings() const { return EditorSettings.get(); }
 
 	void DrawGrid(const FVector& CameraPos);
 	void AxisDraw();
 
-	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
-	//TUniquePtr<FGridRenderer> GridRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
@@ -49,11 +48,12 @@ private:
 
 	TUniquePtr<FLineRenderer> LineRenderer;
 
-	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;
 
+	TUniquePtr<FEditorSettings> EditorSettings;
+
 	float GridExtent = 1000.0f;
-	float GridSpacing = 10.0f;
+	// float GridSpacing = 10.0f;
 	int32 GridCount = 20;
 };
 

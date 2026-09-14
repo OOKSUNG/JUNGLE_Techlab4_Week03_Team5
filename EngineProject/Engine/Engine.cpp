@@ -138,7 +138,7 @@ void Engine::UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP)
 
 void Engine::Shutdown()
 {
-	FEditorSettings::Get().SaveEditorSetting();
+	Editor->GetEditorSettings()->SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
 		delete Object;
 	Editor->Shutdown();

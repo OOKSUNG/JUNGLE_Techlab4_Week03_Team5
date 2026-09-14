@@ -12,51 +12,6 @@
 #include "Core/FBoxBounds.h"
 
 
-namespace
-{
-	FString PrimitiveTypeToString(EPrimitiveType Type)
-	{
-		switch (Type)
-		{
-		case EPrimitiveType::Sphere:
-			return "Sphere";
-			break;
-		case EPrimitiveType::Cube:
-			return "Cube";
-			break;
-		case EPrimitiveType::Cone:
-			return "Cone";
-			break;
-		case EPrimitiveType::Plane:
-			return "Plane";
-			break;
-		default:
-			return "";
-			break;
-		}
-	}
-
-	EPrimitiveType FStringToPrimitiveType(const FString& string)
-	{
-		if (string == "Sphere")
-		{
-			return EPrimitiveType::Sphere;
-		}
-		if (string == "Cube")
-		{
-			return EPrimitiveType::Cube;
-		}
-		if (string == "Cone")
-		{
-			return EPrimitiveType::Cone;
-		}
-		if (string == "Plane")
-		{
-			return EPrimitiveType::Plane;
-		}
-		return EPrimitiveType::Cube;
-	}
-}
 
 //UPrimitiveComponent* UWorld::SpawnPrimitive(FClass* Class)
 //{
@@ -78,6 +33,10 @@ bool UWorld::Init()
 	// Camera 초기 위치 수정
 	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
 
+	FString NewName =  FString("Camera_") + std::to_string(GetCamera->GetUUID());
+
+	GetCamera->SetFName(NewName);
+
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);
@@ -95,8 +54,9 @@ AActor* UWorld::SpawnActor(UClass* Class, const FTransform* UserTransformPtr)
 	const FTransform UserTransform = UserTransformPtr ? *UserTransformPtr : FTransform::Identity;
 	UObject* NewObject= FObjectFactory::ConstructObject(Class);
 	AActor* NewActor = Cast<AActor>(NewObject);
-	NewActor->World = this;
+
 	if (!NewActor) return nullptr;
+	NewActor->World = this;
 
 	if (!NewActor->GetRootComponent())
 	{
