@@ -16,6 +16,9 @@ public:
 	FMatrix GetWorldMatrix() const;
 	const FBoxBounds& GetBounds() const;
 	void SetTransform(FTransform transform);
+	void SetLocation(FVector NewLocation);
+	void SetScale(FVector NewScale);
+	void SetRotation(FRotator NewRotation);
 	virtual void UpdateBounds() {};
 private:
 	//FTransform transform;
