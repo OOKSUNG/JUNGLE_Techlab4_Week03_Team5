@@ -51,8 +51,12 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
 
     FT_Set_Pixel_Sizes(FTFace, 0, FontPixelSize);
 
-    // CPU AtlasBuffer (GrayScale)
-    AtlasBuffer.resize(AtlasSize * AtlasSize, 0);
+    // FTFace를 msdfgen이 그대로 재사용 (폰트 파일 동일)
+    MsdfFont = msdfgen::adoptFreetypeFont(FTFace);
+    if (!MsdfFont) assert(false, "MsdfFont Error");
+
+    // CPU AtlasBuffer (RGBA - msdf 3채널 + 패딩)
+    AtlasBuffer.resize(AtlasSize * AtlasSize * BytesPerPixel, 0);
 
     // GPU 텍스처
     D3D11_TEXTURE2D_DESC Desc = {};
@@ -60,7 +64,7 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
     Desc.Height = AtlasSize;
     Desc.MipLevels = 1;
     Desc.ArraySize = 1;
-    Desc.Format = DXGI_FORMAT_R8_UNORM;
+    Desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     Desc.SampleDesc.Count = 1;
     Desc.Usage = D3D11_USAGE_DEFAULT;
     Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -68,7 +72,7 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
 
     D3D11_SUBRESOURCE_DATA InitData = {};
     InitData.pSysMem = AtlasBuffer.data();
-    InitData.SysMemPitch = AtlasSize;
+    InitData.SysMemPitch = AtlasSize * BytesPerPixel;
 
     if (FAILED(Device->CreateTexture2D(&Desc, &InitData, &AtlasTexture))) return false;
     if (FAILED(Device->CreateShaderResourceView(AtlasTexture, nullptr, &AtlasSRV))) return false;
@@ -93,20 +97,50 @@ const FGlyphInfo& FDynamicFontAtlas::GetOrCreateGlyph(uint32 Codepoint, ID3D11De
 const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11DeviceContext* Context)
 {
     static constexpr int GlyphPadding = 1 ; // 인접 Glyph 블리딩 방지용 패딩
-    
-    // Rasterizing
-    FT_Load_Char(FTFace, Codepoint, FT_LOAD_RENDER);
-    FT_GlyphSlot Slot = FTFace->glyph;
-    FT_Bitmap& Bitmap = Slot->bitmap;
 
-    int GlyphW = Bitmap.width;
-    int GlyphH = Bitmap.rows;
+    // 1. 윤곽선(Shape) 추출
+    msdfgen::Shape Shape;
+    double Advance = 0.0;
+    bool bLoaded = msdfgen::loadGlyph(
+        Shape, MsdfFont, static_cast<msdfgen::unicode_t>(Codepoint),
+        msdfgen::FONT_SCALING_EM_NORMALIZED, &Advance);
+    
+    if (!bLoaded)
+    {
+        LOG(Renderer, Error, "Failed to load glyph shape for codepoint {}!", Codepoint);
+        
+        FGlyphInfo FallbackInfo{};
+        auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
+        return Result.first->second;
+    }
+    
+    Shape.normalize();
+    Shape.orientContours();
+    msdfgen::edgeColoringSimple(Shape, 3.0);
+    
+    // 2. 바운딩 박스 -> 픽셀 크기 계산
+    double ShapeLeft = 0, ShapeBottom = 0, ShapeRight = 0, ShapeTop = 0;
+    Shape.bound(ShapeLeft, ShapeBottom, ShapeRight, ShapeTop);
+    
+    int GlyphW = static_cast<int>(std::ceil((ShapeRight - ShapeLeft) * FontPixelSize)) + static_cast<int>(PxRange) * 2;
+    int GlyphH = static_cast<int>(std::ceil((ShapeTop - ShapeBottom) * FontPixelSize)) + static_cast<int>(PxRange) * 2;
+    
+    // 그릴 윤곽선이 없을 경우
+    if (GlyphW <= 0 || GlyphH <= 0)
+    {
+        LOG(Renderer, Error, "There is no shape in {}!", Codepoint);
+        FGlyphInfo Info{};
+        Info.Advance = static_cast<float>(Advance * FontPixelSize);
+        auto Result = GlyphCache.emplace(Codepoint, Info);
+        return Result.first->second;
+    }
 
     // Shelf Packing
 
     // 현재 선반이 꽉 찼을 경우
     if (CursorX + GlyphW + GlyphPadding > AtlasSize)
     {
+        LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render in next shelf.", Codepoint);
         CursorX = 0;
         CursorY += CurrentShelfHeight;
         CurrentShelfHeight = 0;
@@ -117,26 +151,45 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
         LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render blank.", Codepoint);
         
         FGlyphInfo FallbackInfo{};
-        FallbackInfo.Advance = static_cast<float>(Slot->advance.x >> 6);
+        FallbackInfo.Advance = static_cast<float>(Advance * FontPixelSize);
         auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
         return Result.first->second;
     }
-
+    
     int DestX = CursorX;
     int DestY = CursorY;
-
-    // CPU 버퍼에 글리프 픽셀 복사
+    
+    // 3. MSDF 생성
+    msdfgen::Bitmap<float, 3> Msdf(GlyphW, GlyphH);
+    
+    msdfgen::Projection Proj(
+        msdfgen::Vector2(FontPixelSize, FontPixelSize),
+        msdfgen::Vector2(-ShapeLeft + PxRange / FontPixelSize, -ShapeBottom + PxRange / FontPixelSize));
+        msdfgen::Range Range(PxRange / FontPixelSize);
+        
+    msdfgen::generateMSDF(Msdf, Shape, msdfgen::SDFTransformation(Proj, Range));
+    
+    // 4. CPU 버퍼에 글리프 픽셀 복사 (msdfgen은 y가 위로 갈수록 증가)
     for (int y = 0; y < GlyphH; y++)
+    {
         for (int x = 0; x < GlyphW; x++)
-            AtlasBuffer[(DestY + y) * AtlasSize + (DestX + x)] = Bitmap.buffer[y * Bitmap.pitch + x];
-
+        {
+            const float* Px = Msdf(x, GlyphH -1 - y);
+            int DstIndex = ((DestY + y) * AtlasSize + (DestX + x)) * BytesPerPixel;
+            AtlasBuffer[DstIndex + 0] = static_cast<uint8>(std::clamp(Px[0], 0.0f, 1.0f) * 255.0f);
+            AtlasBuffer[DstIndex + 1] = static_cast<uint8>(std::clamp(Px[1], 0.0f, 1.0f) * 255.0f);
+            AtlasBuffer[DstIndex + 2] = static_cast<uint8>(std::clamp(Px[2], 0.0f, 1.0f) * 255.0f);
+            AtlasBuffer[DstIndex + 3] = 255;
+        }
+    }
+    
     // 선반 커서 갱신
     CursorX += GlyphW + GlyphPadding;
     CurrentShelfHeight = std::max(CurrentShelfHeight, GlyphH + GlyphPadding);
-
+    
     // GPU 텍스처에 업로드
     UploadAtlasToGPU(Context, DestX, DestY, GlyphW, GlyphH);
-
+    
     // UV 계산 및 캐시에 등록
     FGlyphInfo Info;
     Info.U = static_cast<float>(DestX) / AtlasSize;
@@ -145,14 +198,15 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
     Info.Height = static_cast<float>(GlyphH) / AtlasSize;
     Info.BitmapWidth = GlyphW;
     Info.BitmapHeight = GlyphH;
-    Info.BearingX = Slot->bitmap_left;
-    Info.BearingY = Slot->bitmap_top;
-    Info.Advance = Slot->advance.x >> 6;        // 소수부 날림
-
+    Info.BearingX = static_cast<int>(std::floor(ShapeLeft * FontPixelSize)) - static_cast<int>(PxRange);
+    Info.BearingY = static_cast<int>(std::ceil(ShapeTop * FontPixelSize)) + static_cast<int>(PxRange);
+    Info.Advance = static_cast<float>(Advance * FontPixelSize);
+    
+    
     // 삽입과 반환을 동시에
     auto Result = GlyphCache.emplace(Codepoint, Info);
     return Result.first->second;
-
+    
 }
 
 void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int DirtyX, int DirtyY, int DirtyW, int DirtyH)
@@ -165,8 +219,8 @@ void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int Dirty
     Box.bottom = DirtyY + DirtyH;
     Box.back = 1;
 
-    const uint8* SrcData = &AtlasBuffer[DirtyY * AtlasSize + DirtyX];
-    Context->UpdateSubresource(AtlasTexture, 0, &Box, SrcData, AtlasSize, 0);
+    const uint8* SrcData = &AtlasBuffer[(DirtyY * AtlasSize + DirtyX) * BytesPerPixel];
+    Context->UpdateSubresource(AtlasTexture, 0, &Box, SrcData, AtlasSize * BytesPerPixel, 0);
 }
 
 
@@ -176,13 +230,13 @@ bool FDynamicFontAtlas::SaveDebugBMP(FRenderer* Renderer, const char* FilePath) 
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
     int Size = AtlasSize;
 
-    // 1. CPU에서 읽을 수 있는 STAGING 텍스처 생성
+    // 1. CPU에서 읽을 수 있는 STAGING 텍스처 생성 (아틀라스와 동일한 포맷이어야 CopyResource 가능)
     D3D11_TEXTURE2D_DESC Desc = {};
     Desc.Width = Size;
     Desc.Height = Size;
     Desc.MipLevels = 1;
     Desc.ArraySize = 1;
-    Desc.Format = DXGI_FORMAT_R8_UNORM;
+    Desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     Desc.SampleDesc.Count = 1;
     Desc.Usage = D3D11_USAGE_STAGING;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
@@ -206,44 +260,47 @@ bool FDynamicFontAtlas::SaveDebugBMP(FRenderer* Renderer, const char* FilePath) 
         return false;
     }
 
-    int RowSize = (Size + 3) & ~3; // BMP는 행마다 4바이트 정렬 필요
+    int RowSize = (Size * 3 + 3) & ~3; // 24bit BMP는 행마다 4바이트 정렬 필요
     TArray<uint8> PixelData(RowSize * Size);
 
     const uint8* Src = static_cast<const uint8*>(Mapped.pData);
     for (int y = 0; y < Size; y++)
     {
         // BMP는 아래->위 순서로 저장하므로 y를 뒤집어서 복사
-        memcpy(&PixelData[(Size - 1 - y) * RowSize], Src + y * Mapped.RowPitch, Size);
+        uint8* DstRow = &PixelData[(Size - 1 - y) * RowSize];
+        const uint8* SrcRow = Src + y * Mapped.RowPitch;
+
+        for (int x = 0; x < Size; x++)
+        {
+            // RGBA(MSDF R/G/B + 미사용 A) -> BMP는 BGR 순서로 저장
+            DstRow[x * 3 + 0] = SrcRow[x * 4 + 2]; // B
+            DstRow[x * 3 + 1] = SrcRow[x * 4 + 1]; // G
+            DstRow[x * 3 + 2] = SrcRow[x * 4 + 0]; // R
+        }
     }
 
     Context->Unmap(StagingTex, 0);
     StagingTex->Release();
 
-    // 4. 8bit 그레이스케일 BMP로 저장
+    // 4. 24bit 트루컬러 BMP로 저장 (팔레트 없음)
     FBmpFileHeader FileHeader;
     FBmpInfoHeader InfoHeader;
     InfoHeader.Width = Size;
     InfoHeader.Height = Size;
+    InfoHeader.BitCount = 24;
+    InfoHeader.ClrUsed = 0;
+    InfoHeader.ClrImportant = 0;
     InfoHeader.SizeImage = static_cast<uint32>(PixelData.size());
 
-    uint32 PaletteSize = 256 * 4;
-    FileHeader.OffBits = sizeof(FBmpFileHeader) + sizeof(FBmpInfoHeader) + PaletteSize;
+    FileHeader.OffBits = sizeof(FBmpFileHeader) + sizeof(FBmpInfoHeader);
     FileHeader.Size = FileHeader.OffBits + static_cast<uint32>(PixelData.size());
 
     std::ofstream File(FilePath, std::ios::binary);
     File.write(reinterpret_cast<const char*>(&FileHeader), sizeof(FileHeader));
     File.write(reinterpret_cast<const char*>(&InfoHeader), sizeof(InfoHeader));
-
-    for (int i = 0; i < 256; i++)
-    {
-        uint8 Gray[4] = { (uint8)i, (uint8)i, (uint8)i, 0 };
-        File.write(reinterpret_cast<const char*>(Gray), 4);
-    }
-
     File.write(reinterpret_cast<const char*>(PixelData.data()), PixelData.size());
 
-    std::cout << "Atlas dumped to " << FilePath << std::endl;
-
+    // std::cout << "Atlas dumped to " << FilePath << std::endl;
 
     return true;
 }

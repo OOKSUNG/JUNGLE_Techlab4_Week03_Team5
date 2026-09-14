@@ -34,6 +34,7 @@ public:
     inline ID3D11ShaderResourceView* GetAtlasSRV() const { return AtlasSRV; }
     inline ID3D11Texture2D* GetAtlasTexture() const { return AtlasTexture; }
     inline int GetAtlasSize() const { return AtlasSize; }
+    inline float GetPxRange() const { return PxRange; }
 
     // Debug용 함수 (아틀라스 텍스처 직접 보고 싶을 때)
     bool SaveDebugBMP(FRenderer* Renderer, const char* FilePath) const;
@@ -44,12 +45,18 @@ private:
 
     FT_Library FTLibrary = nullptr;
     FT_Face FTFace = nullptr;
+    msdfgen::FontHandle* MsdfFont = nullptr;    // FTFace를 msdfgen에서 사용하기 위한 handle
+
     ID3D11Device* Device = nullptr;
     ID3D11Texture2D* AtlasTexture = nullptr;
     ID3D11ShaderResourceView* AtlasSRV = nullptr;
 
     int AtlasSize = 1024;
     int FontPixelSize = 24;
+
+    static constexpr int BytesPerPixel = 4;     // MSDF RGB 3채널 + 미사용 패딩 1채널
+    static constexpr float PxRange = 4.0f;      // Distance Field 유효 범위
+
     TArray<uint8> AtlasBuffer;
     TMap<uint32, FGlyphInfo> GlyphCache;
 

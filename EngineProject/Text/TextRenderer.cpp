@@ -20,7 +20,7 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
 
     VB = MakeShared<FDynamicVertexBuffer>(Renderer->GetDevice(), MaxVertices, static_cast<uint32>(sizeof(FTextVertex)));
     IB = MakeShared<FDynamicIndexBuffer>(Renderer->GetDevice(), MaxIndices);
-    CB = Renderer->CreateConstantBuffer(sizeof(float) * 8); // ScreenOffset+ScreenSize+Colo
+    CB = Renderer->CreateConstantBuffer(sizeof(float) * 12); // ScreenOffset+ScreenSize+Color+PxRange+Pad
 
     // Sampler 명세
     D3D11_SAMPLER_DESC SamplerDesc = {};
@@ -67,7 +67,7 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
 
     VBWorld = MakeShared<FDynamicVertexBuffer>(Renderer->GetDevice(), MaxVertices, static_cast<uint32>(sizeof(FTextVertexWorld)));
     IBWorld = MakeShared<FDynamicIndexBuffer>(Renderer->GetDevice(), MaxIndices);
-    CBWorld = Renderer->CreateConstantBuffer(sizeof(float) * 20); // VP (16) + Color (4)
+    CBWorld = Renderer->CreateConstantBuffer(sizeof(float) * 24); // VP (16) + Color (4) + PxRange + Pad(3)
 
 
     return true;
@@ -163,17 +163,18 @@ void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVe
 
     struct FTextCBData
     {
-        // float WorldPosition[3];
         float ScreenOffset[2];
         float ScreenSize[2];
-        float Color[4]; } CBData;
+        float Color[4];
+        float PxRange;
+        float Pad[3];
+    } CBData;
 
-    // CBData.WorldPosition[0] = ScreenOffset.X;
-    // CBData.WorldPosition[1] = ScreenOffset.Y;
     CBData.ScreenOffset[0] = ScreenOffset.X;
     CBData.ScreenOffset[1] = ScreenOffset.Y;
     CBData.ScreenSize[0] = static_cast<float>(ScreenWidth);
     CBData.ScreenSize[1] = static_cast<float>(ScreenHeight);
+    CBData.PxRange = Atlas.GetPxRange();
 
     CBData.Color[0] = Color.X;
     CBData.Color[1] = Color.Y;
@@ -223,15 +224,18 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     {
         float VP[16];
         float Color[4];
+        float PxRange;
+        float Pad[3];
     } CBData;
 
     FMatrix TransposedVP = VP.GetTransposed();
     memcpy(CBData.VP, &TransposedVP, sizeof(CBData.VP));
-
+    
     CBData.Color[0] = Color.X;
     CBData.Color[1] = Color.Y;
     CBData.Color[2] = Color.Z;
     CBData.Color[3] = Color.W;
+    CBData.PxRange = Atlas.GetPxRange();
 
     Renderer->UpdateConstantBufferData(CBWorld.get(), &CBData, sizeof(CBData));
 
