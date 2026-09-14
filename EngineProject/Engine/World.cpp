@@ -332,7 +332,6 @@ bool UWorld::LoadScene(const FString& Path)
 		Actor->AddPrimitiveComponent(Type, Transform);
 		Actor->SetUUID(UUID);
 
-
 	}
 
 	return true;
@@ -414,6 +413,20 @@ UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 	}
 
 	return PickingPrimitive;
+}
+
+// UUID로 Actor 찾기
+AActor* UWorld::FindActorByUUID(uint32 InUUID) const
+{
+	for (AActor* Actor : Actors)
+	{
+		if (Actor->GetUUID() == InUUID)
+		{
+			return Actor;
+		}
+			
+	}
+	return nullptr;
 }
 
 

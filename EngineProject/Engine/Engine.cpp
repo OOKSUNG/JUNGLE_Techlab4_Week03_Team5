@@ -122,13 +122,35 @@ void Engine::Run()
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
 			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
+				
+		// Editor
+		Editor->OnRender(VP, Camera, Renderer.get());
+
+		Renderer->BindMainRenderTarget();   // ImGui 멀티뷰포트가 바꾼 Render Target 원복
+
+		FConsolePanel* Console = FEditor::GetConsolePanel();
+
+		if (Console && Console->HasActiveWorldText())
+		{
+			AActor* TargetActor = World->FindActorByUUID(Console->GetDebugTextTargetUUID());
 			
-		// Text
-		TextRenderer->RenderText(
-			Renderer.get(), "안녕하세요 크래프톤 정글 게임테크랩 하하하",
-			FVector2(0.0f, 0.0f), FVector4(1.0f, 1.0f, 1.0f, 1.0f),
-			MainWindow->GetWidth(), MainWindow->GetHeight());
-		
+			if (TargetActor)
+			{
+				FVector HeadOffset(0.0f, 0.0f, 1.0f); // Actor 살짝 위 (2.0f)
+				FVector TextWorldPos = TargetActor->GetRootComponent()->GetTransform()->Location + HeadOffset;
+				
+				FVector CamRight = Camera->GetTransform()->GetRight();
+				FVector CamUp = Camera->GetTransform()->GetUp();
+
+				TextRenderer->RenderTextWorld(
+					Renderer.get(), Console->GetDebugTextString(),
+					TextWorldPos, CamRight, CamUp,
+					0.01f,
+					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+					VP);
+			}
+		}
+			
 		// 아틀라스 (atlas_dump.bup) 보면 "게임테크랩 하하하" 가 아니라 "게임테랩"까지만 저장되어 있는데
 		// 앞쪽에서 이미 '크'와 '하'를 래스터라이징 후 패킹해놓았기 때문에 캐싱 값을 사용해서 그렇습니다.
 		static bool bDumpedOnce = false;
@@ -137,10 +159,6 @@ void Engine::Run()
 			TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
 			bDumpedOnce = true;
 		}
-
-		// Editor
-		Editor->OnRender(VP, Camera, Renderer.get());
-		
 
 		Renderer->EndFrame();
 	

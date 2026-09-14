@@ -38,6 +38,7 @@ public:
 
 	void GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue);
 	UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
+	AActor* FindActorByUUID(uint32 InUUID) const;
 
 	// 카메라 세터, 게터
 	void SetMainCamera(ACameraActor* Camera);
