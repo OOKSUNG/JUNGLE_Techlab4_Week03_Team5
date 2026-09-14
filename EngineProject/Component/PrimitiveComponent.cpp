@@ -9,6 +9,12 @@ void UPrimitiveComponent::BeginPlay()
 	Shader = FResourceManager::GetInstance().GetShader("Shader/DefaultShader.hlsl");
 }
 
+void UPrimitiveComponent::SetMeshData(const FMeshData& data) 
+{ 
+	MeshData = data;
+	UpdateBounds();
+}
+
 void UPrimitiveComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue)
 {
 	if (Mesh && Shader)

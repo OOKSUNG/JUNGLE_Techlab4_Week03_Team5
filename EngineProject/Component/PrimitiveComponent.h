@@ -23,11 +23,11 @@ class UPrimitiveComponent :public USceneComponent
 public:
 	virtual void BeginPlay() override;
 
-	void SetMeshData(const FMeshData& data) { MeshData = data; }
+	void SetMeshData(const FMeshData& data);
 	void SetMeshShader(FMesh* InMesh, FShader* InShader) { Mesh = InMesh; Shader = InShader; }
 	void SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue);
 
-	FMeshData GetMeshData() const { return MeshData; }
+	const FMeshData& GetMeshData() const { return MeshData; }
 	void SetMesh(FMesh* InMesh);
 	FMesh* GetMesh() const { return Mesh; };
 	FShader* GetShader() const { return Shader; };
