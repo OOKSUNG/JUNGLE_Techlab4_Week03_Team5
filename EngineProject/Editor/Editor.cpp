@@ -39,7 +39,6 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
-	ControlPanel->TestFont();
 	// 씬 클리어 호출 시 콜백 함수
 	ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
@@ -65,7 +64,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	FontRenderer->Init(InRenderer);
 
 	FFontManager::GetIntance().Init(InRenderer);
-	FFontManager::GetIntance().LoadFontAtlas("Default", "Font\\Default.png", 16, 16);
+	FFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
 	return true;
 }
 

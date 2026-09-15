@@ -8,14 +8,14 @@ FFontTexture::FFontTexture()
 {
 }
 
-void FFontTexture::Init(FRenderer* InRenderer)
+void FFontTexture::Init()
 {
-	Renderer = InRenderer;
 }
 
 // TODO:: 용도에 따라 텍스처 로드 방식 다르게 하기
-bool FFontTexture::LoadTexture(char const* filename)
+bool FFontTexture::LoadTexture(FRenderer* InRenderer, char const* filename)
 {
+	Renderer = InRenderer;
 	ID3D11Device* Device = Renderer->GetDevice();
 	unsigned char* Image = stbi_load(filename, &Width, &Height, nullptr, 4);
 	// TODO:: 이미지 파일 오픈 실패 에러 핸들링

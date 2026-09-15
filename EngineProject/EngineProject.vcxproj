@@ -166,7 +166,6 @@
     <ClCompile Include="Editor\ControlPanel.cpp" />
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
-    <ClCompile Include="Editor\FontAtlas.cpp" />
     <ClCompile Include="Editor\FontManager.cpp" />
     <ClCompile Include="Editor\FontRenderer.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
@@ -273,7 +272,6 @@
     <ClInclude Include="Editor\EditorUI.h" />
     <ClInclude Include="Editor\FontManager.h" />
     <ClInclude Include="Editor\FontRenderer.h" />
-    <ClInclude Include="Editor\FontAtlas.h" />
     <ClInclude Include="Editor\Gizmo.h" />
     <ClInclude Include="Editor\GizmoRenderer.h" />
     <ClInclude Include="Editor\GridRenderer.h" />

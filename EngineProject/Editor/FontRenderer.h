@@ -3,7 +3,6 @@
 #include <d3d11.h>
 #include "Render/Renderer.h"
 #include "FontManager.h"
-#include "FontAtlas.h"
 #include "Camera/CameraComponent.h"
 
 struct FWorldTextItem
@@ -42,7 +41,7 @@ public:
 private:
 	FRenderer* Renderer;
 	float BaseFontSize;
-	FFontAtlas* FontAtlas;
+	FFontTexture* FontTexture;
 
 	TSharedPtr<FShader> Shader;
 	TSharedPtr<FConstantBuffer> CB;

@@ -1,8 +1,8 @@
 #pragma once
-#include "FontAtlas.h"
 #include <string>
 #include "Core/Containers.h"
 #include "ObjectSystem/Property.h"
+#include "FontTexture.h"
 
 
 class FFontManager
@@ -14,9 +14,9 @@ public:
 		return Instance;
 	}
 	void Init(FRenderer* InRenderer);
-	void LoadFontAtlas(char const* KeyName, char const* FileName, int AtlasCols, int AtlasRows);
+	void LoadFontTexture(char const* KeyName, char const* FileName);
 	
-	TMap<FString, TSharedPtr<FFontAtlas>> FontAtlasMap;
+	TMap<FString, TSharedPtr<FFontTexture>> FontTextureMap;
 	FFontManager& operator=(FFontManager&) = delete;
 private:
 	FRenderer* Renderer = nullptr;

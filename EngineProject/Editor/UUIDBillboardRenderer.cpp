@@ -14,7 +14,7 @@ void FUUIDBillboardRenderer::SetUUIDTextItemList(UCameraComponent* Camera)
 	{
 		if (!Primitive || !Primitive->GetVisible()) continue;
 		FString Text = "UUID: " + std::to_string(Primitive->GetUUID());
-		FVector WorldStartPos = Primitive->GetTransform()->Location + FVector(1.5f);
+		FVector WorldStartPos = Primitive->GetTransform()->Location + FVector(0.5f);
 		float DistSqr = FVector::DistanceSqr(CamPos, WorldStartPos);
 		FMatrix CamWorldMat = Camera->GetWorldMatrix();
 		FVector UpVector = FVector(CamWorldMat[2][0], CamWorldMat[2][1], CamWorldMat[2][2]).Normalize();

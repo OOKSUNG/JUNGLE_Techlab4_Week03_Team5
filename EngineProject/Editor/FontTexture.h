@@ -8,14 +8,14 @@ class FFontTexture
 public:
 	FFontTexture();
 	~FFontTexture() = default;
-	bool LoadTexture(char const* filename);
+	bool LoadTexture(FRenderer* InRenderer, char const* filename);
 	void SetSamplerState();
 	ID3D11ShaderResourceView* GetTextureSRV();
 	ID3D11SamplerState* GetSamplerState();
 	float GetWidth() const { return Width; };
 	float GetHeight() const { return Height; };
 
-	void Init(FRenderer* InRenderer);
+	void Init();
 private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> TextureSRV = nullptr;

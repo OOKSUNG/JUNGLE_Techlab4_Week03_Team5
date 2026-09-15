@@ -195,9 +195,6 @@
     <ClCompile Include="Editor\EditorSetting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Editor\FontAtlas.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Editor\FontManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -453,9 +450,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\FontRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\FontAtlas.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\FontTexture.h">

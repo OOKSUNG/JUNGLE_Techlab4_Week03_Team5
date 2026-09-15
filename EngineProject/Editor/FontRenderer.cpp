@@ -73,13 +73,13 @@ void FFontRenderer::Shutdown()
 void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCameraComponent* Camera)
 {
 	if (TextItemArray.empty()) return;
-	FontAtlas = FFontManager::GetIntance().FontAtlasMap["Default"].get();
+	FontTexture = FFontManager::GetIntance().FontTextureMap["Default"].get();
 	ID3D11DeviceContext* DeviceContext = Renderer->GetDeviceContext();
 	TArray<FFontVertex> Vertices;
 	for (const FWorldTextItem& TextItem : TextItemArray)
 	{
 		float Distance = sqrt(TextItem.DistSqr);
-		float CharWidth = 16.0f * 0.002f * Distance * TextItem.Scale;
+		float CharWidth = 32.0f * 0.002f * Distance * TextItem.Scale;
 		float HeightHalf = CharWidth * 0.5f;
 
 		FVector Cursor = TextItem.WorldStartPos;
@@ -131,9 +131,9 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	Renderer->BindConstantBuffer(0, CB.get(), EShaderBindFlagBits::Vertex);
 	Renderer->BindConstantBuffer(0, CB.get(), EShaderBindFlagBits::Pixel);
 	
-	ID3D11ShaderResourceView* SRV = FontAtlas->GetTextureSRV();
+	ID3D11ShaderResourceView* SRV = FontTexture->GetTextureSRV();
 	DeviceContext->PSSetShaderResources(0, 1, &SRV);
-	ID3D11SamplerState* SS = FontAtlas->GetSamplerState();
+	ID3D11SamplerState* SS = FontTexture->GetSamplerState();
 	DeviceContext->PSSetSamplers(0, 1, &SS);
 
 	UINT Stride = sizeof(FFontVertex);

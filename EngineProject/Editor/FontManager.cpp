@@ -1,11 +1,12 @@
 #include "EnginePCH.h"
 #include "FontManager.h"
 
-void FFontManager::LoadFontAtlas(char const* KeyName, char const* FileName, int AtlasCols = 16, int AtlasRows = 16)
+void FFontManager::LoadFontTexture(char const* KeyName, char const* FileName)
 {
-	TSharedPtr<FFontAtlas> FontAtlas = MakeShared<FFontAtlas>();
-	FontAtlas->Init(Renderer, FileName, AtlasCols, AtlasRows);
-	FontAtlasMap[KeyName] = FontAtlas;
+	TSharedPtr<FFontTexture> FontTexture = MakeShared<FFontTexture>();
+	FontTexture->LoadTexture(Renderer, FileName);
+	FontTextureMap[KeyName] = FontTexture;
+
 }
 
 void FFontManager::Init(FRenderer* InRenderer)
