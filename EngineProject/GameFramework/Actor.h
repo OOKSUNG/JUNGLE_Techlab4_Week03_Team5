@@ -6,7 +6,7 @@
 #include "ObjectSystem/Class.h"
 
 class UWorld;
-
+class UTextComponent;
 
 class AActor : public UObject
 {
@@ -30,6 +30,7 @@ public:
 	//}
 
 	UPrimitiveComponent* GetPrimitiveComponent() const { return Cast<UPrimitiveComponent>(RootComponent); }
+	UTextComponent* GetTextComponent() const;
 	void AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform);
 	void SetRootComponent(USceneComponent* SceneComponent);
 	USceneComponent* GetRootComponent();

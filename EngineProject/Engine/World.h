@@ -9,6 +9,8 @@
 #include "Engine/SceneMetaData.h"
 
 class ACameraActor;
+class UTextComponent;
+class FTextRenderer;
 
 class UWorld : public UObject
 {
@@ -37,8 +39,11 @@ public:
 	bool LoadScene(const FSceneMetaData& Data);
 
 	inline void AddPrimitive(UPrimitiveComponent* Primitive) { PrimitiveComponents.push_back(Primitive); }
+	inline void AddTextComponent(UTextComponent* TextComponent) { TextComponents.push_back(TextComponent); }
 
 	void GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue);
+	void RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Renderer, const FMatrix& VP);
+
 	UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
 	AActor* FindActorByUUID(uint32 InUUID) const;
 
@@ -61,4 +66,7 @@ private:
 	// 피킹 프리미티브
 	bool AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT);
 	bool TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Primitive, float& MinT);
+
+	// Text Components
+	TArray<UTextComponent*> TextComponents;
 };

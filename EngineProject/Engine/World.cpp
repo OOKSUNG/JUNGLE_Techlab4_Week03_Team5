@@ -9,6 +9,9 @@
 
 #include "Collision/Ray.h"
 #include "Core/FBoxBounds.h"
+#include "Text/TextRenderer.h"
+
+#include "Component/TextComponent.h"
 
 namespace
 {
@@ -268,6 +271,19 @@ UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 		}
 	}
 
+	// text는 삼각형 메쉬가 없어서 RayIntersectsAABB로 박스 히트만 판정
+	for (UTextComponent* TextComp : TextComponents)
+	{
+		if (!TextComp) continue;
+
+		float RayT{};
+		if (RayIntersectsAABB(Ray, TextComp->GetBounds(), RayT) && RayT < MinT)
+		{
+			MinT = RayT;
+			PickingPrimitive = TextComp;
+		}
+	}
+
 	return PickingPrimitive;
 }
 
@@ -349,4 +365,10 @@ void UWorld::SetMainCamera(ACameraActor* Camera)
 ACameraActor* UWorld::GetMainCamera() const
 {
 	return MainCamera;
+}
+
+// Text Renderer
+void UWorld::RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Renderer, const FMatrix& VP)
+{
+	TextRenderer->RenderTextComponents(TextComponents, Renderer, VP);
 }
