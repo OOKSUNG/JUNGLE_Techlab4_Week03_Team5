@@ -159,6 +159,7 @@
     <ClCompile Include="Component\PrimitiveComponent.cpp" />
     <ClCompile Include="Component\SceneComponent.cpp" />
     <ClCompile Include="Component\SphereComponent.cpp" />
+    <ClCompile Include="Component\TextComponent.cpp" />
     <ClCompile Include="Core\EngineTimer.cpp" />
     <ClCompile Include="Core\FName.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -222,6 +223,7 @@
     </ClCompile>
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Text\FontAtlas.cpp" />
+    <ClCompile Include="Text\FontManager.cpp" />
     <ClCompile Include="Text\StringUtils.cpp" />
     <ClCompile Include="Text\TextRenderer.cpp" />
     <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_dx11.cpp">
@@ -262,6 +264,7 @@
     <ClInclude Include="Camera\CameraComponent.h" />
     <ClInclude Include="Collision\Ray.h" />
     <ClInclude Include="Component\ActorComponent.h" />
+    <ClInclude Include="Component\TextComponent.h" />
     <ClInclude Include="Core\Containers.h" />
     <ClInclude Include="Core\EngineLog.h" />
     <ClInclude Include="Core\EngineStatics.h" />
@@ -334,6 +337,7 @@
     <ClInclude Include="Render\ViewModeState.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Text\FontAtlas.h" />
+    <ClInclude Include="Text\FontManager.h" />
     <ClInclude Include="Text\StringUtils.h" />
     <ClInclude Include="Text\TextRenderer.h" />
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_dx11.h" />

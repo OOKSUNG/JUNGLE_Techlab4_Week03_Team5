@@ -17,6 +17,7 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/ResourceManager.h"
 #include "Editor/EditorUI.h"
+#include "Text/FontManager.h"
 
 bool Engine::Init(HINSTANCE hInstance)
 {
@@ -69,6 +70,12 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 
 	LOG(Engine, Info, "Success!");
+
+	// Font Manager
+	LOG(Engine, Info, "Initialize FontManager...");
+	FFontManager::GetInstance().SetDevice(Renderer->GetDevice());   // 주석 해제
+	LOG(Engine, Info, "Success!");
+
 	Editor = MakeUnique<FEditor>();
 
 	LOG(Engine, Info, "Initialize Editor...");
@@ -142,24 +149,31 @@ void Engine::Run()
 				FVector CamRight = Camera->GetTransform()->GetRight();
 				FVector CamUp = Camera->GetTransform()->GetUp();
 				
-				TextRenderer->RenderTextWorld(
-					Renderer.get(), Console->GetDebugTextString(),
-					TextWorldPos, CamRight, CamUp,
-					0.01f,
-					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
-					VP);
+				FDynamicFontAtlas* DebugAtlas = FFontManager::GetInstance().GetOrLoadAtlas("ThirdParty\\Pretendard-Regular.otf", 32);
 
+				if (DebugAtlas)
+				{
+					TextRenderer->RenderTextWorld(
+						Renderer.get(), Console->GetDebugTextString(),
+						TextWorldPos, CamRight, CamUp,
+						0.01f,
+						FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+						VP,
+						*DebugAtlas);
 				}
-				
-			}
-			
-		if (Console && Console->ConsumeAtlasDumpRequest())
-		{
-			TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
+			}				
 		}
+			
+		// if (Console && Console->ConsumeAtlasDumpRequest())
+		// {
+		// 	TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
+		// }
+
+		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
 		Renderer->EndFrame();
-	
+		
+
 	}
 }
 
