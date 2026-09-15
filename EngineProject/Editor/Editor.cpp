@@ -114,14 +114,7 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
-		OutlineRenderer->OnRender(*Outline, VP, CamLoc);	
-
-	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
-	{
-		Renderer->SetDepthStencilEnabled(false);
-		GizmoRenderer->OnRender(*Gizmo, VP);
-	}
-
+		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 	{
@@ -144,6 +137,17 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	EditorUI->OnRender();
 
 	ImGuiRenderer->End();
+}
+
+// Gizmo Render 함수 분리
+void FEditor::RenderGizmo(FMatrix VP, FRenderer* Renderer)
+{
+	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
+	{
+		Renderer->SetDepthStencilEnabled(false);
+		GizmoRenderer->OnRender(*Gizmo, VP);
+		Renderer->SetDepthStencilEnabled(true);
+	}
 }
 
 void FEditor::Shutdown()
