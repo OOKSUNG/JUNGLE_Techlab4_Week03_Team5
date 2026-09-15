@@ -1,6 +1,8 @@
 #include "EnginePCH.h"
 #include "TextRenderer.h"
 #include "StringUtils.h"
+#include "Component/TextComponent.h"
+#include "FontManager.h"
 
 bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontPixelSize, int AtlasSize)
 {
@@ -113,7 +115,8 @@ TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
     return Indices;
 }
 
-TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float Scale)
+TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition,
+                                                            const FVector& Right, const FVector& Up, float Scale, FDynamicFontAtlas& InAtlas)
 {
     TArray<FTextVertexWorld> Vertices;
     TArray<uint32> Codepoints = DecodeUTF8(Utf8Text);
@@ -122,7 +125,7 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
 
     for (uint32 Codepoint : Codepoints)
     {
-        const FGlyphInfo& Glyph = Atlas.GetOrCreateGlyph(Codepoint, Context);
+        const FGlyphInfo& Glyph = InAtlas.GetOrCreateGlyph(Codepoint, Context);
 
         float X0 = (PenX + Glyph.BearingX) * Scale;
         float Y0 = static_cast<float>(Glyph.BearingY) * Scale;
@@ -206,10 +209,12 @@ void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVe
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
 
-void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text, const FVector& WorldPosition, const FVector& CameraRight, const FVector& CameraUp, float Scale, FVector4 Color, const FMatrix& VP)
+void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text, const FVector& WorldPosition,
+                                    const FVector& CameraRight, const FVector& CameraUp, float Scale, FVector4 Color,
+                                    const FMatrix& VP, FDynamicFontAtlas& InAtlas)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
-    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, Scale);
+    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, Scale, InAtlas);
     if (Vertices.empty())
         return;
 
@@ -235,7 +240,7 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     CBData.Color[1] = Color.Y;
     CBData.Color[2] = Color.Z;
     CBData.Color[3] = Color.W;
-    CBData.PxRange = Atlas.GetPxRange();
+    CBData.PxRange = InAtlas.GetPxRange();
 
     Renderer->UpdateConstantBufferData(CBWorld.get(), &CBData, sizeof(CBData));
 
@@ -254,7 +259,7 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Vertex);
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Pixel);
 
-    ID3D11ShaderResourceView* AtlasSRV = Atlas.GetAtlasSRV();
+    ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV();
     ID3D11SamplerState* SamplerRaw = Sampler.Get();
     Context->PSSetShaderResources(0, 1, &AtlasSRV);
     Context->PSSetSamplers(0, 1, &SamplerRaw);
@@ -263,4 +268,27 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     // Wtire On (다음 오브젝트를 위해 정상 depth 상태로 복귀)
     Renderer->SetDepthStencilEnabled(true);
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+}
+
+void FTextRenderer::RenderTextComponents(const TArray<UTextComponent*>& TextComponents, FRenderer* Renderer, const FMatrix& VP)
+{
+    for (UTextComponent* TextComp : TextComponents)
+    {
+        if (!TextComp || !TextComp->GetVisible())
+            continue;
+
+        FDynamicFontAtlas* Atlas = FFontManager::GetInstance().GetOrLoadAtlas(TextComp->GetFontPath(), TextComp->GetFontPixelSize());
+        if (!Atlas)
+            continue;
+
+        FTransform* CompTransform = TextComp->GetTransform();
+
+        RenderTextWorld(Renderer, TextComp->GetText(),
+                        CompTransform->Location,
+                        CompTransform->GetRight(), CompTransform->GetUp(),
+                        CompTransform->Scale.X * UTextComponent::WorldScaleFactor,
+                        TextComp->GetColor(),
+                        VP,
+                        *Atlas);
+    }
 }
