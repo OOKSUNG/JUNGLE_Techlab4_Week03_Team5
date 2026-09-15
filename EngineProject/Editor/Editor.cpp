@@ -43,13 +43,7 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
-	
-	
 
-
-
-
-	
 	// 씬 클리어 호출 시 콜백 함수
 
 	/*ControlPanel->SetSceneClearCallback([&]() {
