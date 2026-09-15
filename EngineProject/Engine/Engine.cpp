@@ -118,6 +118,9 @@ void Engine::Run()
 		UCameraComponent* Camera = MainCamera->GetCameraComponent();
 		VP = Camera->GetViewProjectionMatrix();
 
+		// BoundingBox 렌더링 전에 갱신
+		World->UpdateTextComponentBounds(TextRenderer.get(), Renderer->GetDeviceContext());
+
 		UpdateEditor(DeltaTime, Camera, VP);
 
 		TQueue<FRenderPacket> RenderQueue;
@@ -129,13 +132,18 @@ void Engine::Run()
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
 			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
-				
+
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
+		
+		// ImGui 멀티뷰포트가 바꾼 Render Target 원복
+		Renderer->BindMainRenderTarget();   
 
-		Renderer->BindMainRenderTarget();   // ImGui 멀티뷰포트가 바꾼 Render Target 원복
+		// Text Component Render
+		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
 		FConsolePanel* Console = FEditor::GetConsolePanel();
+		
 
 		if (Console && Console->HasActiveWorldText())
 		{
@@ -156,20 +164,22 @@ void Engine::Run()
 					TextRenderer->RenderTextWorld(
 						Renderer.get(), Console->GetDebugTextString(),
 						TextWorldPos, CamRight, CamUp,
-						0.01f,
+						0.01f, 0.01f,
 						FVector4(1.0f, 1.0f, 1.0f, 1.0f),
 						VP,
 						*DebugAtlas);
 				}
 			}				
 		}
-			
+		
+		// DEBUG 용
 		// if (Console && Console->ConsumeAtlasDumpRequest())
 		// {
 		// 	TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
 		// }
 
-		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
+		// Gizmo는 항상 마지막에 그리기
+		Editor->RenderGizmo(VP, Renderer.get());
 
 		Renderer->EndFrame();
 		
