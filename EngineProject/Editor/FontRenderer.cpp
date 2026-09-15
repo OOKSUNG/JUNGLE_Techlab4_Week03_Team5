@@ -7,13 +7,7 @@ bool FFontRenderer::Init(FRenderer* InRenderer)
 	ID3D11Device* Device = Renderer->GetDevice();
 
 	CB = Renderer->CreateConstantBuffer(sizeof(FFontData));
-	
-	D3D11_BUFFER_DESC VBDesc = {};
-	VBDesc.ByteWidth = sizeof(FFontVertex) * MaxTextCount * 4;
-	VBDesc.Usage = D3D11_USAGE_DYNAMIC;
-	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	Device->CreateBuffer(&VBDesc, nullptr, (ID3D11Buffer**)DynamicVB.GetAddressOf());
+	VB = MakeShared<FDynamicVertexBuffer>(Device, MaxTextCount * 4, sizeof(FFontVertex));
 
 	D3D11_DEPTH_STENCIL_DESC DSDesc = {};
 	DSDesc.DepthEnable = TRUE;
@@ -117,12 +111,15 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	}
 	if (Vertices.empty()) return;
 
-	D3D11_MAPPED_SUBRESOURCE MappedResource;
-	if (SUCCEEDED(DeviceContext->Map((ID3D11Resource*)DynamicVB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
-	{
-		memcpy(MappedResource.pData, Vertices.data(), sizeof(FFontVertex) * Vertices.size());
-		DeviceContext->Unmap((ID3D11Resource*)DynamicVB.Get(), 0);
-	}
+	//D3D11_MAPPED_SUBRESOURCE MappedResource;
+	//if (SUCCEEDED(DeviceContext->Map((ID3D11Resource*)VB.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+	//{
+	//	memcpy(MappedResource.pData, Vertices.data(), sizeof(FFontVertex) * Vertices.size());
+	//	DeviceContext->Unmap((ID3D11Resource*)VB.get(), 0);
+	//}
+
+	uint32 DataSize = static_cast<uint32>(sizeof(FFontVertex) * Vertices.size());
+	if (!VB->Update(DeviceContext, Vertices.data() , DataSize))
 
 	DeviceContext->RSSetState(RasterizerState.Get());
 	DeviceContext->OMSetBlendState(AlphaBlendState.Get(), nullptr, 0xffffffff);
@@ -131,6 +128,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 
 	Renderer->BindShader(Shader.get());
 	Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 
 	FFontData ConstData;
 	ConstData.VP = Camera->GetViewProjectionMatrix().GetTransposed();
@@ -146,9 +144,10 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 
 	UINT Stride = sizeof(FFontVertex);
 	UINT Offset = 0;
-	ID3D11Buffer* pVB = (ID3D11Buffer*)DynamicVB.Get();
+	ID3D11Buffer* pVB = (ID3D11Buffer*)VB.get();
 	DeviceContext->IASetVertexBuffers(0, 1, &pVB, &Stride, &Offset);
 	Renderer->BindIndexBuffer(StaticIB.get());
+	Renderer->BindVertexBuffer(VB.get());
 
 	UINT TextCount = (UINT)Vertices.size() / 4;
 	Renderer->DrawIndexed(TextCount * 6);
