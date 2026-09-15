@@ -30,10 +30,6 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 	LOG(Engine, Info, "Success!");
 
-	LOG(Engine, Info, "Load Editor Setting...");
-	FEditorSettings::Get().LoadEditorSetting();
-	LOG(Engine, Info, "Success!");
-
 	LOG(Engine, Info, "Initialize Renderer...");
 	Renderer = MakeUnique<FRenderer>();
 	if (!Renderer->Init(MainWindow->GetHandle()))
@@ -132,7 +128,7 @@ void Engine::Run()
 
 		Renderer->BindMainRenderTarget();   // ImGui 멀티뷰포트가 바꾼 Render Target 원복
 
-		FConsolePanel* Console = FEditor::GetConsolePanel();
+		FConsolePanel* Console = Editor->GetConsolePanel();
 
 		if (Console && Console->HasActiveWorldText())
 		{
@@ -153,9 +149,9 @@ void Engine::Run()
 					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
 					VP);
 
-				}
-				
 			}
+				
+		}
 			
 		if (Console && Console->ConsumeAtlasDumpRequest())
 		{
@@ -186,9 +182,15 @@ void Engine::UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP)
 
 void Engine::Shutdown()
 {
-	FEditorSettings::Get().SaveEditorSetting();
+	Editor->GetEditorSettings()->SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
-		delete Object;
+	{
+		if (Object)
+		{
+			delete Object;
+		}
+	}
+		
 	Editor->Shutdown();
 	Renderer->Shutdown();
 }

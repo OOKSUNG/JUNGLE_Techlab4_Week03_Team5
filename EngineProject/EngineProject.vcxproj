@@ -159,6 +159,8 @@
     <ClCompile Include="Component\PrimitiveComponent.cpp" />
     <ClCompile Include="Component\SceneComponent.cpp" />
     <ClCompile Include="Component\SphereComponent.cpp" />
+    <ClCompile Include="Editor\EditorSelection.cpp" />
+    <ClCompile Include="Editor\ContentBrowser.cpp" />
     <ClCompile Include="Core\EngineTimer.cpp" />
     <ClCompile Include="Core\FName.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -224,6 +226,7 @@
     <ClCompile Include="Render\Vertex.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Editor\SceneOutlinerPanel.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Text\FontAtlas.cpp" />
     <ClCompile Include="Text\StringUtils.cpp" />
@@ -267,6 +270,8 @@
     <ClInclude Include="Camera\CameraComponent.h" />
     <ClInclude Include="Collision\Ray.h" />
     <ClInclude Include="Component\ActorComponent.h" />
+    <ClInclude Include="Editor\EditorSelection.h" />
+    <ClInclude Include="Editor\ContentBrowser.h" />
     <ClInclude Include="Core\Containers.h" />
     <ClInclude Include="Core\EngineLog.h" />
     <ClInclude Include="Core\EngineStatics.h" />
@@ -341,6 +346,7 @@
     <ClInclude Include="Render\Shader.h" />
     <ClInclude Include="Render\Vertex.h" />
     <ClInclude Include="Render\ViewModeState.h" />
+    <ClInclude Include="Editor\SceneOutlinerPanel.h" />
     <ClInclude Include="ThirdParty\stb_image\stb_image.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Text\FontAtlas.h" />

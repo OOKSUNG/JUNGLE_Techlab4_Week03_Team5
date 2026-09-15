@@ -4,6 +4,7 @@
 #include "ImGuiRenderer.h"
 #include "GridRenderer.h"
 #include "GizmoRenderer.h"
+#include "../Text/TextRenderer.h"
 #include "FontRenderer.h"
 #include "UUIDBillboardRenderer.h"
 
@@ -29,19 +30,25 @@ public:
 	void Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight);
 	void OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* InRenderer);
 	void Shutdown();
+
+	void SetTarget(UPrimitiveComponent* PickedComponent);
+	void SetSceneClear();
+
 	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
 	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 	UPrimitiveComponent* GetSelectedTarget() const { return Outline->GetTarget(); }
+	FEditorSettings* GetEditorSettings() const { return EditorSettings.get(); }
 
 	void DrawGrid(const FVector& CameraPos);
 	void AxisDraw();
+
+	void SetPickedComponent(UPrimitiveComponent* Component) { PickedComponent = Component; }
 
 	void ClearSceneTargetsAndFlags();
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
-	//TUniquePtr<FGridRenderer> GridRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
@@ -56,14 +63,19 @@ private:
 
 	TUniquePtr<FLineRenderer> LineRenderer;
 
+	TUniquePtr<FTextRenderer> TextRenderer;
 	TUniquePtr<FUUIDBillboardRenderer> UUIDBillboardRenderer;
 	TUniquePtr<FFontRenderer> FontRenderer;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;
 
+	TUniquePtr<FEditorSettings> EditorSettings;
+
 	float GridExtent = 1000.0f;
-	float GridSpacing = 10.0f;
+	// float GridSpacing = 10.0f;
 	int32 GridCount = 20;
+
+	UPrimitiveComponent* PickedComponent;
 };
 

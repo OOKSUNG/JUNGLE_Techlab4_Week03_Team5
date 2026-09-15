@@ -4,6 +4,7 @@
 #include "Input/InputSystem.h"
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
+#include "Editor/SceneOutlinerPanel.h"
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
 #include "FontRenderer.h"
@@ -24,9 +25,13 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 		return false;
 	}
 
+	EditorSettings = MakeUnique<FEditorSettings>();
+	EditorSettings->LoadEditorSetting();
+
 	// UI가 사용할 정보 저장
 	Context.World = World;
 	Context.Gizmo = Gizmo.get();
+	Context.EditorSettings = EditorSettings.get();
 
 	// UI 생성 및 초기화, 컨텍스트 전달
 	EditorUI = MakeUnique<FEditorUI>();
@@ -35,12 +40,25 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	{
 		return false;
 	}
+
 	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
 	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
+
 	// 씬 클리어 호출 시 콜백 함수
+
+	/*ControlPanel->SetSceneClearCallback([&]() {
+		Gizmo->SetTarget(nullptr);
+		Outline->SetTarget(nullptr);
+		BoundingBox->SetTarget(nullptr);
+		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+		ShowFlags.SetDefault();
+		PickedComponent = nullptr;
+		}
+	);*/
+
 	ControlPanel->SetNewSceneCallback([&]()
 		{
 			Context.World->ClearScene();
@@ -79,9 +97,6 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	LineRenderer = MakeUnique<FLineRenderer>();
 	LineRenderer->Init(InRenderer);
 
-	//GridRenderer = MakeUnique<FGridRenderer>();
-	//GridRenderer->Init(InRenderer);
-
 	GizmoRenderer = MakeUnique<FGizmoRenderer>();
 	GizmoRenderer->Init(InRenderer);
 
@@ -91,14 +106,34 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	EditorFileUtils = MakeUnique<FEditorFileUtils>();
 
 	UUIDBillboardRenderer = MakeUnique<FUUIDBillboardRenderer>();
-	UUIDBillboardRenderer->Init(World);
+	UUIDBillboardRenderer->Init(Context.World);
 
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
 	FFontManager::GetIntance().Init(InRenderer);
 	FFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	
 	return true;
+
+}
+
+void FEditor::SetTarget(UPrimitiveComponent* PickedComponent)
+{
+	Gizmo->SetTarget(PickedComponent);
+	Outline->SetTarget(PickedComponent);
+	BoundingBox->SetTarget(PickedComponent);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+}
+
+void FEditor::SetSceneClear()
+{
+	Gizmo->SetTarget(nullptr);
+	Outline->SetTarget(nullptr);
+	BoundingBox->SetTarget(nullptr);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+	ShowFlags.SetDefault();
+	
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -111,14 +146,21 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 	Gizmo->Update(ray, mousePos, VP, WinWidth, WinHeight, bMouseDown, Camera);
 
+	AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
+	
+	if (PickedActor)
+	{
+		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
+		SetTarget(PickedComponent);
+	}
+
 	if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
 	{
-		UPrimitiveComponent* PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		Gizmo->SetTarget(PickedComponent);
-		Outline->SetTarget(PickedComponent);
-		BoundingBox->SetTarget(PickedComponent);
-		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+		// UPrimitiveComponent* 
+		PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		SetTarget(PickedComponent);
 	}
+	
 }
 
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
@@ -169,7 +211,7 @@ void FEditor::Shutdown()
 void FEditor::DrawGrid(const FVector& CameraPos)
 {
 	// Grid 그리기
-	GridSpacing = EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
+	float GridSpacing = EditorSettings->GetGridSpacing(); // EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
 	GridCount = static_cast<int32>(GridExtent / GridSpacing);
 	if (GridCount >= 100) GridCount = 100;
 

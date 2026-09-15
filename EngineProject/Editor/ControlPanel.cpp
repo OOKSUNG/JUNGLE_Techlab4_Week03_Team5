@@ -10,7 +10,6 @@
 
 bool FControlPanel::Init()
 {
-	SetGridSpace(FEditorSettings::Get().GridSpacing);
 	return true;
 }
 
@@ -26,12 +25,26 @@ void FControlPanel::Tick(float DeltaTime)
 	FControlPanel::DeltaTime = DeltaTime;
 }
 
+void FControlPanel::SetContext(FEditorContext InContext)
+{
+	Context = InContext;
+	SetGridSpace(Context.EditorSettings->GetGridSpacing());
+}
+
+
 void FControlPanel::AddActor(EPrimitiveType Type)
 {
 	FTransform Transform;
 	AActor* Actor = Context.World->SpawnActor(AActor::StaticClass(), &Transform);
 	Actor->AddPrimitiveComponent(Type, Transform);
 
+	FString NewName = PrimitiveTypeToString(Type) + FString("_") + std::to_string(Actor->GetUUID());
+
+	Actor->SetFName(NewName);
+
+	// Actor->SetFName(PrimitiveTypeToString(Type) + FString("_") + std::to_string(Actor->GetUUID()));
+
+	LOG(Editor, Info, "Name : {}" , Actor->GetFName().GetString());
 
 	ActorNum = Context.World->GetActorNum() - 1;
 }
@@ -78,6 +91,7 @@ void FControlPanel::OnRender()
 	}
 	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
 	{
+		// Context.World->ClearScene();
 		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
 	}
@@ -90,8 +104,10 @@ void FControlPanel::OnRender()
 	ImGui::Checkbox("Orthogonal", &CamCom->bIsOrthogonal);
 
 	FTransform* transform = CamCom->GetTransform();
-	float MouseSensitivity = CamCom->GetSensitivity();
-	float CameraSpeed = CamCom->GetSpeed();
+	float MouseSensitivity = Context.EditorSettings->GetCameraSensitivity();
+	float CameraSpeed = Context.EditorSettings->GetCameraMoveSpeed();
+
+	float GridSpace = Context.EditorSettings->GetGridSpacing();;
 
 	ImGui::SetNextItemWidth(255.0f);
 	ImGui::InputFloat("##FOV", &CamCom->FOV);
@@ -120,12 +136,12 @@ void FControlPanel::OnRender()
 	if (ImGui::SliderFloat("Camera Sensitivity", &MouseSensitivity, 0.01f, 0.5f, "%.2f"))
 	{
 		CamCom->SetSensitivity(MouseSensitivity);
-		FEditorSettings::Get().CameraSensitivity = MouseSensitivity;
+		Context.EditorSettings->SetCameraSensitivity(MouseSensitivity);
 	}
 	if (ImGui::SliderFloat("Camera Speed", &CameraSpeed, 1.0f, 50.0f))
 	{
 		CamCom->SetSpeed(CameraSpeed);
-		FEditorSettings::Get().CameraMoveSpeed = CameraSpeed;
+		Context.EditorSettings->SetCameraMoveSpeed(CameraSpeed);
 	}
 
 	ImGui::Separator();
@@ -134,7 +150,7 @@ void FControlPanel::OnRender()
 		try
 		{
 			GridInterval = std::stoi(GridIntervals[GridIntervalIndex]);
-			FEditorSettings::Get().GridSpacing = GridInterval;
+			Context.EditorSettings->SetGridSpacing(GridInterval);
 		}
 		catch (const std::invalid_argument& e) {
 			LOG(Editor, Error, "Selected Grid Interval Can't be converted to number!");

@@ -79,7 +79,17 @@ bool FName::IsNone()
 
 FString FName::GetString()
 {
-	return FNamePool::Get().GetString(ComparisonIndex);
+	//return FNamePool::Get().GetString(ComparisonIndex);
+
+	FString Result = FNamePool::Get().GetString(ComparisonIndex);
+
+	if (Number >= 0)
+	{
+		Result += FString("_");
+		Result += std::to_string(Number);
+	}
+
+	return Result;
 }
 
 int32 FName::ExtractNumber(FString From)

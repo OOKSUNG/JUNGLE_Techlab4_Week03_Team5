@@ -189,6 +189,15 @@
     <ClCompile Include="Core\FName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
+    <ClCompile Include="Editor\ContentBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\SceneOutlinerPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\EditorSelection.cpp">
+=======
     <ClCompile Include="Core\FNamePool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -211,6 +220,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\UUIDBillboardRenderer.cpp">
+>>>>>>> d33049297ae9fdc8cd32691d92b2724d78664ed9
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -440,6 +450,15 @@
     <ClInclude Include="Core\FName.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
+    <ClInclude Include="Editor\ContentBrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\SceneOutlinerPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorSelection.h">
+=======
     <ClInclude Include="..\..\..\..\..\Downloads\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -471,6 +490,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\UUIDBillboardRenderer.h">
+>>>>>>> d33049297ae9fdc8cd32691d92b2724d78664ed9
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

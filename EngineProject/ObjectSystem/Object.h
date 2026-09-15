@@ -3,6 +3,7 @@
 #include "Core/Types.h"
 #include "Core/Containers.h"
 #include "Core/EngineStatics.h"
+#include "../Core/FName.h"
 
 class UClass;
 // Property Reflection
@@ -45,6 +46,7 @@ class UObject
 public:
 	UObject();
 	UObject(bool bRegister);
+	UObject(FString InName);
 	virtual ~UObject();
 
 	static UClass* StaticClass();
@@ -60,6 +62,9 @@ public:
 
 	uint32 GetUUID() const { return UUID; }
 	void SetUUID(uint32 Uid) { UUID = Uid; }
+
+	FName GetFName() const { return Name; }
+	void SetFName(FString InName) { Name = FName(InName); }
 
 	inline static void RegisterProperties(UClass* InClass) {};
 	
@@ -84,6 +89,7 @@ public:
 private:
 	uint32 UUID;
 	uint32 InternalIndex;
+	FName Name;
 };
 
 extern TArray<UObject*> GUObjectArray;

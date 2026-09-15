@@ -22,7 +22,7 @@ public:
 	inline void SetLoadSceneCallback(CallbackFunc InCallback) { LoadSceneCallback = InCallback; }
 	inline void SetSaveSceneCallback(CallbackFunc InCallback) { SaveSceneCallback = InCallback; }
 
-	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	void SetContext(FEditorContext InContext);
 	inline FEditorContext GetContext() { return Context; }
 
 	float DeltaTime = 1.0f;
@@ -72,6 +72,8 @@ public:
 	CallbackFunc SaveSceneCallback = nullptr;
 	
 	// grid control
+	// void SetGridSpace(float Grid) { GridSpace = Grid; }
+	// float GetGridSpace() { return GridSpace; }
 	void SetGridSpace(int32 Grid);
 	float GetGridSpace() { return GridInterval; }
 
