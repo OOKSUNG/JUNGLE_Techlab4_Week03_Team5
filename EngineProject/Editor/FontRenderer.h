@@ -49,6 +49,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> DynamicVB;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> AlphaBlendState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthReadOnlyState;
 
 	const UINT MaxTextCount = 2048;
 };

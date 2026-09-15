@@ -15,6 +15,12 @@ bool FFontRenderer::Init(FRenderer* InRenderer)
 	VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	Device->CreateBuffer(&VBDesc, nullptr, (ID3D11Buffer**)DynamicVB.GetAddressOf());
 
+	D3D11_DEPTH_STENCIL_DESC DSDesc = {};
+	DSDesc.DepthEnable = TRUE;
+	DSDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	DSDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	Device->CreateDepthStencilState(&DSDesc, DepthReadOnlyState.GetAddressOf());
+
 	TArray<UINT> Indices;
 	Indices.reserve(MaxTextCount * 6);
 	for (UINT i = 0; i < MaxTextCount; ++i)
@@ -121,6 +127,8 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	DeviceContext->RSSetState(RasterizerState.Get());
 	DeviceContext->OMSetBlendState(AlphaBlendState.Get(), nullptr, 0xffffffff);
 
+	DeviceContext->OMSetDepthStencilState(DepthReadOnlyState.Get(), 0);
+
 	Renderer->BindShader(Shader.get());
 	Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -147,4 +155,6 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 
 	DeviceContext->RSSetState(nullptr);
 	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);	
+
+	DeviceContext->OMSetDepthStencilState(nullptr, 0);
 }
