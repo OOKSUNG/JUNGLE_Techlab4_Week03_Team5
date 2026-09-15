@@ -166,7 +166,6 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
 	}
-
 	else if (AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
 	{
 		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());

@@ -4,6 +4,7 @@
 #include "Render/Renderer.h"
 #include "FontManager.h"
 #include "Camera/CameraComponent.h"
+#include "Render/Buffer.h"
 
 struct FWorldTextItem
 {
@@ -46,7 +47,7 @@ private:
 	TSharedPtr<FShader> Shader;
 	TSharedPtr<FConstantBuffer> CB;
 	TSharedPtr<FIndexBuffer> StaticIB;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> DynamicVB;
+	TSharedPtr<FDynamicVertexBuffer> VB;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> AlphaBlendState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthReadOnlyState;
