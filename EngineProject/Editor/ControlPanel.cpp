@@ -10,6 +10,7 @@
 
 bool FControlPanel::Init()
 {
+	SetGridSpace(Context.EditorSettings->GetGridSpacing());
 	return true;
 }
 
@@ -25,11 +26,11 @@ void FControlPanel::Tick(float DeltaTime)
 	FControlPanel::DeltaTime = DeltaTime;
 }
 
-void FControlPanel::SetContext(FEditorContext InContext)
-{
-	Context = InContext;
-	SetGridSpace(Context.EditorSettings->GetGridSpacing());
-}
+//void FControlPanel::SetContext(FEditorContext InContext)
+//{
+//	Context = InContext;
+//	//SetGridSpace(Context.EditorSettings->GetGridSpacing());
+//}
 
 
 void FControlPanel::AddActor(EPrimitiveType Type)

@@ -13,14 +13,16 @@ bool FEditorUI::Init(const FEditorContext& InContext)
 
 	// 패널 추가
 	AddEditorPanel<FConsolePanel>();
+	GetEditorPanel<FConsolePanel>()->FConsolePanel::SetContext(InContext);
+
 	AddEditorPanel<FPropertyPanel>();
 	AddEditorPanel<FControlPanel>();
 	AddEditorPanel<FSceneOutlinerPanel>();
 
-	GetEditorPanel<FPropertyPanel>()->FPropertyPanel::SetContext(InContext);
+	/*GetEditorPanel<FPropertyPanel>()->FPropertyPanel::SetContext(InContext);
 	GetEditorPanel<FControlPanel>()->FControlPanel::SetContext(InContext);
-	GetEditorPanel<FSceneOutlinerPanel>()->FSceneOutlinerPanel::SetContext(InContext);
-	GetEditorPanel<FConsolePanel>()->FConsolePanel::SetContext(InContext);
+	GetEditorPanel<FSceneOutlinerPanel>()->FSceneOutlinerPanel::SetContext(InContext);*/
+	
 
 	return true;
 }
