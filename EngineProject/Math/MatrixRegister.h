@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Matrix.h"
 #include "VectorRegister.h"
+
+struct FMatrix;
 
 struct FMatrixRegister 
 {

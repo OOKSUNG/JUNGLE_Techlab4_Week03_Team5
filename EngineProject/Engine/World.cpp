@@ -1,14 +1,14 @@
-#include "EnginePCH.h"
+   #include "EnginePCH.h"
 #include "World.h"
 
 #include "ObjectSystem/ObjectFactory.h"
 #include "Core/EngineStatics.h"
 
-#include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Input/InputSystem.h"
 
 #include "Collision/Ray.h"
+#include "Core/FBoxBounds.h"
 
 namespace
 {
@@ -137,7 +137,7 @@ void UWorld::ClearScene()
 	MainCamera = nullptr;
 }
 
-bool UWorld::NewScene(const FString& Path)
+bool UWorld::NewScene()
 {
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 	// Camera 초기 위치 수정
@@ -154,185 +154,88 @@ bool UWorld::NewScene(const FString& Path)
 	return true;
 }
 
-bool UWorld::SaveScene(const FString& Path)
+bool UWorld::SaveScene(FSceneMetaData& SceneData)
 {
-	json Json;
-	Json.dump(4);
-	Json["Version"] = 1;
-	Json["NextUUID"] = FEngineStatics::NextUUID;
-	Json["Primitives"] = json::object();
+	SceneData.Version = 1;
+	SceneData.NextUUID = FEngineStatics::NextUUID;
 
 	for (AActor* Actor : Actors)
 	{
-
 		USceneComponent* Primitive = Actor->GetRootComponent();
-
+		
 		if (Primitive == nullptr)
 		{
 			continue;
 		}
 
-		json pJson;
+		uint32 UUID = Primitive->GetUUID();
+		SceneData.UUIDs.push_back(UUID);
 
 		const FTransform* Transform = Primitive->GetTransform();
-
-		pJson["Location"] = { Transform->Location.X, Transform->Location.Y, Transform->Location.Z };
-		pJson["Rotation"] = { Transform->Rotation.Roll, Transform->Rotation.Pitch, Transform->Rotation.Yaw };
-		pJson["Scale"] = { Transform->Scale.X, Transform->Scale.Y, Transform->Scale.Z };
+		SceneData.Transforms.insert(std::make_pair(UUID, *Transform));
 
 		if (Cast<UPrimitiveComponent>(Primitive))
 		{
-			pJson["Type"] = PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType());
+			SceneData.Types.insert(std::make_pair(UUID, PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType())));
 		}
 		else if (Cast<UCameraComponent>(Primitive))
 		{
-			pJson["Type"] = "Camera";
+			SceneData.Types.insert(std::make_pair(UUID, "Camera"));
 		}
 		else
 		{
-			pJson["Type"] = "Other";
+			SceneData.Types.insert(std::make_pair(UUID, "Other"));
 		}
-
-
-		Json["Primitives"][std::to_string(Primitive->GetUUID())] = pJson;
-
 	}
 
-	std::filesystem::create_directories("Scene");
-
-	FString FullPath = "Scene/" + Path + ".Scene";
-	std::ofstream File(FullPath);
-
-	if (!File.is_open())
-	{
-		return false;
-	}
-
-	File << Json.dump(4);
-
-	File.close();
-
-	std::cout << Json.dump(4);
 	return true;
 }
 
-bool UWorld::LoadScene(const FString& Path)
+bool UWorld::LoadScene(const FSceneMetaData& Data)
 {
-	std::filesystem::create_directories("Scene");
+	FEngineStatics::NextUUID = Data.NextUUID;
 
-	FString FullPath = "Scene/" + Path + ".Scene";
-	std::ifstream File(FullPath);
-
-	if (!std::filesystem::exists(FullPath))
-	{
-		LOG(World, Warning, "{} is Not Exist!", FullPath);
-		return false;
-	}
-
-	// ClearScene();
-
-	if (!File.is_open())
-	{
-		return false;
-	}
-
-	json Json;
-
-	try
-	{
-		File >> Json;
-	}
-	catch (const json::parse_error&)
-	{
-		File.close();
-		return false;
-	}
-
-	File.close();
-
-	if (!Json.contains("Version"))
-	{
-		return false;
-	}
-
-	if (Json["Version"] != 1)
-	{
-		return false;
-	}
-
-	if (Json.contains("NextUUID"))
-	{
-		FEngineStatics::NextUUID = Json["NextUUID"].get<uint64>();
-	}
-
-	if (!Json.contains("Primitives"))
+	if (Data.UUIDs.empty())
 	{
 		return true;
 	}
 
-	for (auto& [UUIDString, PrimitiveJson] : Json["Primitives"].items())
+	for (auto& UUID : Data.UUIDs)
 	{
-		uint64 UUID = std::stoull(UUIDString);
-
-		FTransform Transform;
-
-		if (PrimitiveJson.contains("Location"))
+		try 
 		{
-			Transform.Location.X = PrimitiveJson["Location"][0].get<float>();
-			Transform.Location.Y = PrimitiveJson["Location"][1].get<float>();
-			Transform.Location.Z = PrimitiveJson["Location"][2].get<float>();
-		}
+			FTransform Transform = Data.Transforms.at(UUID);
+			FString TypeString = Data.Types.at(UUID);
 
-		if (PrimitiveJson.contains("Rotation"))
-		{
-			Transform.Rotation.Roll = PrimitiveJson["Rotation"][0].get<float>();
-			Transform.Rotation.Pitch = PrimitiveJson["Rotation"][1].get<float>();
-			Transform.Rotation.Yaw = PrimitiveJson["Rotation"][2].get<float>();
-		}
-
-		if (PrimitiveJson.contains("Scale"))
-		{
-			Transform.Scale.X = PrimitiveJson["Scale"][0].get<float>();
-			Transform.Scale.Y = PrimitiveJson["Scale"][1].get<float>();
-			Transform.Scale.Z = PrimitiveJson["Scale"][2].get<float>();
-		}
-
-		if (!PrimitiveJson.contains("Type"))
-		{
-			continue;
-		}
-
-
-		FString TypeString = PrimitiveJson["Type"].get<FString>();
-
-		if (TypeString == "Camera")
-		{
-			// 현재 카메라 delete하고 새로 생성
-			ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
-			if (GetCamera)
+			if (TypeString == "Camera")
 			{
-				SetMainCamera(GetCamera);
+				// 현재 카메라 delete하고 새로 생성
+				ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
+				if (GetCamera)
+				{
+					SetMainCamera(GetCamera);
+				}
+				MainCamera = GetCamera;
+				MainCamera->GetRootComponent()->SetTransform(Transform);
+
+				continue;
 			}
-			MainCamera = GetCamera;
-			MainCamera->GetRootComponent()->SetTransform(Transform);
 
-			continue;
+			if (TypeString == "Other")
+				continue;
+
+			EPrimitiveType Type = FStringToPrimitiveType(TypeString);
+
+			// 액터 스폰
+			AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
+			Actor->AddPrimitiveComponent(Type, Transform);
+			Actor->SetUUID(UUID);
 		}
-
-		if (TypeString == "Other")
+		catch (const std::out_of_range& e)
 		{
+			LOG(World, Error, "Failed Parsing Actor Information for: {}", UUID);
 			continue;
 		}
-
-		EPrimitiveType Type = FStringToPrimitiveType(TypeString);
-
-
-		// 액터 스폰
-		AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
-		Actor->AddPrimitiveComponent(Type, Transform);
-		Actor->SetUUID(UUID);
-
-
 	}
 
 	return true;
@@ -349,71 +252,77 @@ void UWorld::GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue)
 
 UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 {
-	FRay ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
+	FRay Ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
 
-	float minT{ FLT_MAX };
-	UPrimitiveComponent* PickingPrimitive = nullptr;		//UPrimitiveComponent*
+	UPrimitiveComponent* PickingPrimitive = nullptr;
+	float MinT{ FLT_MAX };
 
 	for (UPrimitiveComponent* Primitive : PrimitiveComponents)
 	{
-		// ray를 로컬공간으로
-		FMatrix invWorld = Primitive->GetWorldMatrix().Inverse();
-		FVector4 LocalRayOrigin = invWorld.TransformPosition(ray.Origin);
-		FVector4 LocalRayDir = invWorld.TransformVector(ray.Direction);
-
-		FRay LocalRay{};
-		LocalRay.Origin.X = LocalRayOrigin.X;
-		LocalRay.Origin.Y = LocalRayOrigin.Y;
-		LocalRay.Origin.Z = LocalRayOrigin.Z;
-
-		LocalRay.Direction.X = LocalRayDir.X;
-		LocalRay.Direction.Y = LocalRayDir.Y;
-		LocalRay.Direction.Z = LocalRayDir.Z;
-
 		if (!Primitive) continue;
-		const FMeshData& mesh = Primitive->GetMeshData();
-
-		FVector BoxMin, BoxMax;
-		mesh.GetAABB(BoxMin, BoxMax);
-		float rayT{};
-
-		if (!RayIntersectsAABB(LocalRay, BoxMin, BoxMax, rayT))
+		const FBoxBounds& Bounds = Primitive->GetBounds();
+		
+		if (AABBInspection(Ray, Bounds, MinT) && TriangleInspection(Ray, *Primitive, MinT))
 		{
-			continue;
-		}
-
-		if (rayT > minT)
-		{
-			continue;
-		}
-
-		// Broad Phase 통과하면 뮐러-트럼보르 알고리즘 수행
-		for (uint32 i = 0; i + 2 < mesh.Indices.size(); i += 3)
-		{
-			FVector vertices[3]{};	// 3 vertex
-			for (uint32 j = 0; j < 3; ++j)
-			{
-				uint32 index = mesh.Indices[i + j];
-
-				vertices[j].X = mesh.Vertices[index].Position.X;
-				vertices[j].Y = mesh.Vertices[index].Position.Y;
-				vertices[j].Z = mesh.Vertices[index].Position.Z;
-			}
-
-			if (!RayIntersectsTriangle(LocalRay, vertices[0], vertices[1], vertices[2], rayT))
-			{
-				continue;
-			}
-
-			if (rayT < minT)
-			{
-				PickingPrimitive = Primitive;
-				minT = rayT;
-			}
+			PickingPrimitive = Primitive;
 		}
 	}
 
 	return PickingPrimitive;
+}
+
+bool UWorld::AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT)
+{
+	float RayT{};
+
+	return (RayIntersectsAABB(Ray, Bounds, RayT) && RayT <= MinT);
+}
+
+bool UWorld::TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Primitive, float& MinT)
+{
+	float RayT{};
+	// ray를 로컬공간으로
+	FMatrix invWorld = Primitive.GetWorldMatrix().Inverse();
+	FVector4 LocalRayOrigin = invWorld.TransformPosition(Ray.Origin);
+	FVector4 LocalRayDir = invWorld.TransformVector(Ray.Direction);
+
+	FRay LocalRay{};
+	LocalRay.Origin.X = LocalRayOrigin.X;
+	LocalRay.Origin.Y = LocalRayOrigin.Y;
+	LocalRay.Origin.Z = LocalRayOrigin.Z;
+
+	LocalRay.Direction.X = LocalRayDir.X;
+	LocalRay.Direction.Y = LocalRayDir.Y;
+	LocalRay.Direction.Z = LocalRayDir.Z;
+
+	const FMeshData& Mesh = Primitive.GetMeshData();
+
+	// Broad Phase 통과하면 뮐러-트럼보르 알고리즘 수행
+	for (uint32 i = 0; i + 2 < Mesh.Indices.size(); i += 3)
+	{
+		FVector vertices[3]{};	// 3 vertex
+		for (uint32 j = 0; j < 3; ++j)
+		{
+			uint32 index = Mesh.Indices[i + j];
+
+			vertices[j].X = Mesh.Vertices[index].Position.X;
+			vertices[j].Y = Mesh.Vertices[index].Position.Y;
+			vertices[j].Z = Mesh.Vertices[index].Position.Z;
+		}
+
+		if (!RayIntersectsTriangle(LocalRay, vertices[0], vertices[1], vertices[2], RayT))
+		{
+			continue;
+		}
+
+		if (RayT < MinT)
+		{
+			MinT = RayT;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 

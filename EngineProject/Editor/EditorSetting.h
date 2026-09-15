@@ -16,5 +16,5 @@ struct FEditorSettings
 
 	float CameraMoveSpeed = 10.0f;
 	float CameraSensitivity = 0.05f;
-	//float GridSpacing;
+	float GridSpacing = 10.0f;
 };

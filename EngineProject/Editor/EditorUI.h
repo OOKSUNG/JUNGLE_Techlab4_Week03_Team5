@@ -11,6 +11,8 @@ public:
 	void Tick(float DeltaTime);
 	void OnRender();
 
+
+
 	template <typename T>
 	T* AddEditorPanel()
 	{

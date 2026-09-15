@@ -27,34 +27,30 @@
     <FxCompile Include="Shader\GridShader.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\OutlineShader.hlsl" />
+    <FxCompile Include="Shader\ShaderLine.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\OutlineShader.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GameFramework\Actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Camera\CameraActor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera\CameraComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Collision\Ray.cpp">
+    <ClCompile Include="ObjectSystem\Class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Component\CubeComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Component\PrimitiveComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Component\SceneComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Component\SphereComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\EngineTimer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Window.cpp">
+    <ClCompile Include="Component\ConeComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\ConsolePanel.cpp">
@@ -63,7 +59,37 @@
     <ClCompile Include="Editor\ControlPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Component\CubeComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\Editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\EditorSetting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Editor\EditorUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnginePCH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\EngineTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\FName.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\FNamePool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\FViewModeState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\GeometryGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\Gizmo.cpp">
@@ -75,28 +101,34 @@
     <ClCompile Include="Editor\GridRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Editor\PropertyPanel.cpp">
+    <ClCompile Include="ThirdParty\ImGui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EnginePCH.cpp">
+    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Engine.cpp">
+    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\ResourceManager.cpp">
+    <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\World.cpp">
+    <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameFramework\Actor.cpp">
+    <ClCompile Include="ThirdParty\ImGui\imgui_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Input\InputSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\LineRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -108,10 +140,52 @@
     <ClCompile Include="Math\MatrixRegister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Render\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectSystem\Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectSystem\ObjectFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\OutLineRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\PlaneComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\PrimitiveComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\PropertyPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Math\Quat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Collision\Ray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Math\Rotator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\SceneComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\SphereComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Math\Transform.cpp">
@@ -123,70 +197,16 @@
     <ClCompile Include="Math\Vector4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectSystem\Class.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectSystem\Object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectSystem\ObjectFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Render\Buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Render\GeometryGenerator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Render\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Render\Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Render\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Render\Vertex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Texture2D.cpp">
+    <ClCompile Include="Core\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_dx11.cpp">
+    <ClCompile Include="Engine\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_win32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Editor\OutLineRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Editor\Editor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Component\ConeComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Component\PlaneComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\FName.cpp">
+    <ClCompile Include="ThirdParty\xxHash\xxhash.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\FNamePool.cpp">
@@ -215,22 +235,70 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameFramework\Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\ActorComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\BoundingBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Camera\CameraActor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera\CameraComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Collision\Ray.h">
+    <ClInclude Include="ObjectSystem\Casts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Component\ActorComponent.h">
+    <ClInclude Include="ObjectSystem\Class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\ConeComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\ConsolePanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Containers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Editor\ControlPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\CubeComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\Editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorSetting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Core\EngineLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\EngineMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnginePCH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\EngineStatics.h">
@@ -242,22 +310,19 @@
     <ClInclude Include="Core\EngineTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Types.h">
+    <ClInclude Include="Core\FBoxBounds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Window.h">
+    <ClInclude Include="Math\FMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Editor\ConsolePanel.h">
+    <ClInclude Include="Core\FName.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Editor\ControlPanel.h">
+    <ClInclude Include="Core\FNamePool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Editor\EditorPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\EditorUI.h">
+    <ClInclude Include="Render\GeometryGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\Gizmo.h">
@@ -272,121 +337,10 @@
     <ClInclude Include="Editor\GuizmoRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Editor\PropertyPanel.h">
+    <ClInclude Include="ThirdParty\ImGui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Engine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\World.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameFramework\Actor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\InputSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\KeyCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\MouseButton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\EngineMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Matrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\MatrixRegister.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Quat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Transform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Vector2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Vector4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\VectorRegister.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\VectorRegister_SSE.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Rotator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSystem\Casts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSystem\Class.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSystem\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSystem\ObjectFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSystem\Property.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Component\CubeComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Component\PrimitiveComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Component\SceneComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Component\SphereComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnginePCH.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\GeometryGenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\RenderPacket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture2D.h">
+    <ClInclude Include="ThirdParty\ImGui\imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_dx11.h">
@@ -395,13 +349,10 @@
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imconfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ThirdParty\ImGui\imgui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ThirdParty\ImGui\imgui_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h">
@@ -413,28 +364,124 @@
     <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Input\InputSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\KeyCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\LineRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\MatrixRegister.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\MouseButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectSystem\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectSystem\ObjectFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Editor\Outline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\OutLineRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Math\TVector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\Editor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor\EditorContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Component\ConeComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Component\PlaneComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\FName.h">
+    <ClInclude Include="Component\PrimitiveComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectSystem\Property.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\PropertyPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Quat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision\Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\World.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\xxHash\xxhash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\VectorRegister.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\VectorRegister_SSE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\TVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\SphereComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\ShowFlags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\SceneComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Rotator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RenderPacket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\ViewModeState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\Downloads\stb_image.h">

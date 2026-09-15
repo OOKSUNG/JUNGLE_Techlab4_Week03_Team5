@@ -1,0 +1,81 @@
+//cbuffer LineData : register(b0)
+//{
+//    float4x4 ViewProj;
+//};
+
+//struct VS_INPUT
+//{
+//    float3 Position : POSITION;
+//    float4 Color : COLOR;
+//};
+
+//struct VS_OUTPUT
+//{
+//    float4 Position : SV_POSITION;
+//    float4 Color : COLOR;
+//};
+
+//VS_OUTPUT mainVS(VS_INPUT Input)
+//{
+//    VS_OUTPUT Output;
+
+//    // Row Vector 방식
+//    Output.Position = mul(float4(Input.Position, 1.0f), ViewProj);
+
+//    Output.Color = Input.Color;
+
+//    return Output;
+//}
+
+//float4 mainPS(VS_OUTPUT Input) : SV_TARGET
+//{
+//    return Input.Color;
+//}
+
+cbuffer LineData : register(b0)
+{
+    float4x4 ViewProj;
+    float3 CameraPos;
+    float FadeStart;
+    float FadeEnd;
+    float Padding;
+};
+
+struct VS_INPUT
+{
+    float3 Position : POSITION;
+    float4 Color : COLOR;
+};
+
+struct VS_OUTPUT
+{
+    float4 Position : SV_POSITION;
+    float4 Color : COLOR;
+    float3 WorldPos : TEXCOORD0;
+};
+
+VS_OUTPUT mainVS(VS_INPUT Input)
+{
+    VS_OUTPUT Output;
+
+    Output.Position = mul(float4(Input.Position, 1.0f), ViewProj);
+    Output.Color = Input.Color;
+    Output.WorldPos = Input.Position;
+
+    return Output;
+}
+
+float4 mainPS(VS_OUTPUT Input) : SV_TARGET
+{
+    float DistanceToCamera = length(Input.WorldPos - CameraPos);
+
+    // FadeStart 전까지 완전 불투명, FadeEnd부터 완전 투명
+    float Fade = 1.0f - smoothstep(FadeStart, FadeEnd, DistanceToCamera);
+
+    Input.Color.a *= Fade;
+
+    if (Input.Color.a < 0.01f)
+        discard;
+
+    return Input.Color;
+}

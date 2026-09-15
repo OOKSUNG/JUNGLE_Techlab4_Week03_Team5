@@ -13,6 +13,8 @@
 #include "GeometryGenerator.h"
 #include "Render/ViewModeState.h"
 
+// #include "LineRenderer.h"
+
 enum EShaderBindFlagBits : uint32
 {
 	None = 0,
@@ -52,11 +54,14 @@ public:
 	TSharedPtr<FIndexBuffer> CreateIndexBuffer(const uint32* InIndices, uint32 IndexCount);
 	TSharedPtr<FConstantBuffer> CreateConstantBuffer(uint32 BufferSize);
 
+	TSharedPtr<FVertexBuffer> CreateDynamicVertexBuffer(const void* InVertices, uint32 InSize, uint32 Stride);
+	TSharedPtr<FIndexBuffer> CreateDynamicIndexBuffer(const uint32* InIndices, uint32 IndexCount);
+
 	void UpdateConstantBufferData(FConstantBuffer* Buffer, const void* Data, uint32 DataSize);
 
 	void UpdateConstantBuffer(const FMatrix& MVP, bool bHighlightEdge, const FVector& EdgeColor);
-	void BindVertexBuffer(FVertexBuffer* VertexBuffer);
-	void BindIndexBuffer(FIndexBuffer* IndexBuffer);
+	void BindVertexBuffer(FVertexBufferBase* VertexBuffer);
+	void BindIndexBuffer(FIndexBufferBase* IndexBuffer);
 	void BindConstantBuffer(uint32 Slot, FConstantBuffer* ConstantBuffer, EShaderBindFlagBits FlagBits = None);
 	void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY Topology);
 	void SetDepthStencilEnabled(bool bEnabled);
@@ -81,6 +86,9 @@ public:
 	
 	// ViewMode Getter
 	inline EViewModeIndex GetViewMode() const { return ViewModeState->GetMode(); };
+
+	// Shader Resource View Getter
+	// inline Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetRenderTargetSRV() { return FrameBufferSRV; }
 
 private:
 	// Camera 
@@ -109,6 +117,9 @@ private:
 	Microsoft::WRL::ComPtr <ID3D11Buffer> ConstantBuffer;
 	D3D11_VIEWPORT ViewportInfo;
 
+	// imgui 렌더링용
+	// Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> FrameBufferSRV;
+
 	uint32 Width;
 	uint32 Height;
 
@@ -117,4 +128,6 @@ private:
 	FLOAT ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 
 	TSharedPtr<FViewModeState> ViewModeState;
+
+	//TUniquePtr<FLineRenderer> LineRenderer;
 };

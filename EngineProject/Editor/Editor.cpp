@@ -5,14 +5,17 @@
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
 #include "EditorContext.h"
+#include "Core/FBoxBounds.h"
 #include "FontRenderer.h"
 #include "FontManager.h"
 #include "UUIDBillboardRenderer.h"
 
-bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
+
+bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 {
 	Gizmo = MakeUnique<FGizmo>();
 	Outline = MakeUnique<FOutline>();
+	BoundingBox = MakeUnique<FBoundingBox>();
 
 	ImGuiRenderer = MakeUnique<FImGuiRenderer>();
 	if (!ImGuiRenderer->Init(hwnd, InRenderer->GetDevice(), InRenderer->GetDeviceContext()))
@@ -24,8 +27,6 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	// UI가 사용할 정보 저장
 	Context.World = World;
 	Context.Gizmo = Gizmo.get();
-
-
 
 	// UI 생성 및 초기화, 컨텍스트 전달
 	EditorUI = MakeUnique<FEditorUI>();
@@ -40,22 +41,54 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 
 	ControlPanel->ShowFlags = &GetShowFlags();
 	// 씬 클리어 호출 시 콜백 함수
-	ControlPanel->SetSceneClearCallback([&]() {
-		Gizmo->SetTarget(nullptr);
-		Outline->SetTarget(nullptr);
-		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
-		ShowFlags.SetDefault();
+	ControlPanel->SetNewSceneCallback([&]()
+		{
+			Context.World->ClearScene();
+			Context.World->NewScene();
+			ClearSceneTargetsAndFlags();
 		}
 	);
 
-	GridRenderer = MakeUnique<FGridRenderer>();
-	GridRenderer->Init(InRenderer);
+	ControlPanel->SetLoadSceneCallback([&]()
+		{
+			FSceneMetaData SceneData;
+			if (EditorFileUtils->LoadSceneFromFileSelection(SceneData))
+			{
+				Context.World->ClearScene();
+				Context.World->LoadScene(SceneData);
+				ClearSceneTargetsAndFlags();
+			}
+			else {
+				LOG(Editor, Error, "Failed Loading Scene File...");
+			}
+		}
+	);
+
+	ControlPanel->SetSaveSceneCallback([&]()
+		{
+			FSceneMetaData SceneData;
+			if (Context.World->SaveScene(SceneData) && EditorFileUtils->SaveSceneWithFileBrowser(SceneData))
+			{
+			}
+			else {
+				LOG(Editor, Error, "Failed Saving Scene File...");
+			}
+		}
+	);
+
+	LineRenderer = MakeUnique<FLineRenderer>();
+	LineRenderer->Init(InRenderer);
+
+	//GridRenderer = MakeUnique<FGridRenderer>();
+	//GridRenderer->Init(InRenderer);
 
 	GizmoRenderer = MakeUnique<FGizmoRenderer>();
 	GizmoRenderer->Init(InRenderer);
 
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
+
+	EditorFileUtils = MakeUnique<FEditorFileUtils>();
 
 	UUIDBillboardRenderer = MakeUnique<FUUIDBillboardRenderer>();
 	UUIDBillboardRenderer->Init(World);
@@ -83,6 +116,7 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 		UPrimitiveComponent* PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
 		Gizmo->SetTarget(PickedComponent);
 		Outline->SetTarget(PickedComponent);
+		BoundingBox->SetTarget(PickedComponent);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
 	}
 }
@@ -90,9 +124,6 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
 {
 	const FVector CamLoc = Camera->GetLocation();
-	
-	if (ShowFlags.IsSet(EShowFlagBits::Grid))
-		GridRenderer->OnRender(VP, CamLoc);
 
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
@@ -107,6 +138,21 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
 	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
 
+	if (ShowFlags.IsSet(EShowFlagBits::Grid))
+	{
+		DrawGrid(CamLoc);
+	}
+
+	// World 축 드로우
+	AxisDraw();
+
+	if (BoundingBox->GetTarget() && ShowFlags.IsSet(EShowFlagBits::BoundingBox))
+	{
+		LineRenderer->DrawBox(BoundingBox->GetTarget()->GetBounds());
+	}
+
+	// Line Rendering
+	LineRenderer->Flush(Renderer, CamLoc, VP);
 
 	ImGuiRenderer->Begin();
 
@@ -118,4 +164,119 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 void FEditor::Shutdown()
 {
 	ImGuiRenderer->Shutdown();
+}
+
+void FEditor::DrawGrid(const FVector& CameraPos)
+{
+	// Grid 그리기
+	GridSpacing = EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
+	GridCount = static_cast<int32>(GridExtent / GridSpacing);
+	if (GridCount >= 100) GridCount = 100;
+
+	const float CenterX = floor(CameraPos.X / GridSpacing) * GridSpacing;
+	const float CenterY = floor(CameraPos.Y / GridSpacing) * GridSpacing;
+	const float HalfSize = GridCount * GridSpacing;
+
+	const FVector4 GridColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	//for (int32 i = -GridCount; i <= GridCount; ++i)
+	//{
+	//	float Offset = i * GridSpacing;
+
+	//	// X 방향 선
+	//	LineRenderer->AddLine(
+	//		FVector(CenterX - HalfSize, CenterY + Offset, 0.0f),
+	//		FVector(CenterX + HalfSize, CenterY + Offset, 0.0f),
+	//		GridColor);
+
+	//	// Y 방향 선
+	//	LineRenderer->AddLine(
+	//		FVector(CenterX + Offset, CenterY - HalfSize, 0.0f),
+	//		FVector(CenterX + Offset, CenterY + HalfSize, 0.0f),
+	//		GridColor);
+	//}
+
+	const float AxisEpsilon = 0.001f;
+
+	for (int32 i = -GridCount; i <= GridCount; ++i)
+	{
+		const float Offset = i * GridSpacing;
+
+		// X 방향 그리드 선: Y=0이면 X축과 겹침
+		const float GridY = CenterY + Offset;
+		if (abs(GridY) > AxisEpsilon)
+		{
+			LineRenderer->AddLine(
+				FVector(CenterX - HalfSize, GridY, 0.0f),
+				FVector(CenterX + HalfSize, GridY, 0.0f),
+				GridColor);
+		}
+
+		/*else
+		{
+			LineRenderer->AddLine(
+				FVector(CenterX - HalfSize, GridY, 0.0f),
+				FVector(CenterX + HalfSize, GridY, 0.0f),
+				FVector4(1.0f, 0.0f, 0.0f, 1.0f));
+		}*/
+
+		// Y 방향 그리드 선: X=0이면 Y축과 겹침
+		const float GridX = CenterX + Offset;
+		if (abs(GridX) > AxisEpsilon)
+		{
+			LineRenderer->AddLine(
+				FVector(GridX, CenterY - HalfSize, 0.0f),
+				FVector(GridX, CenterY + HalfSize, 0.0f),
+				GridColor);
+		}
+
+		/*else
+		{
+			LineRenderer->AddLine(
+				FVector(GridX, CenterY - HalfSize, 0.0f),
+				FVector(GridX, CenterY + HalfSize, 0.0f),
+				FVector4(0.0f, 1.0f, 0.0f, 1.0f));
+		}*/
+	}
+
+	// Z축 - 파랑
+	LineRenderer->AddLine(
+		FVector(0.0f, 0.0f, -1000.0f),
+		FVector(0.0f, 0.0f, 1000.0f),
+		FVector4(0.0f, 0.0f, 1.0f, 1.0f)
+	);
+}
+
+void FEditor::ClearSceneTargetsAndFlags()
+{
+	Gizmo->SetTarget(nullptr);
+	Outline->SetTarget(nullptr);
+	BoundingBox->SetTarget(nullptr);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+	ShowFlags.SetDefault();
+}
+
+void FEditor::AxisDraw()
+{
+	// X축 - 빨강
+	LineRenderer->AddLine(
+		FVector(-100000.0f, 0.0f, 0.0f),
+		FVector(100000.0f, 0.0f, 0.0f),
+		FVector4(1.0f, 0.0f, 0.0f, 1.0f)
+	);
+
+	// Y축 - 초록
+	LineRenderer->AddLine(
+		FVector(0.0f, -100000.0f, 0.0f),
+		FVector(0.0f, 100000.0f, 0.0f),
+		FVector4(0.0f, 1.0f, 0.0f, 1.0f)
+	);
+
+	// Z축 - 파랑
+	LineRenderer->AddLine(
+		FVector(0.0f, 0.0f, -10000.0f),
+		FVector(0.0f, 0.0f, 10000.0f),
+		FVector4(0.0f, 0.0f, 1.0f, 1.0f)
+	);
+
 }

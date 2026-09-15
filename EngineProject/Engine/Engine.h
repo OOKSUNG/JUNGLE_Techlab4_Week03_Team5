@@ -30,13 +30,6 @@ public:
 	void Shutdown();
 	void HandleResize();
 	void UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP);
-	// void RenderWorld(TQueue<FRenderPacket> RenderQueue, FMatrix VP, UCameraComponent* Camera);
-	// void RenderEditor(FMatrix VP, UCameraComponent* Camera);
-
-	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
-
-	// inline static FEditorUI* GetEditorUI() { return EditorUI.get(); }
-
 	void OnWindowResized(uint32 Width, uint32 Height);
 
 private:
@@ -47,24 +40,9 @@ private:
 
 	UWorld* World;
 
-	// TUniquePtr<FEditorUI> EditorUI;
 	TUniquePtr<FRenderer> Renderer;
 
-	// TUniquePtr<FEditor> Editor;
-
-	//TUniquePtr<FImGuiRenderer> ImGuiRenderer;
-	//TUniquePtr<FGridRenderer> GridRenderer;
-	//TUniquePtr<FGizmoRenderer> GizmoRenderer;
-	////TUniquePtr<FGizmo> Gizmo;
-	//TSharedPtr<FGizmo> Gizmo;
-	//TUniquePtr<FOutline> Outline;
-	//TUniquePtr<FOutlineRenderer> OutlineRenderer;
-
 	TUniquePtr<FEditor> Editor;
-
-	inline static FConsolePanel* ConsolePanel = nullptr;
-	// inline static FPropertyPanel* PropertyPanel = nullptr;
-	// inline static FControlPanel* ControlPanel = nullptr;
 
 	TSharedPtr<FVertexBuffer> vb;
 	TSharedPtr<FIndexBuffer> ib;

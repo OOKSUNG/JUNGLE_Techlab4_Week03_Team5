@@ -1,7 +1,10 @@
 #pragma once
 
-#include "Math/EngineMath.h"
+#include "Math/Vector.h"
+#include "Math/Vector2.h"
+#include "Math/Matrix.h"
 
+struct FBoxBounds;
 struct FRay
 {
 	// 광선 시작위치
@@ -15,7 +18,7 @@ struct FRay
 	}
 };
 
-bool RayIntersectsAABB(const FRay& Ray, const FVector& BoxMin, const FVector& BoxMax, float& OutT);
+bool RayIntersectsAABB(const FRay& Ray, const FBoxBounds& Bounds, float& OutT);
 
 bool RayIntersectsTriangle(const FRay& Ray, const FVector& v1, const FVector& v2, const FVector& v3, float& OutT);
 
