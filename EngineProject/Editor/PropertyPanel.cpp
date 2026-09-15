@@ -115,11 +115,11 @@ void FPropertyPanel::OnRender()
 	{
 		transform = Target->GetTransform();
 
-		DrawVector3Controller("Translation", transform->Location, 0.0f, 10.0f);
+		DrawVector3Controller("Translation", transform->Location, 0.0f, 70.0f);
 		FVector Rotation = FVector(transform->Rotation.Roll, transform->Rotation.Pitch, transform->Rotation.Yaw);
-		DrawVector3Controller("Rotation", Rotation, 0.0f, 10.0f);
+		DrawVector3Controller("Rotation", Rotation, 0.0f, 70.0f);
 		transform->Rotation = FRotator(Rotation.Y, Rotation.Z, Rotation.X);
-		DrawVector3Controller("Scale", transform->Scale, 0.0f, 10.0f);
+		DrawVector3Controller("Scale", transform->Scale, 0.0f, 70.0f);
 		if (UPrimitiveComponent* TargetPrimitive = Cast<UPrimitiveComponent>(Target))
 		{
 			bool bIsVisible = TargetPrimitive->GetVisible();
