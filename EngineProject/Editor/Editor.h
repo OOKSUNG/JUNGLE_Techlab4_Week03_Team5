@@ -4,6 +4,7 @@
 #include "ImGuiRenderer.h"
 #include "GridRenderer.h"
 #include "GizmoRenderer.h"
+#include "../Text/TextRenderer.h"
 
 #include "EditorUI.h"
 #include "ConsolePanel.h"
@@ -15,6 +16,7 @@
 #include "ShowFlags.h"
 #include "BoundingBox.h"
 #include "LineRenderer.h"
+#include "EditorFileUtils.h"
 
 #include "EditorSetting.h"
 
@@ -40,6 +42,9 @@ public:
 
 	void SetPickedComponent(UPrimitiveComponent* Component) { PickedComponent = Component; }
 
+	void ClearSceneTargetsAndFlags();
+
+	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;
@@ -52,8 +57,13 @@ private:
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
 
+	TUniquePtr<FEditorFileUtils> EditorFileUtils;
+
 	TUniquePtr<FLineRenderer> LineRenderer;
 
+	TUniquePtr<FTextRenderer> TextRenderer;
+
+	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;
 
 	TUniquePtr<FEditorSettings> EditorSettings;

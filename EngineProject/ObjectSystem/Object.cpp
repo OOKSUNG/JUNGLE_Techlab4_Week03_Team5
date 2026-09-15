@@ -31,6 +31,7 @@ UObject::UObject(bool bRegister) : Name("Object_" + std::to_string(UUID))
 
 UObject::~UObject()
 {
+	GUObjectArray[InternalIndex] = nullptr;
 }
 
 UClass* UObject::StaticClass()

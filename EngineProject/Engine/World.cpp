@@ -4,13 +4,12 @@
 #include "ObjectSystem/ObjectFactory.h"
 #include "Core/EngineStatics.h"
 
-#include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Input/InputSystem.h"
 
 #include "Collision/Ray.h"
 #include "Core/FBoxBounds.h"
-
+#include "Editor/EditorSetting.h"
 
 
 //UPrimitiveComponent* UWorld::SpawnPrimitive(FClass* Class)
@@ -26,12 +25,15 @@ UWorld::~UWorld()
 
 bool UWorld::Init()
 {
-
 	// Spawn Actor로 카메라 생성하고 세팅하기
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 
 	// Camera 초기 위치 수정
-	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	UCameraComponent* Camera = GetCamera->GetCameraComponent();
+	//FEditorSettings& Settings = FEditorSettings::Get();
+	Camera->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	//Camera->SetSpeed(Settings.CameraMoveSpeed);
+	//Camera->SetSensitivity(Settings.CameraSensitivity);
 
 	FString NewName =  FString("Camera_") + std::to_string(GetCamera->GetUUID());
 
@@ -42,7 +44,6 @@ bool UWorld::Init()
 		SetMainCamera(GetCamera);
 		return true;
 	}
-
 
 	return false;
 }
@@ -99,7 +100,7 @@ void UWorld::ClearScene()
 	MainCamera = nullptr;
 }
 
-bool UWorld::NewScene(const FString& Path)
+bool UWorld::NewScene()
 {
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 	// Camera 초기 위치 수정
@@ -116,185 +117,88 @@ bool UWorld::NewScene(const FString& Path)
 	return true;
 }
 
-bool UWorld::SaveScene(const FString& Path)
+bool UWorld::SaveScene(FSceneMetaData& SceneData)
 {
-	json Json;
-	Json.dump(4);
-	Json["Version"] = 1;
-	Json["NextUUID"] = FEngineStatics::NextUUID;
-	Json["Primitives"] = json::object();
+	SceneData.Version = 1;
+	SceneData.NextUUID = FEngineStatics::NextUUID;
 
 	for (AActor* Actor : Actors)
 	{
-
 		USceneComponent* Primitive = Actor->GetRootComponent();
-
+		
 		if (Primitive == nullptr)
 		{
 			continue;
 		}
 
-		json pJson;
+		uint32 UUID = Primitive->GetUUID();
+		SceneData.UUIDs.push_back(UUID);
 
 		const FTransform* Transform = Primitive->GetTransform();
-
-		pJson["Location"] = { Transform->Location.X, Transform->Location.Y, Transform->Location.Z };
-		pJson["Rotation"] = { Transform->Rotation.Roll, Transform->Rotation.Pitch, Transform->Rotation.Yaw };
-		pJson["Scale"] = { Transform->Scale.X, Transform->Scale.Y, Transform->Scale.Z };
+		SceneData.Transforms.insert(std::make_pair(UUID, *Transform));
 
 		if (Cast<UPrimitiveComponent>(Primitive))
 		{
-			pJson["Type"] = PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType());
+			SceneData.Types.insert(std::make_pair(UUID, PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType())));
 		}
 		else if (Cast<UCameraComponent>(Primitive))
 		{
-			pJson["Type"] = "Camera";
+			SceneData.Types.insert(std::make_pair(UUID, "Camera"));
 		}
 		else
 		{
-			pJson["Type"] = "Other";
+			SceneData.Types.insert(std::make_pair(UUID, "Other"));
 		}
-
-
-		Json["Primitives"][std::to_string(Primitive->GetUUID())] = pJson;
-
 	}
 
-	std::filesystem::create_directories("Scene");
-
-	FString FullPath = "Scene/" + Path + ".Scene";
-	std::ofstream File(FullPath);
-
-	if (!File.is_open())
-	{
-		return false;
-	}
-
-	File << Json.dump(4);
-
-	File.close();
-
-	std::cout << Json.dump(4);
 	return true;
 }
 
-bool UWorld::LoadScene(const FString& Path)
+bool UWorld::LoadScene(const FSceneMetaData& Data)
 {
-	std::filesystem::create_directories("Scene");
+	FEngineStatics::NextUUID = Data.NextUUID;
 
-	FString FullPath = "Scene/" + Path + ".Scene";
-	std::ifstream File(FullPath);
-
-	if (!std::filesystem::exists(FullPath))
-	{
-		LOG(World, Warning, "{} is Not Exist!", FullPath);
-		return false;
-	}
-
-	// ClearScene();
-
-	if (!File.is_open())
-	{
-		return false;
-	}
-
-	json Json;
-
-	try
-	{
-		File >> Json;
-	}
-	catch (const json::parse_error&)
-	{
-		File.close();
-		return false;
-	}
-
-	File.close();
-
-	if (!Json.contains("Version"))
-	{
-		return false;
-	}
-
-	if (Json["Version"] != 1)
-	{
-		return false;
-	}
-
-	if (Json.contains("NextUUID"))
-	{
-		FEngineStatics::NextUUID = Json["NextUUID"].get<uint64>();
-	}
-
-	if (!Json.contains("Primitives"))
+	if (Data.UUIDs.empty())
 	{
 		return true;
 	}
 
-	for (auto& [UUIDString, PrimitiveJson] : Json["Primitives"].items())
+	for (auto& UUID : Data.UUIDs)
 	{
-		uint64 UUID = std::stoull(UUIDString);
-
-		FTransform Transform;
-
-		if (PrimitiveJson.contains("Location"))
+		try 
 		{
-			Transform.Location.X = PrimitiveJson["Location"][0].get<float>();
-			Transform.Location.Y = PrimitiveJson["Location"][1].get<float>();
-			Transform.Location.Z = PrimitiveJson["Location"][2].get<float>();
-		}
+			FTransform Transform = Data.Transforms.at(UUID);
+			FString TypeString = Data.Types.at(UUID);
 
-		if (PrimitiveJson.contains("Rotation"))
-		{
-			Transform.Rotation.Roll = PrimitiveJson["Rotation"][0].get<float>();
-			Transform.Rotation.Pitch = PrimitiveJson["Rotation"][1].get<float>();
-			Transform.Rotation.Yaw = PrimitiveJson["Rotation"][2].get<float>();
-		}
-
-		if (PrimitiveJson.contains("Scale"))
-		{
-			Transform.Scale.X = PrimitiveJson["Scale"][0].get<float>();
-			Transform.Scale.Y = PrimitiveJson["Scale"][1].get<float>();
-			Transform.Scale.Z = PrimitiveJson["Scale"][2].get<float>();
-		}
-
-		if (!PrimitiveJson.contains("Type"))
-		{
-			continue;
-		}
-
-
-		FString TypeString = PrimitiveJson["Type"].get<FString>();
-
-		if (TypeString == "Camera")
-		{
-			// 현재 카메라 delete하고 새로 생성
-			ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
-			if (GetCamera)
+			if (TypeString == "Camera")
 			{
-				SetMainCamera(GetCamera);
+				// 현재 카메라 delete하고 새로 생성
+				ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
+				if (GetCamera)
+				{
+					SetMainCamera(GetCamera);
+				}
+				MainCamera = GetCamera;
+				MainCamera->GetRootComponent()->SetTransform(Transform);
+
+				continue;
 			}
-			MainCamera = GetCamera;
-			MainCamera->GetRootComponent()->SetTransform(Transform);
 
-			continue;
+			if (TypeString == "Other")
+				continue;
+
+			EPrimitiveType Type = FStringToPrimitiveType(TypeString);
+
+			// 액터 스폰
+			AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
+			Actor->AddPrimitiveComponent(Type, Transform);
+			Actor->SetUUID(UUID);
 		}
-
-		if (TypeString == "Other")
+		catch (const std::out_of_range& e)
 		{
+			LOG(World, Error, "Failed Parsing Actor Information for: {}", UUID);
 			continue;
 		}
-
-		EPrimitiveType Type = FStringToPrimitiveType(TypeString);
-
-
-		// 액터 스폰
-		AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
-		Actor->AddPrimitiveComponent(Type, Transform);
-		Actor->SetUUID(UUID);
-
-
 	}
 
 	return true;
@@ -384,6 +288,19 @@ bool UWorld::TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Prim
 	return false;
 }
 
+// UUID로 Actor 찾기
+AActor* UWorld::FindActorByUUID(uint32 InUUID) const
+{
+	for (AActor* Actor : Actors)
+	{
+		if (Actor->GetUUID() == InUUID)
+		{
+			return Actor;
+		}
+			
+	}
+	return nullptr;
+}
 
 // 카메라 관련 추가
 

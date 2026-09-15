@@ -26,5 +26,5 @@ public:
 private:
 	float CameraMoveSpeed = 10.0f;
 	float CameraSensitivity = 0.05f;
-	float GridSpacing = 10.0f;
+	int32 GridSpacing = 10;
 };

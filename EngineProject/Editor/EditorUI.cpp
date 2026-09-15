@@ -20,7 +20,7 @@ bool FEditorUI::Init(const FEditorContext& InContext)
 	GetEditorPanel<FPropertyPanel>()->FPropertyPanel::SetContext(InContext);
 	GetEditorPanel<FControlPanel>()->FControlPanel::SetContext(InContext);
 	GetEditorPanel<FSceneOutlinerPanel>()->FSceneOutlinerPanel::SetContext(InContext);
-
+	GetEditorPanel<FConsolePanel>()->FConsolePanel::SetContext(InContext);
 
 	return true;
 }

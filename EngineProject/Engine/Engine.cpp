@@ -18,7 +18,6 @@
 #include "Engine/ResourceManager.h"
 #include "Editor/EditorUI.h"
 
-
 bool Engine::Init(HINSTANCE hInstance)
 {
 	// Create Main Window
@@ -59,6 +58,19 @@ bool Engine::Init(HINSTANCE hInstance)
 	LOG(Engine, Info, "Success!");
 	Editor = MakeUnique<FEditor>();
 
+	// Text Renderer
+	TextRenderer = MakeUnique<FTextRenderer>();
+
+	LOG(Engine, Info, "Initialize TextRenderer...");
+	if (!TextRenderer->Init(Renderer.get(), L"ThirdParty\\Pretendard-Regular.otf", 32))
+	{
+		LOG(Engine, Info, "Failed To Initialize Text");
+		return false;
+	}
+
+	LOG(Engine, Info, "Success!");
+	Editor = MakeUnique<FEditor>();
+
 	LOG(Engine, Info, "Initialize Editor...");
 	if (!Editor->Init(Renderer.get(), World, MainWindow->GetHandle()))
 	{
@@ -76,7 +88,7 @@ void Engine::Run()
 {
 	EngineTimer::Init(); // return bool
 
-	LOG(Engine, Info, "{}", "Hello, World!");
+	LOG(Engine, Info, "Hello, World!");
 
 	FMatrix Mat;
 	Mat.SetIdentity();
@@ -110,9 +122,41 @@ void Engine::Run()
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
 			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
-
+				
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
+
+		Renderer->BindMainRenderTarget();   // ImGui 멀티뷰포트가 바꾼 Render Target 원복
+
+		FConsolePanel* Console = Editor->GetConsolePanel();
+
+		if (Console && Console->HasActiveWorldText())
+		{
+			AActor* TargetActor = World->FindActorByUUID(Console->GetDebugTextTargetUUID());
+			
+			if (TargetActor)
+			{
+				FVector HeadOffset(0.0f, 0.0f, 1.0f); // Actor 살짝 위 (2.0f)
+				FVector TextWorldPos = TargetActor->GetRootComponent()->GetTransform()->Location + HeadOffset;
+				
+				FVector CamRight = Camera->GetTransform()->GetRight();
+				FVector CamUp = Camera->GetTransform()->GetUp();
+				
+				TextRenderer->RenderTextWorld(
+					Renderer.get(), Console->GetDebugTextString(),
+					TextWorldPos, CamRight, CamUp,
+					0.01f,
+					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+					VP);
+
+			}
+				
+		}
+			
+		if (Console && Console->ConsumeAtlasDumpRequest())
+		{
+			TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
+		}
 
 		Renderer->EndFrame();
 	
@@ -140,7 +184,13 @@ void Engine::Shutdown()
 {
 	Editor->GetEditorSettings()->SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
-		delete Object;
+	{
+		if (Object)
+		{
+			delete Object;
+		}
+	}
+		
 	Editor->Shutdown();
 	Renderer->Shutdown();
 }

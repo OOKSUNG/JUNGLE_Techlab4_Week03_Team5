@@ -5,6 +5,8 @@
 #include "Component/PrimitiveComponent.h"
 #include "Math/Transform.h"
 #include "Render/Renderer.h"
+#include "Camera/CameraActor.h"
+#include "Engine/SceneMetaData.h"
 
 class ACameraActor;
 
@@ -30,14 +32,15 @@ public:
 	void OnRender(FRenderer* Renderer);
 
 	void ClearScene();
-	bool NewScene(const FString& Path);
-	bool SaveScene(const FString& Path);
-	bool LoadScene(const FString& Path);
+	bool NewScene();
+	bool SaveScene(FSceneMetaData& SceneData);
+	bool LoadScene(const FSceneMetaData& Data);
 
 	inline void AddPrimitive(UPrimitiveComponent* Primitive) { PrimitiveComponents.push_back(Primitive); }
 
 	void GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue);
 	UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
+	AActor* FindActorByUUID(uint32 InUUID) const;
 
 	// 카메라 세터, 게터
 	void SetMainCamera(ACameraActor* Camera);

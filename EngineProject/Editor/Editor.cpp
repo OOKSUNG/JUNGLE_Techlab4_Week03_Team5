@@ -9,7 +9,7 @@
 #include "Core/FBoxBounds.h"
 
 
-bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
+bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 {
 	Gizmo = MakeUnique<FGizmo>();
 	Outline = MakeUnique<FOutline>();
@@ -38,18 +38,62 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 		return false;
 	}
 
+	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
 	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
+	
+	
+
+
+
+
+	
 	// 씬 클리어 호출 시 콜백 함수
-	ControlPanel->SetSceneClearCallback([&]() {
+
+	/*ControlPanel->SetSceneClearCallback([&]() {
 		Gizmo->SetTarget(nullptr);
 		Outline->SetTarget(nullptr);
 		BoundingBox->SetTarget(nullptr);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
 		ShowFlags.SetDefault();
 		PickedComponent = nullptr;
+		}
+	);*/
+
+	ControlPanel->SetNewSceneCallback([&]()
+		{
+			Context.World->ClearScene();
+			Context.World->NewScene();
+			ClearSceneTargetsAndFlags();
+		}
+	);
+
+	ControlPanel->SetLoadSceneCallback([&]()
+		{
+			FSceneMetaData SceneData;
+			if (EditorFileUtils->LoadSceneFromFileSelection(SceneData))
+			{
+				Context.World->ClearScene();
+				Context.World->LoadScene(SceneData);
+				ClearSceneTargetsAndFlags();
+			}
+			else {
+				LOG(Editor, Error, "Failed Loading Scene File...");
+			}
+		}
+	);
+
+	ControlPanel->SetSaveSceneCallback([&]()
+		{
+			FSceneMetaData SceneData;
+			if (Context.World->SaveScene(SceneData) && EditorFileUtils->SaveSceneWithFileBrowser(SceneData))
+			{
+			}
+			else {
+				LOG(Editor, Error, "Failed Saving Scene File...");
+			}
 		}
 	);
 
@@ -61,8 +105,6 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
-
-
 
 }
 
@@ -81,6 +123,7 @@ void FEditor::SetSceneClear()
 	BoundingBox->SetTarget(nullptr);
 	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
 	ShowFlags.SetDefault();
+	EditorFileUtils = MakeUnique<FEditorFileUtils>();
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -232,6 +275,15 @@ void FEditor::DrawGrid(const FVector& CameraPos)
 		FVector(0.0f, 0.0f, 1000.0f),
 		FVector4(0.0f, 0.0f, 1.0f, 1.0f)
 	);
+}
+
+void FEditor::ClearSceneTargetsAndFlags()
+{
+	Gizmo->SetTarget(nullptr);
+	Outline->SetTarget(nullptr);
+	BoundingBox->SetTarget(nullptr);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+	ShowFlags.SetDefault();
 }
 
 void FEditor::AxisDraw()

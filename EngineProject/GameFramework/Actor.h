@@ -2,7 +2,7 @@
 
 #include "../ObjectSystem/Object.h"
 #include "Component/PrimitiveComponent.h"
-
+#include "ObjectSystem/Casts.h"
 #include "ObjectSystem/Class.h"
 
 class UWorld;

@@ -6,12 +6,10 @@
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
 #include "ShowFlags.h"
+#include "Editor/EditorSetting.h"
 
 bool FControlPanel::Init()
 {
-
-
-
 	return true;
 }
 
@@ -26,6 +24,13 @@ void FControlPanel::Tick(float DeltaTime)
 
 	FControlPanel::DeltaTime = DeltaTime;
 }
+
+void FControlPanel::SetContext(FEditorContext InContext)
+{
+	Context = InContext;
+	SetGridSpace(Context.EditorSettings->GetGridSpacing());
+}
+
 
 void FControlPanel::AddActor(EPrimitiveType Type)
 {
@@ -74,26 +79,21 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
-	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
+	if (ImGui::Button("New Scene", ImVec2(100.0f, 25.0f))) 
 	{
-		Context.World->ClearScene();
-		Context.World->NewScene(SceneName);
+		if (NewSceneCallback) NewSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback) Callback();
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
-	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
+	if (ImGui::Button("Save Scene", ImVec2(100.0f, 25.0f))) 
+	{ 
+		if (SaveSceneCallback) SaveSceneCallback();
+		ActorNum = Context.World->GetActorNum() - 1; 
+	}
+	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
 	{
-		printf("Buttonstart");
-		Context.World->ClearScene();
-		if (!Context.World->LoadScene(SceneName))
-		{
-			return;
-		}
+		// Context.World->ClearScene();
+		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback)Callback();
-		printf("Buttonend");
 	}
 
 	ImGui::Separator();
@@ -145,10 +145,19 @@ void FControlPanel::OnRender()
 	}
 
 	ImGui::Separator();
-
-	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
+	if (ImGui::Combo("Grid Interval", &GridIntervalIndex, GridIntervals, IM_ARRAYSIZE(GridIntervals)))
 	{
-		Context.EditorSettings->SetGridSpacing(GridSpace);
+		try
+		{
+			GridInterval = std::stoi(GridIntervals[GridIntervalIndex]);
+			Context.EditorSettings->SetGridSpacing(GridInterval);
+		}
+		catch (const std::invalid_argument& e) {
+			LOG(Editor, Error, "Selected Grid Interval Can't be converted to number!");
+		}
+		catch (const std::out_of_range& e) {
+			LOG(Editor, Error, "Selected Grid Interval Value is out of range of int32!");
+		}
 	}
 
 	ImGui::Separator();
@@ -215,4 +224,19 @@ void FControlPanel::OnRender()
 	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
 
 	ImGui::End();
+}
+
+void FControlPanel::SetGridSpace(int32 Grid)
+{
+	constexpr int NumIntervals = sizeof(GridIntervals) / sizeof(GridIntervals[0]);
+
+	for (int i = 0; i < NumIntervals; ++i)
+	{
+		if (std::atoi(GridIntervals[i]) == Grid)
+		{
+			GridIntervalIndex = i;
+			GridInterval = Grid;
+			return;
+		}
+	}
 }

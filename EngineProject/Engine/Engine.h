@@ -10,6 +10,7 @@
 #include "ImGuiRenderer.h"
 #include "Editor/GridRenderer.h"
 #include "Editor/GizmoRenderer.h"
+#include "Text/TextRenderer.h"
 
 #include "Editor/EditorUI.h"
 #include "Editor/ConsolePanel.h"
@@ -41,6 +42,7 @@ private:
 	UWorld* World;
 
 	TUniquePtr<FRenderer> Renderer;
+	TUniquePtr<FTextRenderer> TextRenderer;
 
 	TUniquePtr<FEditor> Editor;
 
