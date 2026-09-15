@@ -154,7 +154,12 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	{
 		// UPrimitiveComponent* 
 		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		if (!Actor) return; 
+		if (!Actor)
+		{
+			SetTarget(nullptr);
+			EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(nullptr);
+			return;
+		}
 
 		PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
 		SetTarget(PickedComponent);
