@@ -377,3 +377,6 @@ imgui.ini
 /EngineProject/Scene/Scene2.Scene
 /EngineProject/Scene/scene345.Scene
 /EngineProject/Editor/editor.ini
+/vcpkg
+/EngineProject/vcpkg_installed
+/EngineProject/atlas_dump.bmp

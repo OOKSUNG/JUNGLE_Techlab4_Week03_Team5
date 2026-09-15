@@ -21,6 +21,14 @@ bool FImGuiRenderer::Init(HWND WindowHandle, ID3D11Device* Device, ID3D11DeviceC
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+	// ImGUI 한글 입력시 ?? 로 뜨는 오류 해결용
+	io.Fonts->AddFontFromFileTTF(
+		"ThirdParty\\Pretendard-Regular.otf",
+		18.0f,
+		NULL,
+		io.Fonts->GetGlyphRangesKorean()
+	);
+
 	ImGui_ImplWin32_Init(WindowHandle);
 	ImGui_ImplDX11_Init(Device, DeviceContext);
 

@@ -72,11 +72,13 @@ public:
 	CallbackFunc SaveSceneCallback = nullptr;
 	
 	// grid control
-	void SetGridSpace(float Grid) { GridSpace = Grid; }
-	float GetGridSpace() { return GridSpace; }
+	void SetGridSpace(int32 Grid);
+	float GetGridSpace() { return GridInterval; }
 
 private:
 	FEditorContext Context;
-	float GridSpace = 10.0f;
+	const char* GridIntervals[5] = { "1", "5", "10", "50", "100" };
+	int32 GridIntervalIndex = 0;
+	int32 GridInterval = 1.0f;
 };
 

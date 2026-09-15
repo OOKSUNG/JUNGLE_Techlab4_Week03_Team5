@@ -40,6 +40,7 @@ public:
 	void CreateDepthStencilBufferAndState();
 	void CreateConstantBuffer();
 	void CreateDefaultShader();
+	void BindMainRenderTarget();
 
 
 	inline ID3D11Device* GetDevice() const { return Device.Get(); }
@@ -90,6 +91,9 @@ public:
 	// Shader Resource View Getter
 	// inline Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetRenderTargetSRV() { return FrameBufferSRV; }
 
+	// Depth Test ONLY
+	inline ID3D11DepthStencilState* GetDepthTestOnlyState() const { return DepthTestOnlyState.Get(); }
+
 private:
 	// Camera 
 	struct FConstants
@@ -111,6 +115,8 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthStencilState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthDisabledState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthTestOnlyState;		// Test ON, Wirte OFF
+
 
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;
 

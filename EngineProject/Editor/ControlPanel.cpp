@@ -5,12 +5,12 @@
 #include "../Core/EngineTimer.h"
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
+#include "ShowFlags.h"
+#include "Editor/EditorSetting.h"
 
 bool FControlPanel::Init()
 {
-
-
-
+	SetGridSpace(FEditorSettings::Get().GridSpacing);
 	return true;
 }
 
@@ -66,17 +66,17 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
+	if (ImGui::Button("New Scene", ImVec2(100.0f, 25.0f))) 
 	{
 		if (NewSceneCallback) NewSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) 
+	if (ImGui::Button("Save Scene", ImVec2(100.0f, 25.0f))) 
 	{ 
 		if (SaveSceneCallback) SaveSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1; 
 	}
-	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
+	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
 	{
 		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
@@ -129,10 +129,19 @@ void FControlPanel::OnRender()
 	}
 
 	ImGui::Separator();
-
-	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
+	if (ImGui::Combo("Grid Interval", &GridIntervalIndex, GridIntervals, IM_ARRAYSIZE(GridIntervals)))
 	{
-		FEditorSettings::Get().GridSpacing = GridSpace;
+		try
+		{
+			GridInterval = std::stoi(GridIntervals[GridIntervalIndex]);
+			FEditorSettings::Get().GridSpacing = GridInterval;
+		}
+		catch (const std::invalid_argument& e) {
+			LOG(Editor, Error, "Selected Grid Interval Can't be converted to number!");
+		}
+		catch (const std::out_of_range& e) {
+			LOG(Editor, Error, "Selected Grid Interval Value is out of range of int32!");
+		}
 	}
 
 	ImGui::Separator();
@@ -199,4 +208,19 @@ void FControlPanel::OnRender()
 	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
 	
 	ImGui::End();
+}
+
+void FControlPanel::SetGridSpace(int32 Grid)
+{
+	constexpr int NumIntervals = sizeof(GridIntervals) / sizeof(GridIntervals[0]);
+
+	for (int i = 0; i < NumIntervals; ++i)
+	{
+		if (std::atoi(GridIntervals[i]) == Grid)
+		{
+			GridIntervalIndex = i;
+			GridInterval = Grid;
+			return;
+		}
+	}
 }

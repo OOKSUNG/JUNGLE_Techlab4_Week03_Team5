@@ -9,6 +9,7 @@
 
 #include "Collision/Ray.h"
 #include "Core/FBoxBounds.h"
+#include "Editor/EditorSetting.h"
 
 namespace
 {
@@ -69,19 +70,21 @@ UWorld::~UWorld()
 
 bool UWorld::Init()
 {
-
 	// Spawn Actor로 카메라 생성하고 세팅하기
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 
 	// Camera 초기 위치 수정
-	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	UCameraComponent* Camera = GetCamera->GetCameraComponent();
+	FEditorSettings& Settings = FEditorSettings::Get();
+	Camera->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	Camera->SetSpeed(Settings.CameraMoveSpeed);
+	Camera->SetSensitivity(Settings.CameraSensitivity);
 
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);
 		return true;
 	}
-
 
 	return false;
 }
@@ -325,6 +328,19 @@ bool UWorld::TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Prim
 	return false;
 }
 
+// UUID로 Actor 찾기
+AActor* UWorld::FindActorByUUID(uint32 InUUID) const
+{
+	for (AActor* Actor : Actors)
+	{
+		if (Actor->GetUUID() == InUUID)
+		{
+			return Actor;
+		}
+			
+	}
+	return nullptr;
+}
 
 // 카메라 관련 추가
 

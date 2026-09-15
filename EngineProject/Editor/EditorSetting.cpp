@@ -9,7 +9,7 @@ void FEditorSettings::LoadEditorSetting(const std::string& FilePath)
 
 	wchar_t Buffer[64];
 	GetPrivateProfileStringW(L"Grid", L"GridSpacing", L"10.0", Buffer, 64, IniPath);
-	GridSpacing = std::stof(Buffer);
+	GridSpacing = std::stoi(Buffer);
 	GetPrivateProfileStringW(L"Editor", L"CameraSpeed", L"10.0", Buffer, 64, IniPath);
 	CameraMoveSpeed = std::stof(Buffer);
 	GetPrivateProfileStringW(L"Editor", L"CameraSensitivity", L"0.05", Buffer, 64, IniPath);
