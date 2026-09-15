@@ -18,7 +18,6 @@
 #include "Engine/ResourceManager.h"
 #include "Editor/EditorUI.h"
 
-
 bool Engine::Init(HINSTANCE hInstance)
 {
 	// Create Main Window
@@ -29,6 +28,10 @@ bool Engine::Init(HINSTANCE hInstance)
 		LOG(Engine, Error, "Failed To Create Main Window!");
 		return false;
 	}
+	LOG(Engine, Info, "Success!");
+
+	LOG(Engine, Info, "Load Editor Setting...");
+	FEditorSettings::Get().LoadEditorSetting();
 	LOG(Engine, Info, "Success!");
 
 	LOG(Engine, Info, "Initialize Renderer...");
