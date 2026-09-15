@@ -325,6 +325,19 @@ bool UWorld::TriangleInspection(const FRay& Ray, const UPrimitiveComponent& Prim
 	return false;
 }
 
+// UUID로 Actor 찾기
+AActor* UWorld::FindActorByUUID(uint32 InUUID) const
+{
+	for (AActor* Actor : Actors)
+	{
+		if (Actor->GetUUID() == InUUID)
+		{
+			return Actor;
+		}
+			
+	}
+	return nullptr;
+}
 
 // 카메라 관련 추가
 

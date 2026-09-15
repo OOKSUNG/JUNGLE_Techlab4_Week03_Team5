@@ -67,17 +67,17 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	if (ImGui::Button("New Scene", ImVec2(80.0f, 19.0f))) 
+	if (ImGui::Button("New Scene", ImVec2(100.0f, 25.0f))) 
 	{
 		if (NewSceneCallback) NewSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
 	}
-	if (ImGui::Button("Save Scene", ImVec2(80.0f, 19.0f))) 
+	if (ImGui::Button("Save Scene", ImVec2(100.0f, 25.0f))) 
 	{ 
 		if (SaveSceneCallback) SaveSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1; 
 	}
-	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
+	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
 	{
 		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;

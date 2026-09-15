@@ -109,9 +109,9 @@ FVector FQuat::RotateVector(const FVector& V) const
 	// + cross(Q.xyz, T)
 	Result = VectorSIMD::Add( Result, VectorSIMD::Cross3(Qv, T));
 
-	FVector Out;
-	VectorSIMD::Store(Out.V, Result);
-
+	float Temp[4];
+	VectorSIMD::Store(Temp, Result);
+	FVector Out(Temp[0], Temp[1], Temp[2]);
 	return Out;
 }
 
