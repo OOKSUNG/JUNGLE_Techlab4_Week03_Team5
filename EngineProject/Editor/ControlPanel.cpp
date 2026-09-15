@@ -130,10 +130,19 @@ void FControlPanel::OnRender()
 	}
 
 	ImGui::Separator();
-
-	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
+	if (ImGui::Combo("Grid Interval", &GridIntervalIndex, GridIntervals, IM_ARRAYSIZE(GridIntervals)))
 	{
-		FEditorSettings::Get().GridSpacing = GridSpace;
+		try
+		{
+			GridInterval = std::stoi(GridIntervals[GridIntervalIndex]);
+			FEditorSettings::Get().GridSpacing = GridInterval;
+		}
+		catch (const std::invalid_argument& e) {
+			LOG(Editor, Error, "Selected Grid Interval Can't be converted to number!");
+		}
+		catch (const std::out_of_range& e) {
+			LOG(Editor, Error, "Selected Grid Interval Value is out of range of int32!");
+		}
 	}
 
 	ImGui::Separator();
