@@ -8,38 +8,24 @@ void UTextComponent::BeginPlay()
 
 void UTextComponent::UpdateBounds()
 {
-	FTransform* Transform = GetTransform();
-	FVector Location = Transform->Location;
-	FVector Right = Transform->GetRight();
-	FVector Up = Transform->GetUp();
-	float Scale = Transform->Scale.X * WorldScaleFactor;
+    FTransform* T = GetTransform();
+    float ScaleRight = T->Scale.Y * WorldScaleFactor;
+    float ScaleUp    = T->Scale.Z * WorldScaleFactor;
 
-	// 대략적인 값 계산
-	float HalfWidth = Text.length() * FontPixelSize * 0.5f * Scale;
-	float HalfHeight = FontPixelSize * 0.5f * Scale;
+    FVector HW = T->GetRight() * (LocalHalfWidth  * ScaleRight);
+    FVector HU = T->GetUp()    * (LocalHalfHeight * ScaleUp);
+    FVector Loc = T->Location;
 
-	FVector Corners[4] =
-	{
-		Location + Right * HalfWidth + Up * HalfHeight, // 우상
-		Location - Right * HalfWidth + Up * HalfHeight, // 좌상
-		Location + Right * HalfWidth - Up * HalfHeight, // 우하
-		Location - Right * HalfWidth - Up * HalfHeight, // 좌하
-	};
+    FVector Corners[4] = { Loc + HW + HU, Loc + HW - HU, Loc - HW + HU, Loc - HW - HU };
 
-	// x,y,z축 각각 비교하여 가장 작은 값 저장
-	FVector BoxMin = Corners[0];
-	FVector BoxMax = Corners[0];
-	for (int i = 1; i < 4; ++i)
-	{
-		BoxMin.X = (Corners[i].X < BoxMin.X) ? Corners[i].X : BoxMin.X;
-		BoxMin.Y = (Corners[i].Y < BoxMin.Y) ? Corners[i].Y : BoxMin.Y;
-		BoxMin.Z = (Corners[i].Z < BoxMin.Z) ? Corners[i].Z : BoxMin.Z;
-		BoxMax.X = (Corners[i].X > BoxMax.X) ? Corners[i].X : BoxMax.X;
-		BoxMax.Y = (Corners[i].Y > BoxMax.Y) ? Corners[i].Y : BoxMax.Y;
-		BoxMax.Z = (Corners[i].Z > BoxMax.Z) ? Corners[i].Z : BoxMax.Z;
-	}
+    FVector Mn = Corners[0], Mx = Corners[0];
+    for (const FVector& C : Corners)
+    {
+        Mn.X = (C.X < Mn.X) ? C.X : Mn.X;  Mx.X = (C.X > Mx.X) ? C.X : Mx.X;
+        Mn.Y = (C.Y < Mn.Y) ? C.Y : Mn.Y;  Mx.Y = (C.Y > Mx.Y) ? C.Y : Mx.Y;
+        Mn.Z = (C.Z < Mn.Z) ? C.Z : Mn.Z;  Mx.Z = (C.Z > Mx.Z) ? C.Z : Mx.Z;
+    }
 
-	// 중심점 / 반경 찾기
-	Bounds.Origin = (BoxMax + BoxMin) * 0.5f;
-	Bounds.BoxExtent = (BoxMax - BoxMin) * 0.5f;
+    Bounds.Origin = (Mn + Mx) * 0.5f;
+    Bounds.BoxExtent = (Mx - Mn) * 0.5f;
 }

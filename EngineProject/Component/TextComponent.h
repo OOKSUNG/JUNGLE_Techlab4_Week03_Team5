@@ -33,10 +33,27 @@ public:
     void SetFontPixelSize(int InFontPixelSize) { FontPixelSize = InFontPixelSize; }
     int GetFontPixelSize() const { return FontPixelSize; } 
 
+    void SetWorldBounds(const FVector& BoxMin, const FVector& BoxMax)
+    {
+        Bounds.Origin = (BoxMax + BoxMin) * 0.5f;
+        Bounds.BoxExtent = (BoxMax - BoxMin) * 0.5f;
+    }
+
+    
+    void SetLocalExtent(float InHalfWidth, float InHalfHeight)
+    {
+        LocalHalfWidth = InHalfWidth;
+        LocalHalfHeight = InHalfHeight;
+    }
+
 private:
     FString Text = "Text";
     FVector4 Color = FVector4(1.0f, 1.0f, 1.0f, 1.0f); // Black
     FString FontPath = "ThirdParty\\Pretendard-Regular.otf";
     int FontPixelSize = 32;
+
+    // 임시 cached bb size
+    float LocalHalfWidth = 1.0f;
+    float LocalHalfHeight = 0.5f;
 
 };
