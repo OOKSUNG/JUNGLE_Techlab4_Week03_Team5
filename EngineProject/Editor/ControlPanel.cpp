@@ -77,7 +77,7 @@ void FControlPanel::OnRender()
 		if (SaveSceneCallback) SaveSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1; 
 	}
-	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
+	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
 	{
 		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
