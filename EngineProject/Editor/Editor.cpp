@@ -154,18 +154,24 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	{
 		// UPrimitiveComponent* 
 		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		if (!Actor) return; 
+		if (!Actor)
+		{
+			PickedComponent = nullptr;
+		}
 
-		PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
-		SetTarget(PickedComponent);
+		else
+		{
+			PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		}
+
 		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
 	}
 
 	else if (AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
 	{
 		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
-		SetTarget(PickedComponent);
 	}
+	SetTarget(PickedComponent);
 	
 }
 
@@ -181,10 +187,14 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	{
 		Renderer->SetDepthStencilEnabled(false);
 		GizmoRenderer->OnRender(*Gizmo, VP);
+		Renderer->SetDepthStencilEnabled(true);
 	}
 
+	Renderer->SetDepthStencilEnabled(false);
 	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
 	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	Renderer->SetDepthStencilEnabled(true);
+
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 	{
