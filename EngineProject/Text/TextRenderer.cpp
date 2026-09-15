@@ -4,6 +4,12 @@
 #include "Component/TextComponent.h"
 #include "FontManager.h"
 
+/// @brief 텍스트 렌더러 초기화. 엔진 시작 시 한 번만 호출.
+/// @param Renderer GPU 리소스 생성 Renderer
+/// @param FontPath 기본 폰트 파일 경로
+/// @param FontPixelSize 기본 Atlas Pixel 크기
+/// @param AtlasSize Atlas Texture 한 변 크기 (default: 1024)
+/// @return 초기화 성공 여부
 bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontPixelSize, int AtlasSize)
 {
     if (!Atlas.Init(Renderer->GetDevice(), FontPath, FontPixelSize, AtlasSize))
@@ -55,8 +61,6 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
     if (FAILED(Renderer->GetDevice()->CreateRasterizerState(&RasterDesc, &NoCullState)))
         return false;
     
-
-    
     D3D11_INPUT_ELEMENT_DESC WorldLayout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -75,6 +79,10 @@ bool FTextRenderer::Init(FRenderer* Renderer, const wchar_t* FontPath, int FontP
     return true;
 }
 
+/// @brief 2D 사각형(Quad) 배치. Text Component는 BuildTextQuadWorld를 사용할 것.
+/// @param Utf8Text 문자열 
+/// @param Context 새로운 Glyph 래스터라이즈용 Device Context
+/// @return 화면 좌표 기준 사각형 정점 목록 (한 글자당 4개)
 TArray<FTextVertex> FTextRenderer::BuildTextQuads(const FString& Utf8Text, ID3D11DeviceContext* Context)
 {
     TArray<FTextVertex> Vertices;
@@ -102,6 +110,9 @@ TArray<FTextVertex> FTextRenderer::BuildTextQuads(const FString& Utf8Text, ID3D1
 
 }
 
+/// @brief 사각형 정점 목록에 대응하는 index buffer 데이터 생성 (삼각형 2개 - 인덱스 6개)
+/// @param VertexCount 정점 총 개수 (4의 배수)
+/// @return Topology index 목록
 TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
 {
     TArray<uint32> Indices;
@@ -115,8 +126,17 @@ TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
     return Indices;
 }
 
-TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition,
-                                                            const FVector& Right, const FVector& Up, float Scale, FDynamicFontAtlas& InAtlas)
+/// @brief World 공간 텍스트 정점 생성. 
+/// @param Utf8Text 문자열
+/// @param Context  새로운 Glyph 래스터라이즈용 Device Context
+/// @param WorldPosition Text 시작 위치(좌측)
+/// @param Right 사각형의 폭 방향 단위벡터
+/// @param Up 사각형의 높이 방향 단위벡터
+/// @param ScaleX 가로 방향 배율
+/// @param ScaleY 세로 방향 배율
+/// @param InAtlas Font Atlas
+/// @return World 공간 정점 목록 (한 글자 당 4개)
+TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float ScaleX, float ScaleY, FDynamicFontAtlas& InAtlas)
 {
     TArray<FTextVertexWorld> Vertices;
     TArray<uint32> Codepoints = DecodeUTF8(Utf8Text);
@@ -127,10 +147,10 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
     {
         const FGlyphInfo& Glyph = InAtlas.GetOrCreateGlyph(Codepoint, Context);
 
-        float X0 = (PenX + Glyph.BearingX) * Scale;
-        float Y0 = static_cast<float>(Glyph.BearingY) * Scale;
-        float X1 = X0 + Glyph.BitmapWidth * Scale;
-        float Y1 = Y0 - Glyph.BitmapHeight * Scale;
+        float X0 = (PenX + Glyph.BearingX) * ScaleX;
+        float Y0 = static_cast<float>(Glyph.BearingY) * ScaleY;
+        float X1 = X0 + Glyph.BitmapWidth * ScaleX;
+        float Y1 = Y0 - Glyph.BitmapHeight * ScaleY;
         
         auto ToWorld = [&](float LocalX, float LocalY) -> FVector
         {
@@ -145,9 +165,42 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
         PenX += Glyph.Advance;
 
     }
+
+    // 기즈모 피벗이 텍스트 중심에 오도록 정점 재배치
+    if (!Vertices.empty())
+    {
+        FVector BoxMin = Vertices[0].Position;
+        FVector BoxMax = Vertices[0].Position;
+        for (const FTextVertexWorld& Vertex : Vertices)
+        {
+            BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
+            BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
+            BoxMin.Z = (Vertex.Position.Z < BoxMin.Z) ? Vertex.Position.Z : BoxMin.Z;
+            BoxMax.X = (Vertex.Position.X > BoxMax.X) ? Vertex.Position.X : BoxMax.X;
+            BoxMax.Y = (Vertex.Position.Y > BoxMax.Y) ? Vertex.Position.Y : BoxMax.Y;
+            BoxMax.Z = (Vertex.Position.Z > BoxMax.Z) ? Vertex.Position.Z : BoxMax.Z;
+        }
+
+        // Center 찾기
+        FVector Center = (BoxMax + BoxMin) * 0.5f;
+        FVector Offset = WorldPosition - Center;
+
+        for (FTextVertexWorld& Vertex : Vertices)
+        {
+            Vertex.Position = Vertex.Position + Offset;
+        }
+    }
+
     return Vertices;
 }
 
+/// @brief Screen 기준 텍스트 그린다. 카메라와 무관하게 화면에 고정 (UI, Debug용)
+/// @param Renderer DrawCall 실행할 Renderer 
+/// @param Utf8Text 문자열
+/// @param ScreenOffset 화면 좌상단 기준 pixel offset
+/// @param Color 텍스트 색상 (RGBA)
+/// @param ScreenWidth 화면 가로 해상도(px)
+/// @param ScreenHeight 화면 세로 해상도(px)
 void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVector2 ScreenOffset, FVector4 Color, uint32 ScreenWidth, uint32 ScreenHeight)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
@@ -209,12 +262,23 @@ void FTextRenderer::RenderText(FRenderer* Renderer, const FString& Utf8Text, FVe
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
 
+/// @brief World에서 텍스트 사각형 그린다.여러 UTextComponent를 한 번에 그리고 싶으면 RenderTextComponents를 쓸 것.
+/// @param Renderer Drawcall 용 Renderer
+/// @param Utf8Text 문자열
+/// @param WorldPosition 텍스트 기준점 월드 좌표
+/// @param CameraRight 폭 방향 단위 벡터 (빌보드면 CamRight, 아니면 ObjRight)
+/// @param CameraUp 높이 방향 단위 벡터 (빌보드면 CamUp, 아니면 ObjUp)
+/// @param ScaleX 가로 방향 배율
+/// @param ScaleY 세로 방향 배율
+/// @param Color 텍스트 색상 (RGBA)
+/// @param VP View-Projection Matrix
+/// @param InAtlas Font Atlas (FFmanager::GetOrLoadAtlas)
 void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text, const FVector& WorldPosition,
-                                    const FVector& CameraRight, const FVector& CameraUp, float Scale, FVector4 Color,
+                                    const FVector& CameraRight, const FVector& CameraUp, float ScaleX, float ScaleY, FVector4 Color,
                                     const FMatrix& VP, FDynamicFontAtlas& InAtlas)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
-    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, Scale, InAtlas);
+    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, ScaleX, ScaleY, InAtlas);
     if (Vertices.empty())
         return;
 
@@ -249,6 +313,7 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     // 0xffffffff -> 전체 샘플에 다 적용
     Context->OMSetBlendState(BlendState.Get(), BlendFactor, 0xffffffff);
     // Test On, Write Off
+    // Renderer->SetDepthStencilEnabled(true);
     Context->OMSetDepthStencilState(Renderer->GetDepthTestOnlyState(), 0);  
     Context->RSSetState(NoCullState.Get());
 
@@ -270,6 +335,10 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
 
+/// @brief Scene에 배치된 UTextComponent 전부 순회. Engine Main에서 매 프레임 호출
+/// @param TextComponents Text Component 목록 (UWorld::TextComponents)
+/// @param Renderer Drawcall용 renderer
+/// @param VP View-Projection Matrix
 void FTextRenderer::RenderTextComponents(const TArray<UTextComponent*>& TextComponents, FRenderer* Renderer, const FMatrix& VP)
 {
     for (UTextComponent* TextComp : TextComponents)
@@ -282,13 +351,58 @@ void FTextRenderer::RenderTextComponents(const TArray<UTextComponent*>& TextComp
             continue;
 
         FTransform* CompTransform = TextComp->GetTransform();
+        float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
+        float ScaleUp = CompTransform->Scale.Z * UTextComponent::WorldScaleFactor;
 
         RenderTextWorld(Renderer, TextComp->GetText(),
                         CompTransform->Location,
                         CompTransform->GetRight(), CompTransform->GetUp(),
-                        CompTransform->Scale.X * UTextComponent::WorldScaleFactor,
+                        ScaleRight, ScaleUp,
                         TextComp->GetColor(),
                         VP,
                         *Atlas);
+    }
+}
+
+
+void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& TextComponents, ID3D11DeviceContext* Context)
+{
+    for (UTextComponent* TextComp : TextComponents)
+    {
+        if (!TextComp || !TextComp->GetVisible())
+            continue;
+
+        FDynamicFontAtlas* Atlas = FFontManager::GetInstance().GetOrLoadAtlas(TextComp->GetFontPath(), TextComp->GetFontPixelSize());
+        if (!Atlas)
+            continue;
+
+        FTransform* CompTransform = TextComp->GetTransform();
+        float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
+        float ScaleUp = CompTransform->Scale.Z * UTextComponent::WorldScaleFactor;
+
+        TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(TextComp->GetText(), Context,
+                                            CompTransform->Location, CompTransform->GetRight(), CompTransform->GetUp(),
+                                            ScaleRight, ScaleUp, *Atlas);
+
+        if (!Vertices.empty())
+        {
+            FVector BoxMin = Vertices[0].Position;
+            FVector BoxMax = Vertices[0].Position;
+            for (const FTextVertexWorld& Vertex : Vertices)
+            {
+                BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
+                BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
+                BoxMin.Z = (Vertex.Position.Z < BoxMin.Z) ? Vertex.Position.Z : BoxMin.Z;
+                BoxMax.X = (Vertex.Position.X > BoxMax.X) ? Vertex.Position.X : BoxMax.X;
+                BoxMax.Y = (Vertex.Position.Y > BoxMax.Y) ? Vertex.Position.Y : BoxMax.Y;
+                BoxMax.Z = (Vertex.Position.Z > BoxMax.Z) ? Vertex.Position.Z : BoxMax.Z;
+            }
+
+            FVector Diagonal = BoxMax - BoxMin;
+            float HalfWidth = FVector::DotProduct(Diagonal, CompTransform->GetRight()) * 0.5f / ScaleRight;
+            float HalfHeight = FVector::DotProduct(Diagonal, CompTransform->GetUp()) * 0.5f / ScaleUp;
+            TextComp->SetLocalExtent(HalfWidth, HalfHeight);
+            TextComp->SetWorldBounds(BoxMin, BoxMax);
+        }
     }
 }
