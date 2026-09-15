@@ -154,19 +154,26 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	{
 		// UPrimitiveComponent* 
 		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		if (!Actor) return; 
+		if (!Actor)
+		{
+			SetTarget(nullptr);
+			EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(nullptr);
+			return;
+		}
 
 		PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
 		SetTarget(PickedComponent);
 		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
 	}
-
 	else if (AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
 	{
 		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
 		SetTarget(PickedComponent);
 	}
-	
+	else {
+		SetTarget(nullptr);
+		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(nullptr);
+	}
 }
 
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
