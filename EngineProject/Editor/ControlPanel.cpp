@@ -6,12 +6,11 @@
 #include "../Editor/Gizmo.h"
 #include "Input/InputSystem.h"
 #include "ShowFlags.h"
+#include "Editor/EditorSetting.h"
 
 bool FControlPanel::Init()
 {
-
-
-
+	SetGridSpace(FEditorSettings::Get().GridSpacing);
 	return true;
 }
 
@@ -209,4 +208,19 @@ void FControlPanel::OnRender()
 	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
 
 	ImGui::End();
+}
+
+void FControlPanel::SetGridSpace(int32 Grid)
+{
+	constexpr int NumIntervals = sizeof(GridIntervals) / sizeof(GridIntervals[0]);
+
+	for (int i = 0; i < NumIntervals; ++i)
+	{
+		if (std::atoi(GridIntervals[i]) == Grid)
+		{
+			GridIntervalIndex = i;
+			GridInterval = Grid;
+			return;
+		}
+	}
 }
