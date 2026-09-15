@@ -4,6 +4,7 @@
 #include "Input/InputSystem.h"
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
+#include "Editor/SceneOutlinerPanel.h"
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
 
@@ -48,6 +49,7 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 		BoundingBox->SetTarget(nullptr);
 		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
 		ShowFlags.SetDefault();
+		PickedComponent = nullptr;
 		}
 	);
 
@@ -64,6 +66,23 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 
 }
 
+void FEditor::SetTarget(UPrimitiveComponent* PickedComponent)
+{
+	Gizmo->SetTarget(PickedComponent);
+	Outline->SetTarget(PickedComponent);
+	BoundingBox->SetTarget(PickedComponent);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+}
+
+void FEditor::SetSceneClear()
+{
+	Gizmo->SetTarget(nullptr);
+	Outline->SetTarget(nullptr);
+	BoundingBox->SetTarget(nullptr);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+	ShowFlags.SetDefault();
+}
+
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
 {
 	EditorUI->Tick(DeltaTime);
@@ -74,14 +93,21 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 	Gizmo->Update(ray, mousePos, VP, WinWidth, WinHeight, bMouseDown, Camera);
 
+	AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
+	
+	if (PickedActor)
+	{
+		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
+		SetTarget(PickedComponent);
+	}
+
 	if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
 	{
-		UPrimitiveComponent* PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		Gizmo->SetTarget(PickedComponent);
-		Outline->SetTarget(PickedComponent);
-		BoundingBox->SetTarget(PickedComponent);
-		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+		// UPrimitiveComponent* 
+		PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		SetTarget(PickedComponent);
 	}
+	
 }
 
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)

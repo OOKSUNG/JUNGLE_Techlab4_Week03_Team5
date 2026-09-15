@@ -209,6 +209,15 @@
     <ClCompile Include="ThirdParty\xxHash\xxhash.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Editor\ContentBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\SceneOutlinerPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\EditorSelection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework\Actor.h">
@@ -458,6 +467,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\ContentBrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\SceneOutlinerPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorSelection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

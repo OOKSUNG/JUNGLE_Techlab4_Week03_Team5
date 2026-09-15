@@ -26,6 +26,10 @@ public:
 	void Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight);
 	void OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* InRenderer);
 	void Shutdown();
+
+	void SetTarget(UPrimitiveComponent* PickedComponent);
+	void SetSceneClear();
+
 	FEngineShowFlags& GetShowFlags() { return ShowFlags; };
 	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 	UPrimitiveComponent* GetSelectedTarget() const { return Outline->GetTarget(); }
@@ -33,6 +37,8 @@ public:
 
 	void DrawGrid(const FVector& CameraPos);
 	void AxisDraw();
+
+	void SetPickedComponent(UPrimitiveComponent* Component) { PickedComponent = Component; }
 
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
@@ -55,5 +61,7 @@ private:
 	float GridExtent = 1000.0f;
 	// float GridSpacing = 10.0f;
 	int32 GridCount = 20;
+
+	UPrimitiveComponent* PickedComponent;
 };
 

@@ -13,8 +13,11 @@ public:
 	inline void SetContext(FEditorContext InContext) { Context = InContext; }
 	inline FEditorContext GetContext() { return Context; }
 
+	inline AActor* GetSelectedActor() { return SelectedActor; }
+
 private:
 	FEditorContext Context;
+	AActor* SelectedActor = nullptr;
 
 };
 

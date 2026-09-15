@@ -1,31 +1,61 @@
 #include "EnginePCH.h"
 #include "SceneOutlinerPanel.h"
 
-bool FSceneOutlinerPanel::Init()
+bool FSceneOutlinerPanel::Init( )
 {
+
+
 	return true;
 }
 
 void FSceneOutlinerPanel::Tick(float DeltaTime)
 {
-
+    
 }
 
 void FSceneOutlinerPanel::OnRender()
 {
 	ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Outliner");
-    for (AActor* Actor : Context.World->GetActors())
+
+    if (ImGui::Begin("Scene Outliner"))
     {
-        if (!Actor)
+        ImGuiTreeNodeFlags SceneFlags =
+            ImGuiTreeNodeFlags_DefaultOpen |
+            ImGuiTreeNodeFlags_OpenOnArrow |
+            ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        if (ImGui::TreeNodeEx("Scene", SceneFlags))
         {
-            continue;
+            for (AActor* Actor : Context.World->GetActors())
+            {
+                if (!Actor)
+                {
+                    continue;
+                }
+
+                ImGui::PushID(Actor->GetUUID());
+
+                FString ActorName = Actor->GetFName().GetString();
+
+                /*ImGui::TreeNodeEx(
+                    ActorName.c_str(),
+                    ImGuiTreeNodeFlags_Leaf |
+                    ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                    ImGuiTreeNodeFlags_SpanAvailWidth
+                );*/
+
+                if (ImGui::Selectable(ActorName.c_str(), Actor == SelectedActor))
+                {
+                    SelectedActor = (SelectedActor == Actor) ? nullptr : Actor;
+                    // SelectedActor = Actor;
+                }
+
+                ImGui::PopID();
+            }
+
+            ImGui::TreePop();
         }
-
-        FString ActorName = Actor->GetFName().GetString();
-
-        // 아웃라이너 항목 그리기
-        ImGui::Text("%s", ActorName.c_str());
     }
+
 	ImGui::End();
 }
