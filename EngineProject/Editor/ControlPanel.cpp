@@ -222,7 +222,7 @@ void FControlPanel::OnRender()
 	if (ImGui::RadioButton("Unlit", &ViewModeIndex, 1)) Renderer->SetViewMode(EViewModeIndex::Unlit);
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Wirframe", &ViewModeIndex, 2)) Renderer->SetViewMode(EViewModeIndex::Wireframe);
-
+	
 	ImGui::End();
 }
 

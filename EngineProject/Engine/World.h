@@ -48,8 +48,12 @@ public:
 
 	int32 GetActorNum() const { return (int32)Actors.size(); }
 
-	TArray<AActor*> GetActors() const { return Actors; }
 
+	// TArray<AActor*> GetActors() const { return Actors; }
+
+	TArray<UPrimitiveComponent*> GetPrimitiveComponents() { return (PrimitiveComponents); };
+
+	const TArray<AActor*>& GetActors() const { return Actors; };
 private:
 	TArray<AActor*> Actors;
 

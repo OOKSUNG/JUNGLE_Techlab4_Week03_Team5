@@ -5,6 +5,8 @@
 #include "GridRenderer.h"
 #include "GizmoRenderer.h"
 #include "../Text/TextRenderer.h"
+#include "FontRenderer.h"
+#include "UUIDBillboardRenderer.h"
 
 #include "EditorUI.h"
 #include "ConsolePanel.h"
@@ -62,6 +64,8 @@ private:
 	TUniquePtr<FLineRenderer> LineRenderer;
 
 	TUniquePtr<FTextRenderer> TextRenderer;
+	TUniquePtr<FUUIDBillboardRenderer> UUIDBillboardRenderer;
+	TUniquePtr<FFontRenderer> FontRenderer;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;
