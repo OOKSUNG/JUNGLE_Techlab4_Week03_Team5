@@ -180,6 +180,7 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
 	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
 
+
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 	{
 		DrawGrid(CamLoc);
