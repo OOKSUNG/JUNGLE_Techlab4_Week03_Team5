@@ -7,6 +7,7 @@
 #include "EditorContext.h"
 #include "FontRenderer.h"
 #include "FontManager.h"
+#include "UUIDBillboardRenderer.h"
 
 bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 {
@@ -57,11 +58,15 @@ bool FEditor::Init(FRenderer* InRenderer ,UWorld* World, HWND hwnd)
 	OutlineRenderer = MakeUnique<FOutlineRenderer>();
 	OutlineRenderer->Init(InRenderer);
 
+	UUIDBillboardRenderer = MakeUnique<FUUIDBillboardRenderer>();
+	UUIDBillboardRenderer->Init(World);
+
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
 	FFontManager::GetIntance().Init(InRenderer);
-	FFontManager::GetIntance().LoadFontAtlas("Default", "Font//Default", 16, 16);
+	FFontManager::GetIntance().LoadFontAtlas("Default", "Font\\Default.png", 16, 16);
+	return true;
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -100,6 +105,8 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 		GizmoRenderer->OnRender(*Gizmo, VP);
 	}
 
+	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
+	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
 
 
 	ImGuiRenderer->Begin();

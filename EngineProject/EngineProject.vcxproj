@@ -175,6 +175,7 @@
     <ClCompile Include="Editor\OutLineRenderer.cpp" />
     <ClCompile Include="Editor\PropertyPanel.cpp" />
     <ClCompile Include="Editor\FontTexture.cpp" />
+    <ClCompile Include="Editor\UUIDBillboardRenderer.cpp" />
     <ClCompile Include="EnginePCH.cpp">
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MultiProcessorCompilation>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -281,6 +282,7 @@
     <ClInclude Include="Editor\OutLineRenderer.h" />
     <ClInclude Include="Editor\PropertyPanel.h" />
     <ClInclude Include="Editor\FontTexture.h" />
+    <ClInclude Include="Editor\UUIDBillboardRenderer.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Editor\ShowFlags.h" />

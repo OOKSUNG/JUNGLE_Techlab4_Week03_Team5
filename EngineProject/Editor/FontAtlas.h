@@ -17,7 +17,7 @@ public:
 	~FFontAtlas() = default;
 	void Init(FRenderer* InRenderer, char const* FileName, int Cols, int Rows);
 	ID3D11ShaderResourceView* GetTextureSRV();
-	D3D11_SAMPLER_DESC* GetSamplerDesc();
+	ID3D11SamplerState* GetSamplerState();
 	FFontUV GetAtlasUV(char C);
 private:
 	FFontTexture FontTexture;

@@ -11,7 +11,7 @@ void FFontAtlas::Init(FRenderer* InRenderer, char const* FileName, int AtlasCols
 {
 	FontTexture.Init(InRenderer);
 	FontTexture.LoadTexture(FileName);
-	FontTexture.SetSamplerDesc();
+	FontTexture.SetSamplerState();
 	Cols = AtlasCols;
 	Rows = AtlasRows;
 	FontWidth = FontTexture.GetWidth() / Cols;
@@ -23,9 +23,9 @@ ID3D11ShaderResourceView* FFontAtlas::GetTextureSRV()
 	return (FontTexture.GetTextureSRV());
 }
 
-D3D11_SAMPLER_DESC* FFontAtlas::GetSamplerDesc()
+ID3D11SamplerState* FFontAtlas::GetSamplerState()
 {
-	return (FontTexture.GetSamplerDesc());
+	return (FontTexture.GetSamplerState());
 }
 
 FFontUV FFontAtlas::GetAtlasUV(char C)

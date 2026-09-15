@@ -87,7 +87,8 @@ public:
 	/* Static */
 	static float DotProduct(const FVector& V1, const FVector& V2);
 	static FVector CrossProduct(const FVector& V1, const FVector& V2);
-	static float Distance(const FVector& V1, const FVector& V2); // == Dist()
+	static float Distance(const FVector& V1, const FVector& V2); // == Dist
+	static float DistanceSqr(const FVector& V1, const FVector& V2); // == Dist
 	/*static FVector DegreesToRadians(const FVector& V1);
 	static FVector RadiansToDegrees(const FVector& V1);
 	static FVector Max(const FVector& V1, const FVector& V2);

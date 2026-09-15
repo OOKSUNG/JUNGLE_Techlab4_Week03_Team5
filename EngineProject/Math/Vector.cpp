@@ -268,10 +268,15 @@ FVector FVector::CrossProduct(const FVector& V1, const FVector& V2)
 
 float FVector::Distance(const FVector& V1, const FVector& V2)
 {
+	return sqrt(DistanceSqr(V1, V2));
+}
+
+float FVector::DistanceSqr(const FVector& V1, const FVector& V2)
+{
 	float dX = V1.X - V2.X;
 	float dY = V1.Y - V2.Y;
 	float dZ = V1.Z - V2.Z;
 	float sum = dX * dX + dY * dY + dZ * dZ;
 
-	return sqrt(sum);
+	return (sum);
 }

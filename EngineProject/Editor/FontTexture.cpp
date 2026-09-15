@@ -18,6 +18,7 @@ bool FFontTexture::LoadTexture(char const* filename)
 {
 	ID3D11Device* Device = Renderer->GetDevice();
 	unsigned char* Image = stbi_load(filename, &Width, &Height, nullptr, 4);
+	// TODO:: 이미지 파일 오픈 실패 에러 핸들링
 	if (!Image)
 	{
 		std::cout << "현재 작업 디렉터리: " << std::filesystem::current_path() << std::endl;
@@ -60,8 +61,9 @@ bool FFontTexture::LoadTexture(char const* filename)
 	return hr;
 }
 
-void FFontTexture::SetSamplerDesc()
+void FFontTexture::SetSamplerState()
 {
+	D3D11_SAMPLER_DESC SamplerStateDesc;
 	SamplerStateDesc = {};
 	SamplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	SamplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -70,11 +72,13 @@ void FFontTexture::SetSamplerDesc()
 	SamplerStateDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	SamplerStateDesc.MinLOD = 0;
 	SamplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	Renderer->GetDevice()->CreateSamplerState(&SamplerStateDesc, SamplerState.GetAddressOf());
 }
 
-D3D11_SAMPLER_DESC* FFontTexture::GetSamplerDesc()
+ID3D11SamplerState* FFontTexture::GetSamplerState()
 {
-	return (&SamplerStateDesc);
+	return (SamplerState.Get());
 }
 
 

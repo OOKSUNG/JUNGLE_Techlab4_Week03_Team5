@@ -9,9 +9,9 @@ public:
 	FFontTexture();
 	~FFontTexture() = default;
 	bool LoadTexture(char const* filename);
-	void SetSamplerDesc();
+	void SetSamplerState();
 	ID3D11ShaderResourceView* GetTextureSRV();
-	D3D11_SAMPLER_DESC* GetSamplerDesc();
+	ID3D11SamplerState* GetSamplerState();
 	float GetWidth() const { return Width; };
 	float GetHeight() const { return Height; };
 
@@ -19,7 +19,7 @@ public:
 private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> TextureSRV = nullptr;
-	D3D11_SAMPLER_DESC SamplerStateDesc;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> SamplerState;
 	int Width;
 	int Height;
 	FRenderer* Renderer;
