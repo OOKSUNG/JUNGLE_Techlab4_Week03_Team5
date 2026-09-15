@@ -146,18 +146,24 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 	Gizmo->Update(ray, mousePos, VP, WinWidth, WinHeight, bMouseDown, Camera);
 
-	AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
+	// AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
 	
-	if (PickedActor)
-	{
-		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
-		SetTarget(PickedComponent);
-	}
+	
 
 	if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
 	{
 		// UPrimitiveComponent* 
-		PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		if (!Actor) return; 
+
+		PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		SetTarget(PickedComponent);
+		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
+	}
+
+	else if (AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
+	{
+		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
 		SetTarget(PickedComponent);
 	}
 	

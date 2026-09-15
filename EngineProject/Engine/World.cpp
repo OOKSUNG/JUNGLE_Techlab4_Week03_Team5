@@ -213,25 +213,28 @@ void UWorld::GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue)
 	}
 }
 
-UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
+AActor* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 {
 	FRay Ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
 
-	UPrimitiveComponent* PickingPrimitive = nullptr;
 	float MinT{ FLT_MAX };
 
-	for (UPrimitiveComponent* Primitive : PrimitiveComponents)
+	AActor* PickingActor = nullptr;
+
+	for (AActor* Actor : Actors)
 	{
+		if (!Actor) continue;
+		UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
 		if (!Primitive) continue;
 		const FBoxBounds& Bounds = Primitive->GetBounds();
-		
+
 		if (AABBInspection(Ray, Bounds, MinT) && TriangleInspection(Ray, *Primitive, MinT))
 		{
-			PickingPrimitive = Primitive;
+			PickingActor = Actor;
 		}
 	}
 
-	return PickingPrimitive;
+	return PickingActor;
 }
 
 bool UWorld::AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT)
