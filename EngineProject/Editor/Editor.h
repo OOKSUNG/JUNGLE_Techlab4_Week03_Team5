@@ -76,6 +76,7 @@ private:
 	// float GridSpacing = 10.0f;
 	int32 GridCount = 20;
 
+	AActor* PickedActor;
 	UPrimitiveComponent* PickedComponent;
 };
 
