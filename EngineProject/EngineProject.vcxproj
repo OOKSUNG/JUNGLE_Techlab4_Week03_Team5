@@ -174,11 +174,15 @@
     </ClCompile>
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
+    <ClCompile Include="Editor\FontManager.cpp" />
+    <ClCompile Include="Editor\FontRenderer.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
     <ClCompile Include="Editor\GizmoRenderer.cpp" />
     <ClCompile Include="Editor\GridRenderer.cpp" />
     <ClCompile Include="Editor\OutLineRenderer.cpp" />
     <ClCompile Include="Editor\PropertyPanel.cpp" />
+    <ClCompile Include="Editor\FontTexture.cpp" />
+    <ClCompile Include="Editor\UUIDBillboardRenderer.cpp" />
     <ClCompile Include="EnginePCH.cpp">
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MultiProcessorCompilation>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -258,6 +262,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Downloads\stb_image.h" />
     <ClInclude Include="Camera\CameraActor.h" />
     <ClInclude Include="Camera\CameraComponent.h" />
     <ClInclude Include="Collision\Ray.h" />
@@ -280,6 +285,8 @@
     <ClInclude Include="Editor\EditorPanel.h" />
     <ClInclude Include="Editor\EditorSetting.h" />
     <ClInclude Include="Editor\EditorUI.h" />
+    <ClInclude Include="Editor\FontManager.h" />
+    <ClInclude Include="Editor\FontRenderer.h" />
     <ClInclude Include="Editor\Gizmo.h" />
     <ClInclude Include="Editor\GizmoRenderer.h" />
     <ClInclude Include="Editor\GridRenderer.h" />
@@ -287,6 +294,8 @@
     <ClInclude Include="Editor\Outline.h" />
     <ClInclude Include="Editor\OutLineRenderer.h" />
     <ClInclude Include="Editor\PropertyPanel.h" />
+    <ClInclude Include="Editor\FontTexture.h" />
+    <ClInclude Include="Editor\UUIDBillboardRenderer.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Editor\ShowFlags.h" />
@@ -332,6 +341,7 @@
     <ClInclude Include="Render\Shader.h" />
     <ClInclude Include="Render\Vertex.h" />
     <ClInclude Include="Render\ViewModeState.h" />
+    <ClInclude Include="ThirdParty\stb_image\stb_image.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Text\FontAtlas.h" />
     <ClInclude Include="Text\StringUtils.h" />
