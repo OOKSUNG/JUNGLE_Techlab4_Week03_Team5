@@ -14,6 +14,7 @@ public:
 	inline FEditorContext GetContext() { return Context; }
 
 	inline AActor* GetSelectedActor() { return SelectedActor; }
+	inline void SetSelectedActor(AActor* Actor) { SelectedActor = Actor; }
 
 private:
 	FEditorContext Context;
