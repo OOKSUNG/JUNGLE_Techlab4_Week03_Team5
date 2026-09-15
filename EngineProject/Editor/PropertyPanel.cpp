@@ -1,5 +1,7 @@
 #include "EnginePCH.h"
 #include "PropertyPanel.h"
+#include "Component/TextComponent.h"
+#include "Text/FontManager.h"
 
 #include "imgui_internal.h"
 
@@ -103,7 +105,7 @@ void FPropertyPanel::Tick(float DeltaTime)
 
 void FPropertyPanel::OnRender()
 {
-	ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
 
 	ImGui::Begin("Jungle Property Window");
 
@@ -124,6 +126,60 @@ void FPropertyPanel::OnRender()
 			if (ImGui::Checkbox("IsVisible", &bIsVisible))
 			{
 				TargetPrimitive->SetVisible(bIsVisible);
+			}
+		}
+
+		if (UTextComponent* TargetText = Cast<UTextComponent>(Target))
+		{
+			// Font Input 입력
+			char TextBuffer[256];
+			strncpy_s(TextBuffer, TargetText->GetText().c_str(), sizeof(TextBuffer)-1);
+			if (ImGui::InputText("Text", TextBuffer, sizeof(TextBuffer)))
+			{
+				TargetText->SetText(TextBuffer);
+			}
+
+			// Font Color 선택
+			FVector4 Color = TargetText->GetColor();
+			float ColorArr[4] = { Color.X, Color.Y, Color.Z, Color.W };
+			if(ImGui::ColorEdit4("Color", ColorArr))
+			{
+				TargetText->SetColor(FVector4(ColorArr[0],ColorArr[1],ColorArr[2],ColorArr[3]));
+			}
+
+			// FontPath 선택
+			const TArray<FString>& FontPaths = FFontManager::GetInstance().GetAvailableFontPaths();
+			FString CurrentFontPath = TargetText->GetFontPath();
+
+			// Font 이름만 Parsing
+			auto GetDisplayName = [](const FString& Path) -> FString
+			{
+				size_t Slash = Path.find_last_of("/\\");
+				return (Slash == FString::npos) ? Path : Path.substr(Slash + 1);
+			};
+
+			if (ImGui::BeginCombo("Font", GetDisplayName(CurrentFontPath).c_str()))
+			{
+				for (const FString& Path : FontPaths)
+				{
+					bool bSelected = (Path == CurrentFontPath);
+					if (ImGui::Selectable(GetDisplayName(Path).c_str(), bSelected))
+					{
+						TargetText->SetFontPath(Path);
+					}
+					if (bSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			// FontSize 입력
+			int FontSize = TargetText->GetFontPixelSize();
+			if (ImGui::SliderInt("Font Size", &FontSize, 1, 100))
+			{
+				TargetText->SetFontPixelSize(FontSize);
 			}
 		}
 	}
