@@ -40,7 +40,7 @@ bool FFontRenderer::Init(FRenderer* InRenderer)
 	RasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	RasterizerDesc.CullMode = D3D11_CULL_BACK;
 	Renderer->GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
-	
+
 	D3D11_BLEND_DESC BlendDesc = {};
 	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
 	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -91,7 +91,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 
 			uint8 Index = static_cast<int>(C);
 			float CellSize = 1.0f / 16.0f;
-			
+
 			float UMin = (Index % 16) * CellSize;
 			float VMin = (Index / 16) * CellSize;
 			float UMax = UMin + CellSize;
@@ -101,7 +101,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 			FVector V1 = Cursor + (TextItem.CamUp * HeightHalf) + (TextItem.CamRight * CharWidth);
 			FVector V2 = Cursor + (TextItem.CamUp * -HeightHalf) + (TextItem.CamRight * CharWidth);
 			FVector V3 = Cursor + (TextItem.CamUp * -HeightHalf);
-			
+
 			Vertices.push_back({ V0, FVector2(UMin, VMin) });
 			Vertices.push_back({ V1, FVector2(UMax, VMin) });
 			Vertices.push_back({ V2, FVector2(UMax, VMax) });
@@ -119,7 +119,10 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	//}
 
 	uint32 DataSize = static_cast<uint32>(sizeof(FFontVertex) * Vertices.size());
-	if (!VB->Update(DeviceContext, Vertices.data() , DataSize))
+	if (!VB->Update(DeviceContext, Vertices.data(), DataSize))
+	{
+		true;
+	}
 
 	DeviceContext->RSSetState(RasterizerState.Get());
 	DeviceContext->OMSetBlendState(AlphaBlendState.Get(), nullptr, 0xffffffff);
@@ -136,7 +139,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	Renderer->UpdateConstantBufferData(CB.get(), &ConstData, sizeof(FFontData));
 	Renderer->BindConstantBuffer(0, CB.get(), EShaderBindFlagBits::Vertex);
 	Renderer->BindConstantBuffer(0, CB.get(), EShaderBindFlagBits::Pixel);
-	
+
 	ID3D11ShaderResourceView* SRV = FontTexture->GetTextureSRV();
 	DeviceContext->PSSetShaderResources(0, 1, &SRV);
 	ID3D11SamplerState* SS = FontTexture->GetSamplerState();
@@ -144,16 +147,16 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 
 	UINT Stride = sizeof(FFontVertex);
 	UINT Offset = 0;
-	ID3D11Buffer* pVB = (ID3D11Buffer*)VB.get();
+	ID3D11Buffer* pVB = VB->GetBuffer();
 	DeviceContext->IASetVertexBuffers(0, 1, &pVB, &Stride, &Offset);
 	Renderer->BindIndexBuffer(StaticIB.get());
-	Renderer->BindVertexBuffer(VB.get());
+	//Renderer->BindVertexBuffer(VB.get());
 
 	UINT TextCount = (UINT)Vertices.size() / 4;
 	Renderer->DrawIndexed(TextCount * 6);
 
 	DeviceContext->RSSetState(nullptr);
-	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);	
+	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
 	DeviceContext->OMSetDepthStencilState(nullptr, 0);
 }
