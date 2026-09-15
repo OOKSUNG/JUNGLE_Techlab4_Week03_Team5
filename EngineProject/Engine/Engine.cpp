@@ -30,6 +30,10 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 	LOG(Engine, Info, "Success!");
 
+	LOG(Engine, Info, "Load Editor Setting...");
+	FEditorSettings::Get().LoadEditorSetting();
+	LOG(Engine, Info, "Success!");
+
 	LOG(Engine, Info, "Initialize Renderer...");
 	Renderer = MakeUnique<FRenderer>();
 	if (!Renderer->Init(MainWindow->GetHandle()))
