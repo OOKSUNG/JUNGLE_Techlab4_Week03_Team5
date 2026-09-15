@@ -41,7 +41,7 @@ public:
 	void RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCameraComponent* Camera);
 private:
 	FRenderer* Renderer;
-	float BaseFontSize;
+	//float BaseFontSize;
 	FFontTexture* FontTexture;
 
 	TSharedPtr<FShader> Shader;

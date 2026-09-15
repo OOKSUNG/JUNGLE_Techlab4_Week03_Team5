@@ -159,6 +159,7 @@
     <ClCompile Include="Component\PrimitiveComponent.cpp" />
     <ClCompile Include="Component\SceneComponent.cpp" />
     <ClCompile Include="Component\SphereComponent.cpp" />
+    <ClCompile Include="Component\UParticleSubUVComponent.cpp" />
     <ClCompile Include="Editor\EditorSelection.cpp" />
     <ClCompile Include="Editor\ContentBrowser.cpp" />
     <ClCompile Include="Core\EngineTimer.cpp" />
@@ -270,6 +271,7 @@
     <ClInclude Include="Camera\CameraComponent.h" />
     <ClInclude Include="Collision\Ray.h" />
     <ClInclude Include="Component\ActorComponent.h" />
+    <ClInclude Include="Component\UparticleSubUVComponent.h" />
     <ClInclude Include="Editor\EditorSelection.h" />
     <ClInclude Include="Editor\ContentBrowser.h" />
     <ClInclude Include="Core\Containers.h" />
