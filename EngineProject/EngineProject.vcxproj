@@ -169,6 +169,9 @@
     <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="Editor\ConsolePanel.cpp" />
     <ClCompile Include="Editor\ControlPanel.cpp" />
+    <ClCompile Include="Editor\EditorFileUtils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
@@ -264,13 +267,16 @@
     <ClInclude Include="Core\EngineStatics.h" />
     <ClInclude Include="Core\EngineString.h" />
     <ClInclude Include="Core\EngineTimer.h" />
+    <ClInclude Include="Core\FBoxBounds.h" />
     <ClInclude Include="Core\FName.h" />
     <ClInclude Include="Core\FNamePool.h" />
     <ClInclude Include="Core\Types.h" />
     <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Editor\BoundingBox.h" />
     <ClInclude Include="Editor\ConsolePanel.h" />
     <ClInclude Include="Editor\ControlPanel.h" />
     <ClInclude Include="Editor\EditorContext.h" />
+    <ClInclude Include="Editor\EditorFileUtils.h" />
     <ClInclude Include="Editor\EditorPanel.h" />
     <ClInclude Include="Editor\EditorSetting.h" />
     <ClInclude Include="Editor\EditorUI.h" />
@@ -284,6 +290,7 @@
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Editor\ShowFlags.h" />
+    <ClInclude Include="Engine\SceneMetaData.h" />
     <ClInclude Include="Engine\World.h" />
     <ClInclude Include="Editor\Editor.h" />
     <ClInclude Include="GameFramework\Actor.h" />

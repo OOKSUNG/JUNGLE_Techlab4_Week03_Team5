@@ -88,8 +88,8 @@ public:
 	// ViewMode Getter
 	inline EViewModeIndex GetViewMode() const { return ViewModeState->GetMode(); };
 
-	// LineRenderer
-	// inline FLineRenderer* GetLineRenderer() const { return LineRenderer.get(); }
+	// Shader Resource View Getter
+	// inline Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetRenderTargetSRV() { return FrameBufferSRV; }
 
 	// Depth Test ONLY
 	inline ID3D11DepthStencilState* GetDepthTestOnlyState() const { return DepthTestOnlyState.Get(); }
@@ -122,6 +122,9 @@ private:
 
 	Microsoft::WRL::ComPtr <ID3D11Buffer> ConstantBuffer;
 	D3D11_VIEWPORT ViewportInfo;
+
+	// imgui 렌더링용
+	// Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> FrameBufferSRV;
 
 	uint32 Width;
 	uint32 Height;

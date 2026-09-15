@@ -67,26 +67,20 @@ void FControlPanel::OnRender()
 
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
-	ImGui::InputText("Scene Name", SceneName, IM_ARRAYSIZE(SceneName));
 	if (ImGui::Button("New Scene", ImVec2(100.0f, 25.0f))) 
 	{
-		Context.World->ClearScene();
-		Context.World->NewScene(SceneName);
+		if (NewSceneCallback) NewSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback) Callback();
 	}
-	if (ImGui::Button("Save Scene", ImVec2(100.0f, 25.0f))) { Context.World->SaveScene(SceneName); ActorNum = Context.World->GetActorNum() - 1; }
-	if (ImGui::Button("Load Scene", ImVec2(100.0f, 25.0f)))
+	if (ImGui::Button("Save Scene", ImVec2(100.0f, 25.0f))) 
+	{ 
+		if (SaveSceneCallback) SaveSceneCallback();
+		ActorNum = Context.World->GetActorNum() - 1; 
+	}
+	if (ImGui::Button("Load Scene", ImVec2(80.0f, 19.0f)))
 	{
-		printf("Buttonstart");
-		// Context.World->ClearScene();
-		if (!Context.World->LoadScene(SceneName))
-		{
-			return;
-		}
+		if (LoadSceneCallback) LoadSceneCallback();
 		ActorNum = Context.World->GetActorNum() - 1;
-		if (Callback)Callback();
-		printf("Buttonend");
 	}
 
 	ImGui::Separator();
@@ -137,6 +131,13 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 
+	if(ImGui::SliderFloat("Grid Size", &GridSpace, 1.0f, 100.0f))
+	{
+		FEditorSettings::Get().GridSpacing = GridSpace;
+	}
+
+	ImGui::Separator();
+
 	// Gizmo Select
 	GizmoSelectedIndex = static_cast<int32>(Context.Gizmo->GetMode());
 	if (ImGui::SetNextItemWidth(100.0f); ImGui::Combo("##GizmoCombo", &GizmoSelectedIndex, GizmoItems, IM_ARRAYSIZE(GizmoItems)))
@@ -172,6 +173,12 @@ void FControlPanel::OnRender()
 	if (ImGui::Checkbox("Gizmo", &bGizmo))
 	{
 		ShowFlags->Set(EShowFlagBits::Gizmo, bGizmo);
+	}
+	ImGui::SameLine();
+	bool bBoundingBox = ShowFlags->IsSet(EShowFlagBits::BoundingBox);
+	if (ImGui::Checkbox("Bounding Box", &bBoundingBox))
+	{
+		ShowFlags->Set(EShowFlagBits::BoundingBox, bBoundingBox);
 	}
 	ImGui::Text("ShowFlagPreset");
 	if (ImGui::Button("Default"))

@@ -13,8 +13,11 @@
 #include "Outline.h"
 #include "OutLineRenderer.h"
 #include "ShowFlags.h"
-
+#include "BoundingBox.h"
 #include "LineRenderer.h"
+#include "EditorFileUtils.h"
+
+#include "EditorSetting.h"
 
 class FEditor
 {
@@ -28,24 +31,34 @@ public:
 	const FEngineShowFlags& GetShowFlags() const { return ShowFlags; };
 	UPrimitiveComponent* GetSelectedTarget() const { return Outline->GetTarget(); }
 
+	void DrawGrid(const FVector& CameraPos);
+	void AxisDraw();
+
+	void ClearSceneTargetsAndFlags();
+
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
-	TUniquePtr<FGridRenderer> GridRenderer;
+	//TUniquePtr<FGridRenderer> GridRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;
-	//TUniquePtr<FGizmo> Gizmo;
 	TSharedPtr<FGizmo> Gizmo;
 	TUniquePtr<FOutline> Outline;
 	TUniquePtr<FOutlineRenderer> OutlineRenderer;
+	TUniquePtr<FBoundingBox> BoundingBox;
 	FEngineShowFlags ShowFlags;
 
 	TUniquePtr<FEditorUI> EditorUI;
 	FEditorContext Context;
+
+	TUniquePtr<FEditorFileUtils> EditorFileUtils;
 
 	TUniquePtr<FLineRenderer> LineRenderer;
 
 	inline static FConsolePanel* ConsolePanel = nullptr;
 	inline static FControlPanel* ControlPanel = nullptr;
 
+	float GridExtent = 1000.0f;
+	float GridSpacing = 10.0f;
+	int32 GridCount = 20;
 };
 
