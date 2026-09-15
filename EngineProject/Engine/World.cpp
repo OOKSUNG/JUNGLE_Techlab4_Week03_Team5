@@ -372,3 +372,9 @@ void UWorld::RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Render
 {
 	TextRenderer->RenderTextComponents(TextComponents, Renderer, VP);
 }
+
+
+void UWorld::UpdateTextComponentBounds(FTextRenderer* TextRenderer, ID3D11DeviceContext* Context)
+{
+	TextRenderer->UpdateTextComponentBounds(TextComponents, Context);
+}

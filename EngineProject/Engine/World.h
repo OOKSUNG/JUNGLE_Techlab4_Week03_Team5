@@ -43,6 +43,7 @@ public:
 
 	void GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue);
 	void RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Renderer, const FMatrix& VP);
+	void UpdateTextComponentBounds(FTextRenderer* TextRenderer, ID3D11DeviceContext* Context);
 
 	UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
 	AActor* FindActorByUUID(uint32 InUUID) const;
