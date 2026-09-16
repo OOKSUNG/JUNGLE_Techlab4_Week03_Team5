@@ -126,7 +126,7 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 		
 		if (Primitive == nullptr) continue;
 		
-		uint32 UUID = Primitive->GetUUID();
+		uint32 UUID = Actor->GetUUID();
 		SceneData.UUIDs.push_back(UUID);
 		
 		const FTransform* Transform = Primitive->GetTransform();
