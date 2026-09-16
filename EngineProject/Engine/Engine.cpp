@@ -214,7 +214,8 @@ void Engine::Run()
 		Renderer->BindMainRenderTarget();
 
 		// Text Component Render
-		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
+		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
+			World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
 		FConsolePanel* Console = Editor->GetConsolePanel();
 
