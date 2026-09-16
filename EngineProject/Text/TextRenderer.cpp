@@ -369,12 +369,11 @@ void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& Tex
 {
     for (UTextComponent* TextComp : TextComponents)
     {
-        if (!TextComp || !TextComp->GetVisible())
-            continue;
+        if (!TextComp || !TextComp->GetVisible()) continue;
+        if (!TextComp->ConsumeLayoutDirty()) continue;      // render 할 필요 없으면 pass 
 
         FDynamicFontAtlas* Atlas = FFontManager::GetInstance().GetOrLoadAtlas(TextComp->GetFontPath(), TextComp->GetFontPixelSize());
-        if (!Atlas)
-            continue;
+        if (!Atlas) continue;
 
         FTransform* CompTransform = TextComp->GetTransform();
         float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
