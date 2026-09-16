@@ -150,7 +150,7 @@ void Engine::Run()
 
 			if (TargetActor)
 			{
-				FVector HeadOffset(0.0f, 0.0f, 1.0f); // Actor 살짝 위 (2.0f)
+				FVector HeadOffset(0.0f, 0.0f, 2.0f); // Actor 살짝 위 (2.0f)
 				FVector TextWorldPos = TargetActor->GetRootComponent()->GetTransform()->Location + HeadOffset;
 
 				FVector CamRight = Camera->GetTransform()->GetRight();

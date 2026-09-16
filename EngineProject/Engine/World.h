@@ -97,6 +97,9 @@ namespace
 		case EPrimitiveType::Plane:
 			return "Plane";
 			break;
+		case EPrimitiveType::Text:
+			return "Text";
+			break;
 		default:
 			return "";
 			break;
@@ -120,6 +123,10 @@ namespace
 		if (string == "Plane")
 		{
 			return EPrimitiveType::Plane;
+		}
+		if (string == "Text")
+		{
+			return EPrimitiveType::Text;
 		}
 		return EPrimitiveType::Cube;
 	}

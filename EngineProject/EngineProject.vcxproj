@@ -177,7 +177,9 @@
     <ClCompile Include="Editor\EditorSelection.cpp" />
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
-    <ClCompile Include="Editor\FontManager.cpp" />
+    <ClCompile Include="Editor\FontManager.cpp">
+      <ObjectFileName>$(IntDir)Editor\</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Editor\FontRenderer.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
     <ClCompile Include="Editor\GizmoRenderer.cpp" />
@@ -230,7 +232,9 @@
     <ClCompile Include="Editor\SceneOutlinerPanel.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Text\FontAtlas.cpp" />
-    <ClCompile Include="Text\FontManager.cpp" />
+    <ClCompile Include="Text\FontManager.cpp">
+      <ObjectFileName>$(IntDir)Text\</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="Text\StringUtils.cpp" />
     <ClCompile Include="Text\TextRenderer.cpp" />
     <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_dx11.cpp">

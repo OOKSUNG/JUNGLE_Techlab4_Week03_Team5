@@ -13,65 +13,6 @@
 #include "Editor/EditorSetting.h"
 #include "Component/TextComponent.h"
 
-namespace
-{
-	FString PrimitiveTypeToString(EPrimitiveType Type)
-	{
-		switch (Type)
-		{
-		case EPrimitiveType::Sphere:
-			return "Sphere";
-			break;
-		case EPrimitiveType::Cube:
-			return "Cube";
-			break;
-		case EPrimitiveType::Cone:
-			return "Cone";
-			break;
-		case EPrimitiveType::Plane:
-			return "Plane";
-			break;
-		case EPrimitiveType::Text:
-			return "Text";
-			break;
-		default:
-			return "";
-			break;
-		}
-	}
-
-	EPrimitiveType FStringToPrimitiveType(const FString& string)
-	{
-		if (string == "Sphere")
-		{
-			return EPrimitiveType::Sphere;
-		}
-		if (string == "Cube")
-		{
-			return EPrimitiveType::Cube;
-		}
-		if (string == "Cone")
-		{
-			return EPrimitiveType::Cone;
-		}
-		if (string == "Plane")
-		{
-			return EPrimitiveType::Plane;
-		}
-		if (string == "Text")
-		{
-			return EPrimitiveType::Text;
-		}
-		return EPrimitiveType::Cube;
-	}
-}
-
-//UPrimitiveComponent* UWorld::SpawnPrimitive(FClass* Class)
-//{
-//	UPrimitiveComponent* Component = FObjectFactory::ConstructObject<UPrimitiveComponent>();
-//	Primitives.push_back(Component);
-//	return Component;
-//}
 
 UWorld::~UWorld()
 {
