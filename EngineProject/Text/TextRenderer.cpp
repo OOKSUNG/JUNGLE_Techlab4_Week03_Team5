@@ -162,7 +162,7 @@ FTextRenderer::FTextVertexPageMap FTextRenderer::BuildTextQuadsWorld(const FStri
         FlatVertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
         FlatVertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
         FlatVertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
-
+        QuadPage.push_back(Glyph.PageIndex);
         PenX += Glyph.Advance;
 
     }
