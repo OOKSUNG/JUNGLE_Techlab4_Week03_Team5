@@ -126,7 +126,7 @@ void Engine::Run()
 		TQueue<FRenderPacket> RenderQueue;
 		World->GatherRenderPackets(RenderQueue);
 		FInputSystem::UpdateInputStates();
-	
+
 		Renderer->BeginFrame();
 
 		// World
@@ -135,28 +135,27 @@ void Engine::Run()
 
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
-		
+
 		// ImGui 멀티뷰포트가 바꾼 Render Target 원복
-		Renderer->BindMainRenderTarget();   
+		Renderer->BindMainRenderTarget();
 
 		// Text Component Render
 		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
-		FConsolePanel* Console = FEditor::GetConsolePanel();
-		
+		FConsolePanel* Console = Editor->GetConsolePanel();
 
 		if (Console && Console->HasActiveWorldText())
 		{
 			AActor* TargetActor = World->FindActorByUUID(Console->GetDebugTextTargetUUID());
-			
+
 			if (TargetActor)
 			{
 				FVector HeadOffset(0.0f, 0.0f, 1.0f); // Actor 살짝 위 (2.0f)
 				FVector TextWorldPos = TargetActor->GetRootComponent()->GetTransform()->Location + HeadOffset;
-				
+
 				FVector CamRight = Camera->GetTransform()->GetRight();
 				FVector CamUp = Camera->GetTransform()->GetUp();
-				
+
 				FDynamicFontAtlas* DebugAtlas = FFontManager::GetInstance().GetOrLoadAtlas("ThirdParty\\Pretendard-Regular.otf", 32);
 
 				if (DebugAtlas)
@@ -169,9 +168,9 @@ void Engine::Run()
 						VP,
 						*DebugAtlas);
 				}
-			}				
+			}
 		}
-		
+
 		// DEBUG 용
 		// if (Console && Console->ConsumeAtlasDumpRequest())
 		// {
@@ -182,7 +181,7 @@ void Engine::Run()
 		Editor->RenderGizmo(VP, Renderer.get());
 
 		Renderer->EndFrame();
-		
+
 
 	}
 }
@@ -206,9 +205,15 @@ void Engine::UpdateEditor(float DeltaTime, UCameraComponent* Camera, FMatrix VP)
 
 void Engine::Shutdown()
 {
-	FEditorSettings::Get().SaveEditorSetting();
+	Editor->GetEditorSettings()->SaveEditorSetting();
 	for (UObject* Object : GUObjectArray)
-		delete Object;
+	{
+		if (Object)
+		{
+			delete Object;
+		}
+	}
+
 	Editor->Shutdown();
 	Renderer->Shutdown();
 }

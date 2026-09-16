@@ -1,32 +1,24 @@
 #pragma once
-
-#include <format>
 #include "EditorPanel.h"
 #include "EditorContext.h"
-#include "../Component/SceneComponent.h"
 
-struct FTransform;
 
-class FPropertyPanel : public IEditorPanel
+class FSceneOutlinerPanel : public IEditorPanel
 {
 public:
-	FPropertyPanel() = default;
-	~FPropertyPanel();
-
 	bool Init() override;
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
-	
+
 	//inline void SetContext(FEditorContext InContext) { Context = InContext; }
 	//inline FEditorContext GetContext() { return Context; }
 
-	void SetTarget(USceneComponent* InTarget) { Target = InTarget; }
+	inline AActor* GetSelectedActor() { return SelectedActor; }
+	inline void SetSelectedActor(AActor* Actor) { SelectedActor = Actor; }
 
 private:
 	//FEditorContext Context;
+	AActor* SelectedActor = nullptr;
 
-	//UWorld* World;
-
-	USceneComponent* Target;
 };
 

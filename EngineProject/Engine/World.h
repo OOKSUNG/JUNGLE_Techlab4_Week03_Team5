@@ -45,7 +45,8 @@ public:
 	void RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Renderer, const FMatrix& VP);
 	void UpdateTextComponentBounds(FTextRenderer* TextRenderer, ID3D11DeviceContext* Context);
 
-	UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
+	// UPrimitiveComponent* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
+	AActor* GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH);
 	AActor* FindActorByUUID(uint32 InUUID) const;
 
 	// 카메라 세터, 게터
@@ -54,6 +55,12 @@ public:
 
 	int32 GetActorNum() const { return (int32)Actors.size(); }
 
+
+	// TArray<AActor*> GetActors() const { return Actors; }
+
+	TArray<UPrimitiveComponent*> GetPrimitiveComponents() { return (PrimitiveComponents); };
+
+	const TArray<AActor*>& GetActors() const { return Actors; };
 private:
 	TArray<AActor*> Actors;
 
@@ -71,3 +78,49 @@ private:
 	// Text Components
 	TArray<UTextComponent*> TextComponents;
 };
+
+namespace
+{
+	FString PrimitiveTypeToString(EPrimitiveType Type)
+	{
+		switch (Type)
+		{
+		case EPrimitiveType::Sphere:
+			return "Sphere";
+			break;
+		case EPrimitiveType::Cube:
+			return "Cube";
+			break;
+		case EPrimitiveType::Cone:
+			return "Cone";
+			break;
+		case EPrimitiveType::Plane:
+			return "Plane";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	EPrimitiveType FStringToPrimitiveType(const FString& string)
+	{
+		if (string == "Sphere")
+		{
+			return EPrimitiveType::Sphere;
+		}
+		if (string == "Cube")
+		{
+			return EPrimitiveType::Cube;
+		}
+		if (string == "Cone")
+		{
+			return EPrimitiveType::Cone;
+		}
+		if (string == "Plane")
+		{
+			return EPrimitiveType::Plane;
+		}
+		return EPrimitiveType::Cube;
+	}
+}

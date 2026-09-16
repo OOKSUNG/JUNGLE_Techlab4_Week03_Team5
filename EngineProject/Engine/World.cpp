@@ -10,7 +10,7 @@
 #include "Collision/Ray.h"
 #include "Core/FBoxBounds.h"
 #include "Text/TextRenderer.h"
-
+#include "Editor/EditorSetting.h"
 #include "Component/TextComponent.h"
 
 namespace
@@ -79,19 +79,25 @@ UWorld::~UWorld()
 
 bool UWorld::Init()
 {
-
 	// Spawn Actor로 카메라 생성하고 세팅하기
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 
 	// Camera 초기 위치 수정
-	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	UCameraComponent* Camera = GetCamera->GetCameraComponent();
+	//FEditorSettings& Settings = FEditorSettings::Get();
+	Camera->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
+	//Camera->SetSpeed(Settings.CameraMoveSpeed);
+	//Camera->SetSensitivity(Settings.CameraSensitivity);
+
+	FString NewName =  FString("Camera_") + std::to_string(GetCamera->GetUUID());
+
+	GetCamera->SetFName(NewName);
 
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);
 		return true;
 	}
-
 
 	return false;
 }
@@ -103,8 +109,9 @@ AActor* UWorld::SpawnActor(UClass* Class, const FTransform* UserTransformPtr)
 	const FTransform UserTransform = UserTransformPtr ? *UserTransformPtr : FTransform::Identity;
 	UObject* NewObject= FObjectFactory::ConstructObject(Class);
 	AActor* NewActor = Cast<AActor>(NewObject);
-	NewActor->World = this;
+
 	if (!NewActor) return nullptr;
+	NewActor->World = this;
 
 	if (!NewActor->GetRootComponent())
 	{
@@ -276,38 +283,43 @@ void UWorld::GatherRenderPackets(TQueue<FRenderPacket>& RenderQueue)
 	}
 }
 
-UPrimitiveComponent* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
+AActor* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 {
 	FRay Ray = MainCamera->GetCameraComponent()->DeProjection(FInputSystem::GetMouseX(), FInputSystem::GetMouseY(), ScreenW, ScreenH);
 
-	UPrimitiveComponent* PickingPrimitive = nullptr;
 	float MinT{ FLT_MAX };
 
-	for (UPrimitiveComponent* Primitive : PrimitiveComponents)
+	AActor* PickingActor = nullptr;
+
+	for (AActor* Actor : Actors)
 	{
+		if (!Actor) continue;
+		UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
 		if (!Primitive) continue;
 		const FBoxBounds& Bounds = Primitive->GetBounds();
-		
+
 		if (AABBInspection(Ray, Bounds, MinT) && TriangleInspection(Ray, *Primitive, MinT))
 		{
-			PickingPrimitive = Primitive;
+			PickingActor = Actor;
 		}
 	}
 
 	// text는 삼각형 메쉬가 없어서 RayIntersectsAABB로 박스 히트만 판정
-	for (UTextComponent* TextComp : TextComponents)
+	for (AActor* Actor : Actors)
 	{
+		if (!Actor) continue;
+		UTextComponent* TextComp = Cast<UTextComponent>(Actor->GetRootComponent());
 		if (!TextComp) continue;
 
 		float RayT{};
 		if (RayIntersectsAABB(Ray, TextComp->GetBounds(), RayT) && RayT < MinT)
 		{
 			MinT = RayT;
-			PickingPrimitive = TextComp;
+			PickingActor = Actor;
 		}
 	}
 
-	return PickingPrimitive;
+	return PickingActor;
 }
 
 bool UWorld::AABBInspection(const FRay& Ray, const FBoxBounds& Bounds, float& MinT)

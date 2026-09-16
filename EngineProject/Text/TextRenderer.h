@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include "FontAtlas.h"
 #include "Render/Renderer.h"
+#include "../Core/Types.h"
 
 class UTextComponent;
 

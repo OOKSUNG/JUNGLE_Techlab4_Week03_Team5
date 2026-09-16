@@ -22,8 +22,8 @@ public:
 	inline void SetLoadSceneCallback(CallbackFunc InCallback) { LoadSceneCallback = InCallback; }
 	inline void SetSaveSceneCallback(CallbackFunc InCallback) { SaveSceneCallback = InCallback; }
 
-	inline void SetContext(FEditorContext InContext) { Context = InContext; }
-	inline FEditorContext GetContext() { return Context; }
+	//void SetContext(FEditorContext InContext);
+	//inline FEditorContext GetContext() { return Context; }
 
 	float DeltaTime = 1.0f;
 	// UWorld* World; // SpawnActor MainCamera;
@@ -73,11 +73,15 @@ public:
 	CallbackFunc SaveSceneCallback = nullptr;
 	
 	// grid control
-	void SetGridSpace(float Grid) { GridSpace = Grid; }
-	float GetGridSpace() { return GridSpace; }
+	// void SetGridSpace(float Grid) { GridSpace = Grid; }
+	// float GetGridSpace() { return GridSpace; }
+	void SetGridSpace(int32 Grid);
+	float GetGridSpace() { return GridInterval; }
 
 private:
-	FEditorContext Context;
-	float GridSpace = 10.0f;
+	// FEditorContext Context;
+	const char* GridIntervals[5] = { "1", "5", "10", "50", "100" };
+	int32 GridIntervalIndex = 0;
+	int32 GridInterval = 1.0f;
 };
 

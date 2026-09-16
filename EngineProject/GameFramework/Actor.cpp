@@ -17,6 +17,11 @@ AActor::AActor()
 	
 }
 
+AActor::AActor(FString InName) : Super(InName)
+{
+
+}
+
 AActor::~AActor()
 {
 	//for (UActorComponent* Component : Components)

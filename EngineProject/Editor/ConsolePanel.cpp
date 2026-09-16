@@ -1,5 +1,6 @@
 #include "EnginePCH.h"
 #include "ConsolePanel.h"
+#include "../Camera/CameraComponent.h"
 
 static int TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 {

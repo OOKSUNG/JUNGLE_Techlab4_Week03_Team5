@@ -4,8 +4,12 @@
 #include "Input/InputSystem.h"
 #include "Editor/PropertyPanel.h"
 #include "Editor/ControlPanel.h"
+#include "Editor/SceneOutlinerPanel.h"
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
+#include "FontRenderer.h"
+#include "FontManager.h"
+#include "UUIDBillboardRenderer.h"
 
 
 bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
@@ -21,9 +25,13 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 		return false;
 	}
 
+	EditorSettings = MakeUnique<FEditorSettings>();
+	EditorSettings->LoadEditorSetting();
+
 	// UI가 사용할 정보 저장
 	Context.World = World;
 	Context.Gizmo = Gizmo.get();
+	Context.EditorSettings = EditorSettings.get();
 
 	// UI 생성 및 초기화, 컨텍스트 전달
 	EditorUI = MakeUnique<FEditorUI>();
@@ -32,17 +40,31 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	{
 		return false;
 	}
+
 	ConsolePanel = EditorUI->GetEditorPanel<FConsolePanel>();
 	ControlPanel = EditorUI->GetEditorPanel<FControlPanel>();
 	ControlPanel->SetRenderer(InRenderer);
 
 	ControlPanel->ShowFlags = &GetShowFlags();
+
 	// 씬 클리어 호출 시 콜백 함수
+
+	/*ControlPanel->SetSceneClearCallback([&]() {
+		Gizmo->SetTarget(nullptr);
+		Outline->SetTarget(nullptr);
+		BoundingBox->SetTarget(nullptr);
+		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+		ShowFlags.SetDefault();
+		PickedComponent = nullptr;
+		}
+	);*/
+
 	ControlPanel->SetNewSceneCallback([&]()
 		{
+			ClearSceneTargetsAndFlags();
 			Context.World->ClearScene();
 			Context.World->NewScene();
-			ClearSceneTargetsAndFlags();
+			
 		}
 	);
 
@@ -51,9 +73,10 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 			FSceneMetaData SceneData;
 			if (EditorFileUtils->LoadSceneFromFileSelection(SceneData))
 			{
+				ClearSceneTargetsAndFlags();
 				Context.World->ClearScene();
 				Context.World->LoadScene(SceneData);
-				ClearSceneTargetsAndFlags();
+				
 			}
 			else {
 				LOG(Editor, Error, "Failed Loading Scene File...");
@@ -76,9 +99,6 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	LineRenderer = MakeUnique<FLineRenderer>();
 	LineRenderer->Init(InRenderer);
 
-	//GridRenderer = MakeUnique<FGridRenderer>();
-	//GridRenderer->Init(InRenderer);
-
 	GizmoRenderer = MakeUnique<FGizmoRenderer>();
 	GizmoRenderer->Init(InRenderer);
 
@@ -86,6 +106,36 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	OutlineRenderer->Init(InRenderer);
 
 	EditorFileUtils = MakeUnique<FEditorFileUtils>();
+
+	UUIDBillboardRenderer = MakeUnique<FUUIDBillboardRenderer>();
+	UUIDBillboardRenderer->Init(Context.World);
+
+	FontRenderer = MakeUnique<FFontRenderer>();
+	FontRenderer->Init(InRenderer);
+
+	FFontManager::GetIntance().Init(InRenderer);
+	FFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	
+	return true;
+
+}
+
+void FEditor::SetTarget(UPrimitiveComponent* PickedComponent)
+{
+	Gizmo->SetTarget(PickedComponent);
+	Outline->SetTarget(PickedComponent);
+	BoundingBox->SetTarget(PickedComponent);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+}
+
+void FEditor::SetSceneClear()
+{
+	Gizmo->SetTarget(nullptr);
+	Outline->SetTarget(nullptr);
+	BoundingBox->SetTarget(nullptr);
+	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+	ShowFlags.SetDefault();
+	PickedComponent = nullptr;
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -98,14 +148,33 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 	Gizmo->Update(ray, mousePos, VP, WinWidth, WinHeight, bMouseDown, Camera);
 
+	// AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
+	
+	
+
 	if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
 	{
-		UPrimitiveComponent* PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		Gizmo->SetTarget(PickedComponent);
-		Outline->SetTarget(PickedComponent);
-		BoundingBox->SetTarget(PickedComponent);
-		EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+		// UPrimitiveComponent* 
+		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		if (!Actor)
+		{
+			PickedComponent = nullptr;
+		}
+
+		else
+		{
+			PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		}
+
+		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
 	}
+
+	else if (PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
+	{
+		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
+	}
+	SetTarget(PickedComponent);
+	
 }
 
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
@@ -115,6 +184,11 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
+
+	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
+	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	Renderer->SetDepthStencilEnabled(true);
+
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
 	{
@@ -158,7 +232,7 @@ void FEditor::Shutdown()
 void FEditor::DrawGrid(const FVector& CameraPos)
 {
 	// Grid 그리기
-	GridSpacing = EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
+	float GridSpacing = EditorSettings->GetGridSpacing(); // EditorUI->GetEditorPanel<FControlPanel>()->GetGridSpace();
 	GridCount = static_cast<int32>(GridExtent / GridSpacing);
 	if (GridCount >= 100) GridCount = 100;
 
@@ -238,6 +312,9 @@ void FEditor::DrawGrid(const FVector& CameraPos)
 
 void FEditor::ClearSceneTargetsAndFlags()
 {
+	PickedComponent = nullptr;
+	PickedActor = nullptr;
+	EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(nullptr);
 	Gizmo->SetTarget(nullptr);
 	Outline->SetTarget(nullptr);
 	BoundingBox->SetTarget(nullptr);
