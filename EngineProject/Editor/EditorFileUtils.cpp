@@ -1,3 +1,4 @@
+#include "EnginePCH.h"
 #include "EditorFileUtils.h"
 #include "Core/EngineString.h"
 #include <fstream>
@@ -164,6 +165,9 @@ bool FEditorFileUtils::LoadSceneFromFileSelection(FSceneMetaData& SceneData)
 
 		FString TypeString = PrimitiveJson["Type"].get<FString>();
 
+		if (PrimitiveJson.contains("Name"))
+			SceneData.Names.insert({UUID, PrimitiveJson["Name"].get<FString>()});
+
 		// Text면 아래 property도 가져와서 함께 로드
 		if (TypeString == "Text")
 		{
@@ -278,6 +282,7 @@ bool FEditorFileUtils::SaveSceneWithFileBrowser(FSceneMetaData& SceneData)
 			pJson["Rotation"] = { Transform.Rotation.Roll, Transform.Rotation.Pitch, Transform.Rotation.Yaw };
 			pJson["Scale"] = { Transform.Scale.X, Transform.Scale.Y, Transform.Scale.Z };
 			pJson["Type"] = TypeString;
+			pJson["Name"] = SceneData.Names.at(UUID);
 
 			// Text
 			if (TypeString == "Text" && SceneData.TextDatas.count(UUID))
