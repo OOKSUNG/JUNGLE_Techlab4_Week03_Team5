@@ -1,7 +1,7 @@
 #include "EnginePCH.h"
 #include "FontManager.h"
 
-void FFontManager::LoadFontTexture(char const* KeyName, char const* FileName)
+void FEditorFontManager::LoadFontTexture(char const* KeyName, char const* FileName)
 {
 	TSharedPtr<FFontTexture> FontTexture = MakeShared<FFontTexture>();
 	FontTexture->LoadTexture(Renderer, FileName);
@@ -9,7 +9,7 @@ void FFontManager::LoadFontTexture(char const* KeyName, char const* FileName)
 
 }
 
-void FFontManager::Init(FRenderer* InRenderer)
+void FEditorFontManager::Init(FRenderer* InRenderer)
 {
 	Renderer = InRenderer;
 }
