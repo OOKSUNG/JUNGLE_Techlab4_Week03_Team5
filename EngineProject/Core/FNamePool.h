@@ -10,8 +10,8 @@ public:
 	FNamePool(FNamePool&&) = delete;
 	FNamePool& operator=(FNamePool&&) = delete;
 
-	int32 FindOrAdd(const char* pStr);
-	int32 FindOrAdd(FString str);
+	int32 FindOrAddComparison(const char* pStr);
+	int32 FindOrAddComparison(FString str);
 	FString GetString(int32 Index) const;
 
 private:
@@ -19,6 +19,11 @@ private:
 	~FNamePool();
 
 	void Rehash();
+
+	// Comparison
+	int32* ComparisonHashTable;
+	TArray<FString> ComparisonStringList;
+	int32 ComparisonTableSize = 8192;
 
 	int32* HashTable;
 	TArray<FString> StringList;

@@ -43,7 +43,7 @@ FName::FName(const char* pStr)
 	}
 
 	// FNamePool FindOrAdd 호출
-	ComparisonIndex = FNamePool::Get().FindOrAdd(LowerStr);
+	ComparisonIndex = FNamePool::Get().FindOrAddComparison(LowerStr);
 }
 
 FName::FName(FString str) : FName(str.c_str())
