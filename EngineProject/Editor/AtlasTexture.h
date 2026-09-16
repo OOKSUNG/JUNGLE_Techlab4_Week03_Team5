@@ -3,11 +3,11 @@
 #include <wrl/client.h>
 #include "Render/Renderer.h"
 
-class FFontTexture
+class FAtlasTexture
 {
 public:
-	FFontTexture();
-	~FFontTexture() = default;
+	FAtlasTexture();
+	~FAtlasTexture() = default;
 	bool LoadTexture(FRenderer* InRenderer, char const* filename);
 	void SetSamplerState();
 	void SetParticleSamplerState();

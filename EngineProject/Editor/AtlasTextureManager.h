@@ -2,7 +2,7 @@
 #include <string>
 #include "Core/Containers.h"
 #include "ObjectSystem/Property.h"
-#include "FontTexture.h"
+#include "AtlasTexture.h"
 
 
 class FAtlasTextureManager
@@ -16,7 +16,7 @@ public:
 	void Init(FRenderer* InRenderer);
 	void LoadFontTexture(char const* KeyName, char const* FileName);
 
-	TMap<FString, TSharedPtr<FFontTexture>> FontTextureMap;
+	TMap<FString, TSharedPtr<FAtlasTexture>> FontTextureMap;
 	FAtlasTextureManager& operator=(FAtlasTextureManager&) = delete;
 private:
 	FRenderer* Renderer = nullptr;

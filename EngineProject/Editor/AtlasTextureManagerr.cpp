@@ -3,7 +3,7 @@
 
 void FAtlasTextureManager::LoadFontTexture(char const* KeyName, char const* FileName)
 {
-	TSharedPtr<FFontTexture> FontTexture = MakeShared<FFontTexture>();
+	TSharedPtr<FAtlasTexture> FontTexture = MakeShared<FAtlasTexture>();
 	FontTexture->LoadTexture(Renderer, FileName);
 	FontTextureMap[KeyName] = FontTexture;
 

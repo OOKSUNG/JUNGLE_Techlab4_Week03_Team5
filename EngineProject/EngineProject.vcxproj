@@ -172,6 +172,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Core\Window.cpp" />
+    <ClCompile Include="Editor\AtlasTexture.cpp" />
     <ClCompile Include="Editor\AtlasTextureManagerr.cpp" />
     <ClCompile Include="Editor\ConsolePanel.cpp" />
     <ClCompile Include="Editor\ContentBrowser.cpp" />
@@ -184,7 +185,6 @@
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
     <ClCompile Include="Editor\FontRenderer.cpp" />
-    <ClCompile Include="Editor\FontTexture.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
     <ClCompile Include="Editor\GizmoRenderer.cpp" />
     <ClCompile Include="Editor\GridRenderer.cpp" />
@@ -293,6 +293,7 @@
     <ClInclude Include="Core\FNamePool.h" />
     <ClInclude Include="Core\Types.h" />
     <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Editor\AtlasTexture.h" />
     <ClInclude Include="Editor\AtlasTextureManager.h" />
     <ClInclude Include="Editor\BoundingBox.h" />
     <ClInclude Include="Editor\ConsolePanel.h" />

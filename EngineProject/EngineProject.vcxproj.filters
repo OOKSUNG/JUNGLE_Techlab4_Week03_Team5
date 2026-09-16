@@ -113,9 +113,6 @@
     <ClCompile Include="Editor\FontRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Editor\FontTexture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Editor\Gizmo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -255,6 +252,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\AtlasTextureManagerr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\AtlasTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -557,6 +557,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\AtlasTextureManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\AtlasTexture.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

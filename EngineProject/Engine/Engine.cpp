@@ -94,7 +94,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	{
 		FAtlasTextureManager::GetIntance().Init(Renderer.get());
 		FAtlasTextureManager::GetIntance().LoadFontTexture("Storm","Font\\Storm.png");
-		FFontTexture* Texture = FAtlasTextureManager::GetIntance().FontTextureMap["Storm"].get();
+		FAtlasTexture* Texture = FAtlasTextureManager::GetIntance().FontTextureMap["Storm"].get();
 		Texture->SetParticleSamplerState();
 		StormSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 		StormSubUVComp->SetAtlasInfo(16, 1, 30.f);
@@ -106,7 +106,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	//{
 	//	FFontManager::GetInstance().Init(Renderer.get());
 	//	FFontManager::GetInstance().LoadFontTexture("Astral", "Font\\Astral.png");
-	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Astral"].get();
+	//	FAtlasTexture* Texture = FFontManager::GetInstance().FontTextureMap["Astral"].get();
 	//	Texture->SetParticleSamplerState();
 	//	AstralSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 	//	AstralSubUVComp->SetAtlasInfo(16, 1, 10.f);
@@ -118,7 +118,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	//{
 	//	FFontManager::GetInstance().Init(Renderer.get());
 	//	FFontManager::GetInstance().LoadFontTexture("Axe", "Font\\Axe.png");
-	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Axe"].get();
+	//	FAtlasTexture* Texture = FFontManager::GetInstance().FontTextureMap["Axe"].get();
 	//	Texture->SetParticleSamplerState();
 	//	AxeSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 	//	AxeSubUVComp->SetAtlasInfo(16, 1, 10.f);
@@ -130,7 +130,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	//{
 	//	FFontManager::GetInstance().Init(Renderer.get());
 	//	FFontManager::GetInstance().LoadFontTexture("Core", "Font\\Core.png");
-	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Core"].get();
+	//	FAtlasTexture* Texture = FFontManager::GetInstance().FontTextureMap["Core"].get();
 	//	Texture->SetParticleSamplerState();
 	//	CoreSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 	//	CoreSubUVComp->SetAtlasInfo(16, 1, 10.f);
@@ -142,7 +142,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	//{
 	//	FFontManager::GetInstance().Init(Renderer.get());
 	//	FFontManager::GetInstance().LoadFontTexture("Moonphase", "Font\\Moonphase.png");
-	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Moonphase"].get();
+	//	FAtlasTexture* Texture = FFontManager::GetInstance().FontTextureMap["Moonphase"].get();
 	//	Texture->SetParticleSamplerState();
 	//	MoonphaseSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 	//	MoonphaseSubUVComp->SetAtlasInfo(16, 1, 10.f);
@@ -154,7 +154,7 @@ bool Engine::Init(HINSTANCE hInstance)
 	//{
 	//	FFontManager::GetInstance().Init(Renderer.get());
 	//	FFontManager::GetInstance().LoadFontTexture("Explosion", "Font\\Explosion.png");
-	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Explosion"].get();
+	//	FAtlasTexture* Texture = FFontManager::GetInstance().FontTextureMap["Explosion"].get();
 	//	Texture->SetParticleSamplerState();
 	//	ExplosionSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 	//	ExplosionSubUVComp->SetAtlasInfo(3, 3, 5.0f);

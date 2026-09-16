@@ -42,7 +42,7 @@ public:
 private:
 	FRenderer* Renderer;
 	//float BaseFontSize;
-	FFontTexture* FontTexture;
+	FAtlasTexture* FontTexture;
 
 	TSharedPtr<FShader> Shader;
 	TSharedPtr<FConstantBuffer> CB;
