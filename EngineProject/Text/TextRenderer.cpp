@@ -136,9 +136,10 @@ TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
 /// @param ScaleY 세로 방향 배율
 /// @param InAtlas Font Atlas
 /// @return World 공간 정점 목록 (한 글자 당 4개)
-TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float ScaleX, float ScaleY, FDynamicFontAtlas& InAtlas)
+FTextRenderer::FTextVertexPageMap FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float ScaleX, float ScaleY, FDynamicFontAtlas& InAtlas)
 {
-    TArray<FTextVertexWorld> Vertices;
+    TArray<FTextVertexWorld> FlatVertices;
+    TArray<int> QuadPage;       // 글자 하나 당 페이지 하나
     TArray<uint32> Codepoints = DecodeUTF8(Utf8Text);
 
     float PenX = 0.0f;
@@ -157,21 +158,21 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
             return WorldPosition + Right * LocalX + Up * LocalY;
         };
 
-        Vertices.push_back({ ToWorld(X0, Y0), {Glyph.U,               Glyph.V                }});
-        Vertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
-        Vertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
-        Vertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
-
+        FlatVertices.push_back({ ToWorld(X0, Y0), {Glyph.U,               Glyph.V                }});
+        FlatVertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
+        FlatVertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
+        FlatVertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
+        QuadPage.push_back(Glyph.PageIndex);
         PenX += Glyph.Advance;
 
     }
 
     // 기즈모 피벗이 텍스트 중심에 오도록 정점 재배치
-    if (!Vertices.empty())
+    if (!FlatVertices.empty())
     {
-        FVector BoxMin = Vertices[0].Position;
-        FVector BoxMax = Vertices[0].Position;
-        for (const FTextVertexWorld& Vertex : Vertices)
+        FVector BoxMin = FlatVertices[0].Position;
+        FVector BoxMax = FlatVertices[0].Position;
+        for (const FTextVertexWorld& Vertex : FlatVertices)
         {
             BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
             BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
@@ -185,13 +186,19 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
         FVector Center = (BoxMax + BoxMin) * 0.5f;
         FVector Offset = WorldPosition - Center;
 
-        for (FTextVertexWorld& Vertex : Vertices)
-        {
+        for (FTextVertexWorld& Vertex : FlatVertices)
             Vertex.Position = Vertex.Position + Offset;
-        }
     }
 
-    return Vertices;
+    // 페이지별로 쿼드(4개) 단위로 묶기
+    FTextVertexPageMap Result;
+    for (size_t q = 0; q < QuadPage.size(); q++)
+    {
+        TArray<FTextVertexWorld>& Bucket = Result[QuadPage[q]];
+        for (int v = 0; v < 4; v++)
+            Bucket.push_back(FlatVertices[q * 4 + v]);
+    }
+    return Result;
 }
 
 /// @brief Screen 기준 텍스트 그린다. 카메라와 무관하게 화면에 고정 (UI, Debug용)
@@ -278,17 +285,21 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
                                     const FMatrix& VP, FDynamicFontAtlas& InAtlas)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
-    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, ScaleX, ScaleY, InAtlas);
-    if (Vertices.empty())
-        return;
+    FTextVertexPageMap PageVertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, ScaleX, ScaleY, InAtlas);
+    DrawTextPageMap(Renderer, PageVertices, Color, VP, InAtlas);   // 이 줄 추가, if(empty) return; 줄은 삭제
+}
 
-    TArray<uint32> Indices = BuildQuadIndices(Vertices.size());
+/// @brief 이미 계산된 페이지별 vertex map 그리기 (RenderTextWorld 전용)
+/// @param Renderer Drawcall용 Renderer
+/// @param PageVertices 페이지별로 묶인 world vertex 목록
+/// @param Color 텍스트 색상 (RGBA)
+/// @param VP View-Projection Matrix
+/// @param InAtlas Font Atlas
+void FTextRenderer::DrawTextPageMap(FRenderer* Renderer, const FTextVertexPageMap& PageVertices, FVector4 Color, const FMatrix& VP, FDynamicFontAtlas& InAtlas)
+{
+    if (PageVertices.empty()) return;
+    ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
 
-    if (!VBWorld->Update(Context, Vertices.data(), static_cast<uint32>(sizeof(FTextVertexWorld) * Vertices.size())))
-        return;
-    if (!IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
-        return;
-    
     struct FTextCBDataWorld
     {
         float VP[16];
@@ -313,27 +324,85 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     // 0xffffffff -> 전체 샘플에 다 적용
     Context->OMSetBlendState(BlendState.Get(), BlendFactor, 0xffffffff);
     // Test On, Write Off
-    // Renderer->SetDepthStencilEnabled(true);
     Context->OMSetDepthStencilState(Renderer->GetDepthTestOnlyState(), 0);  
     Context->RSSetState(NoCullState.Get());
 
     Renderer->BindShader(TextShaderWorld.get());
-    Renderer->BindVertexBuffer(VBWorld.get());
-    Renderer->BindIndexBuffer(IBWorld.get());
+
     Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Vertex);
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Pixel);
-
-    ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV();
     ID3D11SamplerState* SamplerRaw = Sampler.Get();
-    Context->PSSetShaderResources(0, 1, &AtlasSRV);
     Context->PSSetSamplers(0, 1, &SamplerRaw);
 
-    Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+    for (auto& [PageIndex, Vertices] : PageVertices)
+    {
+        if (Vertices.empty()) continue;
+
+        TArray<uint32> Indices = BuildQuadIndices(Vertices.size());
+        if (!VBWorld->Update(Context, Vertices.data(), static_cast<uint32>(sizeof(FTextVertexWorld) * Vertices.size())))
+            continue;
+        if (!IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
+            continue;
+
+        Renderer->BindVertexBuffer(VBWorld.get());
+        Renderer->BindIndexBuffer(IBWorld.get());
+
+        ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV(PageIndex);
+        Context->PSSetShaderResources(0, 1, &AtlasSRV);
+
+        Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+    }
+
     // Wtire On (다음 오브젝트를 위해 정상 depth 상태로 복귀)
     Renderer->SetDepthStencilEnabled(true);
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
 }
+
+static uint32 PackColor(const FVector4& C)
+{
+    uint8 R = static_cast<uint8>(std::clamp(C.X, 0.0f, 1.0f) * 255.0f);
+    uint8 G = static_cast<uint8>(std::clamp(C.Y, 0.0f, 1.0f) * 255.0f);
+    uint8 B = static_cast<uint8>(std::clamp(C.Z, 0.0f, 1.0f) * 255.0f);
+    uint8 A = static_cast<uint8>(std::clamp(C.W, 0.0f, 1.0f) * 255.0f);
+    return (R << 24) | (G << 16) | (B << 8) | A;
+}
+
+static FVector4 UnpackColor(uint32 Packed)
+{
+    return FVector4(
+        ((Packed >> 24) & 0xFF) / 255.0f,
+        ((Packed >> 16) & 0xFF) / 255.0f,
+        ((Packed >> 8) & 0xFF) / 255.0f,
+        (Packed & 0xFF) / 255.0f);
+}
+
+struct FTextBatchKey
+{
+    FDynamicFontAtlas* Atlas;
+    int PageIndex;
+    uint32 ColorKey;
+
+    bool operator==(const FTextBatchKey& Other) const
+    {
+        return Atlas == Other.Atlas && PageIndex == Other.PageIndex && ColorKey == Other.ColorKey;
+    }
+};
+
+
+template<>
+struct std::hash<FTextBatchKey>
+{
+    size_t operator()(const FTextBatchKey& Key) const noexcept
+    {
+        size_t Seed = std::hash<void*>()(Key.Atlas);
+        Seed ^= std::hash<int>()(Key.PageIndex) + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
+        Seed ^= std::hash<uint32>()(Key.ColorKey) + 0x9e3779b9 + (Seed << 6) + (Seed >> 2);
+        return Seed;
+    }
+};
+
 
 /// @brief Scene에 배치된 UTextComponent 전부 순회. Engine Main에서 매 프레임 호출
 /// @param TextComponents Text Component 목록 (UWorld::TextComponents)
@@ -341,54 +410,148 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
 /// @param VP View-Projection Matrix
 void FTextRenderer::RenderTextComponents(const TArray<UTextComponent*>& TextComponents, FRenderer* Renderer, const FMatrix& VP)
 {
+    TMap<FTextBatchKey, TArray<FTextVertexWorld>> Batches;
+
     for (UTextComponent* TextComp : TextComponents)
     {
         if (!TextComp || !TextComp->GetVisible())
             continue;
 
         FDynamicFontAtlas* Atlas = FFontManager::GetInstance().GetOrLoadAtlas(TextComp->GetFontPath(), TextComp->GetFontPixelSize());
-        if (!Atlas)
-            continue;
+        if (!Atlas) continue;
+
+        auto It = ComponentVertexCache.find(TextComp);
+        if (It == ComponentVertexCache.end()) continue;
+
+        uint32 ColorKey = PackColor(TextComp->GetColor());
+
+        for (auto& [PageIndex, Vertices] : It->second.PageVertices)
+        {
+            FTextBatchKey Key{ Atlas, PageIndex, ColorKey };
+            TArray<FTextVertexWorld>& Bucket = Batches[Key];
+            Bucket.insert(Bucket.end(), Vertices.begin(), Vertices.end());
+        }
+    }
+
+    for (auto& [Key, Vertices] : Batches)
+    {
+        DrawTextBatch(Renderer, Vertices, UnpackColor(Key.ColorKey), VP, *Key.Atlas, Key.PageIndex);
+    }
+}
+
+/// @brief 같은 atlas/page/color 사용 compont의 vertex 배열 하나를 그리기
+/// @param Renderer Drawcall용 Renderer
+/// @param Vertices 그룹핑된 world vertex 목록
+/// @param Color 그룹 텍스트 색상 (RGBA)
+/// @param VP View-Projection Matrix
+/// @param InAtlas Font Atlas
+/// @param PageIndex Atlas 페이지
+void FTextRenderer::DrawTextBatch(FRenderer* Renderer, const TArray<FTextVertexWorld>& Vertices, FVector4 Color, const FMatrix& VP, FDynamicFontAtlas& InAtlas, int PageIndex)
+{
+    if (Vertices.empty()) return;
+    ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
+
+    struct FTextCBDataWorld { float VP[16]; float Color[4]; float PxRange; float Pad[3]; } CBData;
+    FMatrix TransposedVP = VP.GetTransposed();
+    memcpy(CBData.VP, &TransposedVP, sizeof(CBData.VP));
+    CBData.Color[0] = Color.X; CBData.Color[1] = Color.Y; CBData.Color[2] = Color.Z; CBData.Color[3] = Color.W;
+    CBData.PxRange = InAtlas.GetPxRange();
+    Renderer->UpdateConstantBufferData(CBWorld.get(), &CBData, sizeof(CBData));
+
+    float BlendFactor[4] = { 0,0,0,0 };
+    Context->OMSetBlendState(BlendState.Get(), BlendFactor, 0xffffffff);
+    Context->OMSetDepthStencilState(Renderer->GetDepthTestOnlyState(), 0);
+    Context->RSSetState(NoCullState.Get());
+
+    Renderer->BindShader(TextShaderWorld.get());
+    Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Vertex);
+    Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Pixel);
+    ID3D11SamplerState* SamplerRaw = Sampler.Get();
+    Context->PSSetSamplers(0, 1, &SamplerRaw);
+
+    // MaxVertices(4096)를 넘으면 잘라서 처리
+    size_t Offset = 0;
+    while (Offset < Vertices.size())
+    {
+        size_t Count = std::min(Vertices.size() - Offset, static_cast<size_t>(MaxVertices));
+        Count -= Count % 4;
+        if (Count == 0) break;
+
+        TArray<uint32> Indices = BuildQuadIndices(Count);
+        if (!VBWorld->Update(Context, Vertices.data() + Offset, static_cast<uint32>(sizeof(FTextVertexWorld) * Count)) ||
+            !IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
+        {
+            break;
+        }
+
+        Renderer->BindVertexBuffer(VBWorld.get());
+        Renderer->BindIndexBuffer(IBWorld.get());
+
+        ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV(PageIndex);
+        Context->PSSetShaderResources(0, 1, &AtlasSRV);
+
+        Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+        Offset += Count;
+    }
+
+    Renderer->SetDepthStencilEnabled(true);
+    Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+}
+
+/// @brief TBounding Box 갱신 및 RenderTextComponents가 재사용할 vertex 캐시 생성
+///        내용(Text/Font/Size)과 Transform이 모두 안 바뀐 컴포넌트는 재계산을 건너뛴다.
+/// @param TextComponents Text Component 목록 (UWorld::TextComponents)
+/// @param Context 래스터라이즈/캐시 빌드용
+void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& TextComponents, ID3D11DeviceContext* Context)
+{
+    // 씬에서 제거된 컴포넌트 캐시 clear
+    for (auto It = ComponentVertexCache.begin(); It != ComponentVertexCache.end(); )
+    {
+        bool bStillAlive = std::find(TextComponents.begin(), TextComponents.end(), It->first) != TextComponents.end();
+        It = bStillAlive ? std::next(It) : ComponentVertexCache.erase(It);
+    }
+
+    for (UTextComponent* TextComp : TextComponents)
+    {
+        if (!TextComp || !TextComp->GetVisible()) continue;
+
+        bool bContentDirty = TextComp->ConsumeLayoutDirty();
 
         FTransform* CompTransform = TextComp->GetTransform();
         float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
         float ScaleUp = CompTransform->Scale.Z * UTextComponent::WorldScaleFactor;
+        FVector CurLocation = CompTransform->Location;
+        FVector CurRight = CompTransform->GetRight();
+        FVector CurUp = CompTransform->GetUp();
 
-        RenderTextWorld(Renderer, TextComp->GetText(),
-                        CompTransform->Location,
-                        CompTransform->GetRight(), CompTransform->GetUp(),
-                        ScaleRight, ScaleUp,
-                        TextComp->GetColor(),
-                        VP,
-                        *Atlas);
-    }
-}
+        auto CacheIt = ComponentVertexCache.find(TextComp);
+        bool bTransformChanged = (CacheIt == ComponentVertexCache.end())
+            || CacheIt->second.LastLocation != CurLocation
+            || CacheIt->second.LastRight != CurRight
+            || CacheIt->second.LastUp != CurUp
+            || CacheIt->second.LastScaleRight != ScaleRight
+            || CacheIt->second.LastScaleUp != ScaleUp;
 
 
-void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& TextComponents, ID3D11DeviceContext* Context)
-{
-    for (UTextComponent* TextComp : TextComponents)
-    {
-        if (!TextComp || !TextComp->GetVisible()) continue;
-        if (!TextComp->ConsumeLayoutDirty()) continue;      // render 할 필요 없으면 pass 
+
+        if (!bContentDirty && !bTransformChanged) continue;   // 내용도 transform도 안 바뀜 -> 스킵
 
         FDynamicFontAtlas* Atlas = FFontManager::GetInstance().GetOrLoadAtlas(TextComp->GetFontPath(), TextComp->GetFontPixelSize());
         if (!Atlas) continue;
 
-        FTransform* CompTransform = TextComp->GetTransform();
-        float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
-        float ScaleUp = CompTransform->Scale.Z * UTextComponent::WorldScaleFactor;
-
-        TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(TextComp->GetText(), Context,
-                                            CompTransform->Location, CompTransform->GetRight(), CompTransform->GetUp(),
+        FTextVertexPageMap PageVertices = BuildTextQuadsWorld(TextComp->GetText(), Context,
+                                            CurLocation, CurRight, CurUp,
                                             ScaleRight, ScaleUp, *Atlas);
+        
+        bool bHasVertex = false;
+        FVector BoxMin, BoxMax;
 
-        if (!Vertices.empty())
+        for (auto& [PageIndex, Vertices] : PageVertices)
         {
-            FVector BoxMin = Vertices[0].Position;
-            FVector BoxMax = Vertices[0].Position;
             for (const FTextVertexWorld& Vertex : Vertices)
             {
+                if (!bHasVertex) { BoxMin = BoxMax = Vertex.Position; bHasVertex = true; continue; }
                 BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
                 BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
                 BoxMin.Z = (Vertex.Position.Z < BoxMin.Z) ? Vertex.Position.Z : BoxMin.Z;
@@ -396,12 +559,18 @@ void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& Tex
                 BoxMax.Y = (Vertex.Position.Y > BoxMax.Y) ? Vertex.Position.Y : BoxMax.Y;
                 BoxMax.Z = (Vertex.Position.Z > BoxMax.Z) ? Vertex.Position.Z : BoxMax.Z;
             }
+        }
 
+        if (bHasVertex)
+        {
             FVector Diagonal = BoxMax - BoxMin;
             float HalfWidth = FVector::DotProduct(Diagonal, CompTransform->GetRight()) * 0.5f / ScaleRight;
             float HalfHeight = FVector::DotProduct(Diagonal, CompTransform->GetUp()) * 0.5f / ScaleUp;
             TextComp->SetLocalExtent(HalfWidth, HalfHeight);
             TextComp->SetWorldBounds(BoxMin, BoxMax);
         }
+
+        // 캐시에 저장 -> RenderTextComponents 에서 재사용
+        ComponentVertexCache[TextComp] = { std::move(PageVertices), CurLocation, CurRight, CurUp, ScaleRight, ScaleUp };
     }
 }

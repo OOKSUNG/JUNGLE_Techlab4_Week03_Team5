@@ -7,4 +7,5 @@ void USphereComponent::BeginPlay()
 	Super::BeginPlay();
 	SetMesh(FResourceManager::GetInstance().GetMesh("Sphere"));
 	SetMeshData(FGeometryGenerator::GetMeshData("Sphere"));
+	SetFName("SphereComponent_" + std::to_string(GetUUID()));
 }

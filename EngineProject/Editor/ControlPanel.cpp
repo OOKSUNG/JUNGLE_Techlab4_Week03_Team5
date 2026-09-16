@@ -241,7 +241,7 @@ void FControlPanel::OnRender()
 	{
 		ShowFlags->Set(EShowFlagBits::OutLine, bOutLine);
 	}
-	ImGui::SameLine();
+
 	bool bGizmo = ShowFlags->IsSet(EShowFlagBits::Gizmo);
 	if (ImGui::Checkbox("Gizmo", &bGizmo))
 	{

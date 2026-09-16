@@ -30,4 +30,5 @@ struct FSceneMetaData
 	TMap<uint32, FTextMetaData> TextDatas;	// Text property
 	TMap<uint32, FParticleMetaData> ParticleDatas;
 
+	TMap<uint32, FString> Names;	
 };

@@ -69,9 +69,7 @@ float4 mainPS(VS_OUTPUT Input) : SV_TARGET
 {
     float DistanceToCamera = length(Input.WorldPos - CameraPos);
 
-    // FadeStart 전까지 완전 불투명, FadeEnd부터 완전 투명
     float Fade = 1.0f - smoothstep(FadeStart, FadeEnd, DistanceToCamera);
-     // smoothstep(FadeStart, FadeEnd, DistanceToCamera);
 
     Input.Color.a *= Fade;
 
@@ -79,4 +77,5 @@ float4 mainPS(VS_OUTPUT Input) : SV_TARGET
         discard;
 
     return Input.Color;
+    
 }

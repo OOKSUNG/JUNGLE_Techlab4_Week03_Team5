@@ -61,6 +61,8 @@ public:
 	TArray<UPrimitiveComponent*> GetPrimitiveComponents() { return (PrimitiveComponents); };
 
 	const TArray<AActor*>& GetActors() const { return Actors; };
+
+	void DestroyActor(AActor* Actor);
 private:
 	TArray<AActor*> Actors;
 
@@ -96,6 +98,9 @@ namespace
 			break;
 		case EPrimitiveType::Plane:
 			return "Plane";
+			break;
+		case EPrimitiveType::UVPlane:
+			return "UVPlane";
 			break;
 		case EPrimitiveType::Text:
 			return "Text";

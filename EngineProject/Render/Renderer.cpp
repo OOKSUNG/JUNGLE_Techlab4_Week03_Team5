@@ -415,6 +415,34 @@ void FRenderer::DrawIndexed(uint32 IndexCount)
 	DeviceContext->DrawIndexed(IndexCount, 0, 0);
 }
 
+void FRenderer::CreateAlphaBlendState()
+{
+	D3D11_BLEND_DESC BlendDesc{};
+	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+
+	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask =
+		D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	HRESULT hr = Device->CreateBlendState(&BlendDesc, AlphaBlendState.GetAddressOf());
+}
+
+void FRenderer::SetBlendState(ID3D11BlendState* BlendState)
+{
+	DeviceContext->OMSetBlendState(
+		BlendState,
+		nullptr,
+		0xffffffff
+	);
+}
+
 //void FRenderer::Prepare()
 //{
 //	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -526,9 +554,8 @@ void FRenderer::DrawTexturePacket(const FRenderPacket& Packet, FMatrix VP, UPrim
 	DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
 	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 	DeviceContext->OMSetDepthStencilState(nullptr, 0);
-	DeviceContext->RSSetState(nullptr);
-
 	ViewModeState->Apply(this);
+
 }
 
 void FRenderer::Shutdown()

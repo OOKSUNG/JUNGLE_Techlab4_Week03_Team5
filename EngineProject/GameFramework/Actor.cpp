@@ -85,12 +85,10 @@ UPrimitiveComponent* AActor::AddPrimitiveComponent(EPrimitiveType Type, FTransfo
 		//Cast<UParticleSubUVComponent>(RootComponent)->SetType(Type);
 		break;
 	case EPrimitiveType::Text:
-		RootComponent = FObjectFactory::ConstructObject<UTextComponent>();
-		Cast<UTextComponent>(RootComponent)->SetType(Type);
+		NewComp = FObjectFactory::ConstructObject<UTextComponent>();
 		break;
 	default:
 		break;
-	break;
 	}
 	if (NewComp)
 	{

@@ -33,6 +33,9 @@ public:
 	// OnRender에서 분리한 함수 (Gizmo)
 	void RenderGizmo(FMatrix VP, FRenderer* InRenderer);
 
+	// OnRender에서 분리한 함수 (ImGui)
+	void PresentUI();
+
 	void Shutdown();
 
 	void SetTarget(UPrimitiveComponent* PickedComponent);
@@ -51,6 +54,12 @@ public:
 	void ClearSceneTargetsAndFlags();
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
+
+
+	void ClearActorReference(AActor* Actor);
+
+	void DeleteActor(AActor* Actor);
+
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;

@@ -7,4 +7,5 @@ void UPlaneComponent::BeginPlay()
 	Super::BeginPlay();
 	SetMesh(FResourceManager::GetInstance().GetMesh("Plane"));
 	SetMeshData(FGeometryGenerator::GetMeshData("Plane"));
+	SetFName("PlaneComponent_" + std::to_string(GetUUID()));
 }

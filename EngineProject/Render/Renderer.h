@@ -70,6 +70,10 @@ public:
 	void BindShader(FShader* InShader);
 	void BindMesh(FMesh* InMesh);
 
+	void CreateAlphaBlendState();
+	ID3D11BlendState* GetAlphaBlendState() { return AlphaBlendState.Get(); }
+	void SetBlendState(ID3D11BlendState* BlendState);
+
 	void Draw(uint32 VertexCount);
 	void DrawIndexed(uint32 IndexCount);
 
@@ -149,6 +153,8 @@ private:
 	FLOAT ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 
 	TSharedPtr<FViewModeState> ViewModeState;
+
+	ComPtr<ID3D11BlendState> AlphaBlendState;
 
 	//TUniquePtr<FLineRenderer> LineRenderer;
 };

@@ -96,6 +96,16 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 		}
 	);
 
+	FSceneOutlinerPanel* OutlinerPanel = EditorUI->GetEditorPanel<FSceneOutlinerPanel>();
+
+	OutlinerPanel->SetActorDeleteCallback([&](AActor* Actor)
+		{
+			DeleteActor(Actor );
+
+		}
+	);
+
+
 	LineRenderer = MakeUnique<FLineRenderer>();
 	LineRenderer->Init(InRenderer);
 
@@ -177,6 +187,48 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	
 }
 
+void FEditor::ClearActorReference(AActor* Actor)
+{
+	if (!Actor)
+	{
+		return;
+	}
+
+	// 현재 선택된 Actor가 삭제 대상이면 선택 해제
+	if (PickedActor == Actor)
+	{
+		PickedActor = nullptr;
+		PickedComponent = nullptr;
+	}
+
+	// Outliner 선택 해제
+	if (FSceneOutlinerPanel* Outliner = EditorUI->GetEditorPanel<FSceneOutlinerPanel>())
+	{
+		if (Outliner->GetSelectedActor() == Actor)
+		{
+			Outliner->SetSelectedActor(nullptr);
+		}
+	}
+
+	// Gizmo Target 해제
+	Gizmo->SetTarget(nullptr);
+
+	// 기타 Actor를 참조하는 Editor 객체들도 여기서 해제
+	// Outline->SetTarget(nullptr);
+}
+
+void FEditor::DeleteActor(AActor* Actor)
+{
+	if (!Actor)
+	{
+		return;
+	}
+
+	ClearActorReference(Actor);
+
+	Context.World->DestroyActor(Actor);
+}
+
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
 {
 	const FVector CamLoc = Camera->GetLocation();
@@ -213,7 +265,9 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	EditorUI->OnRender();
 
-	ImGuiRenderer->End();
+	// ImGuiRenderer->End();  // -> PresentUI()로 분리함
+
+
 }
 
 // Gizmo Render 함수 분리
@@ -225,6 +279,11 @@ void FEditor::RenderGizmo(FMatrix VP, FRenderer* Renderer)
 		GizmoRenderer->OnRender(*Gizmo, VP);
 		Renderer->SetDepthStencilEnabled(true);
 	}
+}
+
+void FEditor::PresentUI()
+{
+	ImGuiRenderer->End();	// ImGui::Render() + Draw + Update
 }
 
 void FEditor::Shutdown()

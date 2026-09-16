@@ -27,3 +27,21 @@ void FEditorSelection::Clear()
 //{
 //	
 //}
+
+//void FEditorSelection::SetTarget(UPrimitiveComponent* PickedComponent)
+//{
+//	Gizmo->SetTarget(PickedComponent);
+//	Outline->SetTarget(PickedComponent);
+//	BoundingBox->SetTarget(PickedComponent);
+//	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(PickedComponent);
+//}
+//
+//void FEditorSelection::SetSceneClear()
+//{
+//	Gizmo->SetTarget(nullptr);
+//	Outline->SetTarget(nullptr);
+//	BoundingBox->SetTarget(nullptr);
+//	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
+//	ShowFlags.SetDefault();
+//	PickedComponent = nullptr;
+//}

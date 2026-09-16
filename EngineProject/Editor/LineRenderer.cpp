@@ -70,11 +70,17 @@ bool FLineRenderer::Flush(FRenderer* Renderer,FVector CameraPos,  FMatrix VP)
     Renderer->BindConstantBuffer(0, ConstantBuffer.get(), EShaderBindFlagBits::Vertex);
     Renderer->BindConstantBuffer(0, ConstantBuffer.get(), EShaderBindFlagBits::Pixel);
 
+    // Alpha Blending
+    Renderer->CreateAlphaBlendState();
+    Renderer->SetBlendState(Renderer->GetAlphaBlendState());
+
     // DrawIndexed()
     Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
 
     Vertices.clear();
     Indices.clear();
+
+    return true;
 }
 
 void FLineRenderer::DebugDraw()
