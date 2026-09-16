@@ -210,7 +210,9 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	EditorUI->OnRender();
 
-	ImGuiRenderer->End();
+	// ImGuiRenderer->End();  // -> PresentUI()로 분리함
+
+
 }
 
 // Gizmo Render 함수 분리
@@ -222,6 +224,11 @@ void FEditor::RenderGizmo(FMatrix VP, FRenderer* Renderer)
 		GizmoRenderer->OnRender(*Gizmo, VP);
 		Renderer->SetDepthStencilEnabled(true);
 	}
+}
+
+void FEditor::PresentUI()
+{
+	ImGuiRenderer->End();	// ImGui::Render() + Draw + Update
 }
 
 void FEditor::Shutdown()
