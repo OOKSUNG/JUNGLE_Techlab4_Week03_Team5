@@ -11,6 +11,7 @@
 void UCameraComponent::BeginPlay()
 {
     Super::BeginPlay();
+    SetFName("CameraComponent_" + std::to_string(GetUUID()));
 }
 
 void UCameraComponent::TickComponent(float DeltaTime)
