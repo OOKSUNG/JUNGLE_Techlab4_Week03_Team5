@@ -27,6 +27,12 @@ void FOutlineRenderer::OnRender(const FOutline& InOutline, const FMatrix& InView
 		return;
 	}
 
+	// TODO : Text 박스에 outliner?
+	FMesh* Mesh = InOutline.GetMesh();
+	if (!Mesh)
+	{
+		return;
+	}
 
 	Renderer->GetDeviceContext()->RSSetState(RasterizerState.Get());
 	Renderer->BindShader(Shader);

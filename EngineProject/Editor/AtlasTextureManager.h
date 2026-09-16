@@ -5,21 +5,21 @@
 #include "FontTexture.h"
 
 
-class FFontManager
+class FAtlasTextureManager
 {
 public:
-	static FFontManager& GetInstance()
+	static FAtlasTextureManager& GetIntance()
 	{
-		static FFontManager Instance;
+		static FAtlasTextureManager Instance;
 		return Instance;
 	}
 	void Init(FRenderer* InRenderer);
 	void LoadFontTexture(char const* KeyName, char const* FileName);
-	
+
 	TMap<FString, TSharedPtr<FFontTexture>> FontTextureMap;
-	FFontManager& operator=(FFontManager&) = delete;
+	FAtlasTextureManager& operator=(FAtlasTextureManager&) = delete;
 private:
 	FRenderer* Renderer = nullptr;
-	FFontManager() = default;
-	~FFontManager() = default;
+	FAtlasTextureManager() = default;
+	~FAtlasTextureManager() = default;
 };

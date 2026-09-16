@@ -4,23 +4,6 @@
 #include "Types.h"
 #include "FNamePool.h"
 #include "ThirdParty/xxHash/xxhash.h"
-#include <iostream>
-
-FNamePool::FNamePool()
-{
-	HashTable = new int32[TableSize];
-	std::fill(HashTable, HashTable + TableSize, -1);
-	
-	// 0번째는 None 문자열로 고정
-	StringList.push_back("none");
-	HashTable[XXH32("none", 4, 0) % TableSize] = 0;
-}
-
-FNamePool::~FNamePool()
-{
-	delete[] HashTable;
-	StringList.clear();
-}
 
 FNamePool& FNamePool::Get()
 {
@@ -28,23 +11,50 @@ FNamePool& FNamePool::Get()
 	return instance;
 }
 
-int32 FNamePool::FindOrAdd(const char* pStr)
+FNamePool::FNamePool()
+{
+	// Comparison Initialization
+	ComparisonHashTable = new int32[ComparisonTableSize];
+	std::fill(ComparisonHashTable, ComparisonHashTable + ComparisonTableSize, -1);
+	
+	// 0번째는 None 문자열로 고정
+	ComparisonStringList.push_back("none");
+	ComparisonHashTable[XXH32("none", 4, 0) % ComparisonTableSize] = 0;
+
+	// Display Initialization
+	DisplayHashTable = new int32[DisplayTableSize];
+	std::fill(DisplayHashTable, DisplayHashTable + DisplayTableSize, -1);
+
+	DisplayStringList.push_back("none");
+	DisplayHashTable[XXH32("none", 4, 0) % DisplayTableSize] = 0;
+}
+
+FNamePool::~FNamePool()
+{
+	delete[] ComparisonHashTable;
+	ComparisonStringList.clear();
+
+	delete[] DisplayHashTable;
+	DisplayStringList.clear();
+}
+
+int32 FNamePool::FindOrAddComparison(const char* pStr)
 {
 	// 만약 용량이 60% 찼다면 재해싱
-	if (StringList.size() >= TableSize * 0.6)
+	if (ComparisonStringList.size() >= ComparisonTableSize * 0.6)
 	{
-		Rehash();
+		Rehash(ComparisonHashTable, ComparisonTableSize, ComparisonStringList);
 	}
 
 	// 해시값 기반 슬롯 계산
 	uint32 HashValue = XXH32(pStr, strlen(pStr), 0);
-	uint32 Slot = HashValue % TableSize;
+	uint32 Slot = HashValue % ComparisonTableSize;
 
 	// 해당 슬롯이 이미 차있다면
-	while (HashTable[Slot] != -1)
+	while (ComparisonHashTable[Slot] != -1)
 	{
-		int32 StringIndex = HashTable[Slot];
-		FString Stored = StringList[StringIndex];
+		int32 StringIndex = ComparisonHashTable[Slot];
+		FString Stored = ComparisonStringList[StringIndex];
 
 		// 같은 문자열이면 재사용
 		if (Stored == pStr)
@@ -55,22 +65,63 @@ int32 FNamePool::FindOrAdd(const char* pStr)
 		// 해시 충돌 발생
 		else 
 		{
-			Slot = (Slot + 1) % TableSize;
+			Slot = (Slot + 1) % ComparisonTableSize;
 		}
 	}
 
-	StringList.push_back(pStr);
-	uint32 StringIndex = StringList.size() - 1;
-	HashTable[Slot] = StringIndex;
+	ComparisonStringList.push_back(pStr);
+	uint32 StringIndex = ComparisonStringList.size() - 1;
+	ComparisonHashTable[Slot] = StringIndex;
 	return StringIndex;
 }
 
-int32 FNamePool::FindOrAdd(FString str)
+int32 FNamePool::FindOrAddComparison(FString str)
 {
-	return FindOrAdd(str.c_str());
+	return FindOrAddComparison(str.c_str());
 }
 
-void FNamePool::Rehash()
+int32 FNamePool::FindOrAddDisplay(const char* pStr)
+{
+	if (DisplayStringList.size() >= DisplayTableSize * 0.6)
+	{
+		Rehash(DisplayHashTable, DisplayTableSize, DisplayStringList);
+	}
+
+	// 해시값 기반 슬롯 계산
+	uint32 HashValue = XXH32(pStr, strlen(pStr), 0);
+	uint32 Slot = HashValue % DisplayTableSize;
+
+	// 해당 슬롯이 이미 차있다면
+	while (DisplayHashTable[Slot] != -1)
+	{
+		int32 StringIndex = DisplayHashTable[Slot];
+		FString Stored = DisplayStringList[StringIndex];
+
+		// 같은 문자열이면 재사용
+		if (Stored == pStr)
+		{
+			return StringIndex;
+		}
+
+		// 해시 충돌 발생
+		else
+		{
+			Slot = (Slot + 1) % DisplayTableSize;
+		}
+	}
+
+	DisplayStringList.push_back(pStr);
+	uint32 StringIndex = DisplayStringList.size() - 1;
+	DisplayHashTable[Slot] = StringIndex;
+	return StringIndex;
+}
+
+int32 FNamePool::FindOrAddDisplay(FString str)
+{
+	return FindOrAddDisplay(str.c_str());
+}
+
+void FNamePool::Rehash(int32*& HashTable, int32& TableSize, TArray<FString>& StringList)
 {
 	// 크기 두 배로 설정
 	TableSize *= 2;
@@ -94,7 +145,7 @@ void FNamePool::Rehash()
 	}
 }
 
-FString FNamePool::GetString(int32 Index) const
+FString FNamePool::GetString(int32 DisplayIndex) const
 {
-	return StringList[Index];
+	return DisplayStringList[DisplayIndex];
 }

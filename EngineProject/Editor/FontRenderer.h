@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <d3d11.h>
 #include "Render/Renderer.h"
-#include "FontManager.h"
+#include "AtlasTextureManager.h"
 #include "Camera/CameraComponent.h"
 #include "Render/Buffer.h"
 

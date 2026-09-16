@@ -9,6 +9,7 @@
 #include "../Component/SphereComponent.h"
 #include "../Component/ConeComponent.h"
 #include "../Component/PlaneComponent.h"
+#include "../Component/TextComponent.h"
 #include "../Component/ParticleSubUVComponent.h"
 #include "../Engine/ResourceManager.h"
 
@@ -30,11 +31,21 @@ AActor::~AActor()
 	//RootComponent = nullptr;   // Root 는 Components에 이미 들어있으므로 delete 하지 말 것
 }
 
+UTextComponent* AActor::GetTextComponent() const
+{
+	return Cast<UTextComponent>(RootComponent);
+}
+
 void AActor::BeginPlay()
 {
-	if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(RootComponent))
+	
+	if (UTextComponent* TextComp = Cast<UTextComponent>(RootComponent))
 	{
-		World->AddPrimitive(Cast<UPrimitiveComponent>(RootComponent));
+		World->AddTextComponent(TextComp);
+	}
+	else if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(RootComponent))
+	{
+		World->AddPrimitive(Primitive);
 	}
 
 	for (UActorComponent* Component : Components)
@@ -71,6 +82,10 @@ UPrimitiveComponent* AActor::AddPrimitiveComponent(EPrimitiveType Type, FTransfo
 		break;
 	case EPrimitiveType::UVPlane:
 		NewComp = FObjectFactory::ConstructObject<UParticleSubUVComponent>();
+		break;
+	case EPrimitiveType::Text:
+		RootComponent = FObjectFactory::ConstructObject<UTextComponent>();
+		Cast<UTextComponent>(RootComponent)->SetType(Type);
 		break;
 	default:
 		break;

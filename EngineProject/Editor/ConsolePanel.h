@@ -15,7 +15,7 @@ public:
 	void ExecCommand(const FString& CommandLine);
 	int TextEditCallback(ImGuiInputTextCallbackData* Data);
 
-	inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	// inline void SetContext(FEditorContext InContext) { Context = InContext; }
 
 	bool HasActiveWorldText() const { return bDebugTextActive; }
 	uint32 GetDebugTextTargetUUID() const { return DebugTextTargetUUID; }
@@ -48,7 +48,7 @@ private:
 	bool AutoScroll = true;
 	bool ScrollToBottom = false;
 
-	FEditorContext Context;
+	// FEditorContext Context;
 };
 
 

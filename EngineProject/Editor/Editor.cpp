@@ -8,7 +8,7 @@
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
 #include "FontRenderer.h"
-#include "FontManager.h"
+#include "AtlasTextureManager.h"
 #include "UUIDBillboardRenderer.h"
 
 
@@ -61,9 +61,10 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 
 	ControlPanel->SetNewSceneCallback([&]()
 		{
+			ClearSceneTargetsAndFlags();
 			Context.World->ClearScene();
 			Context.World->NewScene();
-			ClearSceneTargetsAndFlags();
+			
 		}
 	);
 
@@ -72,9 +73,10 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 			FSceneMetaData SceneData;
 			if (EditorFileUtils->LoadSceneFromFileSelection(SceneData))
 			{
+				ClearSceneTargetsAndFlags();
 				Context.World->ClearScene();
 				Context.World->LoadScene(SceneData);
-				ClearSceneTargetsAndFlags();
+				
 			}
 			else {
 				LOG(Editor, Error, "Failed Loading Scene File...");
@@ -111,8 +113,8 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
-	FFontManager::GetInstance().Init(InRenderer);
-	FFontManager::GetInstance().LoadFontTexture("Default", "Font\\Default.png");
+	FAtlasTextureManager::GetIntance().Init(InRenderer);
+	FAtlasTextureManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
 	
 	return true;
 
@@ -133,7 +135,7 @@ void FEditor::SetSceneClear()
 	BoundingBox->SetTarget(nullptr);
 	EditorUI->GetEditorPanel<FPropertyPanel>()->SetTarget(nullptr);
 	ShowFlags.SetDefault();
-	
+	PickedComponent = nullptr;
 }
 
 void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight)
@@ -146,20 +148,32 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 
 	Gizmo->Update(ray, mousePos, VP, WinWidth, WinHeight, bMouseDown, Camera);
 
-	AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
+	// AActor* PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor();
 	
-	if (PickedActor)
-	{
-		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
-		SetTarget(PickedComponent);
-	}
+	
 
 	if (FInputSystem::IsMousePressed(EMouseButton::Left) && !Gizmo->IsUsing() && Gizmo->GetHoveredAxis() < 0 && !ImGui::GetIO().WantCaptureMouse)
 	{
 		// UPrimitiveComponent* 
-		PickedComponent = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
-		SetTarget(PickedComponent);
+		AActor* Actor = Context.World->GetPickingPrimitive(WinWidth, WinHeight);
+		if (!Actor)
+		{
+			PickedComponent = nullptr;
+		}
+
+		else
+		{
+			PickedComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		}
+
+		EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(Actor);
 	}
+
+	else if (PickedActor = EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->GetSelectedActor())
+	{
+		PickedComponent = Cast<UPrimitiveComponent>(PickedActor->GetRootComponent());
+	}
+	SetTarget(PickedComponent);
 	
 }
 
@@ -169,16 +183,12 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
-		OutlineRenderer->OnRender(*Outline, VP, CamLoc);	
-
-	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
-	{
-		Renderer->SetDepthStencilEnabled(false);
-		GizmoRenderer->OnRender(*Gizmo, VP);
-	}
+		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
 
 	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
 	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	Renderer->SetDepthStencilEnabled(true);
+
 
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))
@@ -202,6 +212,17 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	EditorUI->OnRender();
 
 	ImGuiRenderer->End();
+}
+
+// Gizmo Render 함수 분리
+void FEditor::RenderGizmo(FMatrix VP, FRenderer* Renderer)
+{
+	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
+	{
+		Renderer->SetDepthStencilEnabled(false);
+		GizmoRenderer->OnRender(*Gizmo, VP);
+		Renderer->SetDepthStencilEnabled(true);
+	}
 }
 
 void FEditor::Shutdown()
@@ -292,6 +313,9 @@ void FEditor::DrawGrid(const FVector& CameraPos)
 
 void FEditor::ClearSceneTargetsAndFlags()
 {
+	PickedComponent = nullptr;
+	PickedActor = nullptr;
+	EditorUI->GetEditorPanel<FSceneOutlinerPanel>()->SetSelectedActor(nullptr);
 	Gizmo->SetTarget(nullptr);
 	Outline->SetTarget(nullptr);
 	BoundingBox->SetTarget(nullptr);

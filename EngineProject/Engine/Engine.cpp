@@ -17,6 +17,7 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/ResourceManager.h"
 #include "Editor/EditorUI.h"
+#include "Text/FontManager.h"
 
 bool Engine::Init(HINSTANCE hInstance)
 {
@@ -69,6 +70,12 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 
 	LOG(Engine, Info, "Success!");
+
+	// Font Manager
+	LOG(Engine, Info, "Initialize FontManager...");
+	FFontManager::GetInstance().SetDevice(Renderer->GetDevice());   // 주석 해제
+	LOG(Engine, Info, "Success!");
+
 	Editor = MakeUnique<FEditor>();
 
 	LOG(Engine, Info, "Initialize Editor...");
@@ -85,73 +92,73 @@ bool Engine::Init(HINSTANCE hInstance)
 	UParticleSubUVComponent* StormSubUVComp = Cast<UParticleSubUVComponent>(StormEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
 	if (StormSubUVComp)
 	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Storm","Font\\Storm.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Storm"].get();
+		FAtlasTextureManager::GetIntance().Init(Renderer.get());
+		FAtlasTextureManager::GetIntance().LoadFontTexture("Storm","Font\\Storm.png");
+		FFontTexture* Texture = FAtlasTextureManager::GetIntance().FontTextureMap["Storm"].get();
 		Texture->SetParticleSamplerState();
 		StormSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
 		StormSubUVComp->SetAtlasInfo(16, 1, 30.f);
 	}
 
-	AActor* AstralEffect = World->SpawnActor<AActor>(&SpawnTransform);
-	UParticleSubUVComponent* AstralSubUVComp = Cast<UParticleSubUVComponent>(AstralEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
-	if (AstralSubUVComp)
-	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Astral", "Font\\Astral.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Astral"].get();
-		Texture->SetParticleSamplerState();
-		AstralSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
-		AstralSubUVComp->SetAtlasInfo(16, 1, 10.f);
-	}
+	//AActor* AstralEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	//UParticleSubUVComponent* AstralSubUVComp = Cast<UParticleSubUVComponent>(AstralEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	//if (AstralSubUVComp)
+	//{
+	//	FFontManager::GetInstance().Init(Renderer.get());
+	//	FFontManager::GetInstance().LoadFontTexture("Astral", "Font\\Astral.png");
+	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Astral"].get();
+	//	Texture->SetParticleSamplerState();
+	//	AstralSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	//	AstralSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	//}
 
-	AActor* AxeEffect = World->SpawnActor<AActor>(&SpawnTransform);
-	UParticleSubUVComponent* AxeSubUVComp = Cast<UParticleSubUVComponent>(AxeEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
-	if (AxeSubUVComp)
-	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Axe", "Font\\Axe.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Axe"].get();
-		Texture->SetParticleSamplerState();
-		AxeSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
-		AxeSubUVComp->SetAtlasInfo(16, 1, 10.f);
-	}
+	//AActor* AxeEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	//UParticleSubUVComponent* AxeSubUVComp = Cast<UParticleSubUVComponent>(AxeEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	//if (AxeSubUVComp)
+	//{
+	//	FFontManager::GetInstance().Init(Renderer.get());
+	//	FFontManager::GetInstance().LoadFontTexture("Axe", "Font\\Axe.png");
+	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Axe"].get();
+	//	Texture->SetParticleSamplerState();
+	//	AxeSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	//	AxeSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	//}
 
-	AActor* CoreEffect = World->SpawnActor<AActor>(&SpawnTransform);
-	UParticleSubUVComponent* CoreSubUVComp = Cast<UParticleSubUVComponent>(CoreEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
-	if (CoreSubUVComp)
-	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Core", "Font\\Core.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Core"].get();
-		Texture->SetParticleSamplerState();
-		CoreSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
-		CoreSubUVComp->SetAtlasInfo(16, 1, 10.f);
-	}
+	//AActor* CoreEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	//UParticleSubUVComponent* CoreSubUVComp = Cast<UParticleSubUVComponent>(CoreEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	//if (CoreSubUVComp)
+	//{
+	//	FFontManager::GetInstance().Init(Renderer.get());
+	//	FFontManager::GetInstance().LoadFontTexture("Core", "Font\\Core.png");
+	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Core"].get();
+	//	Texture->SetParticleSamplerState();
+	//	CoreSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	//	CoreSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	//}
 
-	AActor* MoonphaseEffect = World->SpawnActor<AActor>(&SpawnTransform);
-	UParticleSubUVComponent* MoonphaseSubUVComp = Cast<UParticleSubUVComponent>(MoonphaseEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
-	if (MoonphaseSubUVComp)
-	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Moonphase", "Font\\Moonphase.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Moonphase"].get();
-		Texture->SetParticleSamplerState();
-		MoonphaseSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
-		MoonphaseSubUVComp->SetAtlasInfo(16, 1, 10.f);
-	}
+	//AActor* MoonphaseEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	//UParticleSubUVComponent* MoonphaseSubUVComp = Cast<UParticleSubUVComponent>(MoonphaseEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	//if (MoonphaseSubUVComp)
+	//{
+	//	FFontManager::GetInstance().Init(Renderer.get());
+	//	FFontManager::GetInstance().LoadFontTexture("Moonphase", "Font\\Moonphase.png");
+	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Moonphase"].get();
+	//	Texture->SetParticleSamplerState();
+	//	MoonphaseSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	//	MoonphaseSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	//}
 
-	AActor* ExplosionEffect = World->SpawnActor<AActor>(&SpawnTransform);
-	UParticleSubUVComponent* ExplosionSubUVComp = Cast<UParticleSubUVComponent>(ExplosionEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
-	if (ExplosionSubUVComp)
-	{
-		FFontManager::GetInstance().Init(Renderer.get());
-		FFontManager::GetInstance().LoadFontTexture("Explosion", "Font\\Explosion.png");
-		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Explosion"].get();
-		Texture->SetParticleSamplerState();
-		ExplosionSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
-		ExplosionSubUVComp->SetAtlasInfo(3, 3, 5.0f);
-	}
+	//AActor* ExplosionEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	//UParticleSubUVComponent* ExplosionSubUVComp = Cast<UParticleSubUVComponent>(ExplosionEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	//if (ExplosionSubUVComp)
+	//{
+	//	FFontManager::GetInstance().Init(Renderer.get());
+	//	FFontManager::GetInstance().LoadFontTexture("Explosion", "Font\\Explosion.png");
+	//	FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Explosion"].get();
+	//	Texture->SetParticleSamplerState();
+	//	ExplosionSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	//	ExplosionSubUVComp->SetAtlasInfo(3, 3, 5.0f);
+	//}
 
 	bIsRunning = true;
 
@@ -185,55 +192,71 @@ void Engine::Run()
 		UCameraComponent* Camera = MainCamera->GetCameraComponent();
 		VP = Camera->GetViewProjectionMatrix();
 
+		// BoundingBox 렌더링 전에 갱신
+		World->UpdateTextComponentBounds(TextRenderer.get(), Renderer->GetDeviceContext());
+
 		UpdateEditor(DeltaTime, Camera, VP);
 
 		TQueue<FRenderPacket> RenderQueue;
 		World->GatherRenderPackets(RenderQueue);
 		FInputSystem::UpdateInputStates();
-	
+
 		Renderer->BeginFrame();
 
 		// World
 		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
 			Renderer->RenderAll(RenderQueue, VP, Editor->GetSelectedTarget());
-				
+
 		// Editor
 		Editor->OnRender(VP, Camera, Renderer.get());
 
-		Renderer->BindMainRenderTarget();   // ImGui 멀티뷰포트가 바꾼 Render Target 원복
+		// ImGui 멀티뷰포트가 바꾼 Render Target 원복
+		Renderer->BindMainRenderTarget();
+
+		// Text Component Render
+		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
 		FConsolePanel* Console = Editor->GetConsolePanel();
 
 		if (Console && Console->HasActiveWorldText())
 		{
 			AActor* TargetActor = World->FindActorByUUID(Console->GetDebugTextTargetUUID());
-			
+
 			if (TargetActor)
 			{
-				FVector HeadOffset(0.0f, 0.0f, 1.0f); // Actor 살짝 위 (2.0f)
+				FVector HeadOffset(0.0f, 0.0f, 2.0f); // Actor 살짝 위 (2.0f)
 				FVector TextWorldPos = TargetActor->GetRootComponent()->GetTransform()->Location + HeadOffset;
-				
+
 				FVector CamRight = Camera->GetTransform()->GetRight();
 				FVector CamUp = Camera->GetTransform()->GetUp();
-				
-				TextRenderer->RenderTextWorld(
-					Renderer.get(), Console->GetDebugTextString(),
-					TextWorldPos, CamRight, CamUp,
-					0.01f,
-					FVector4(1.0f, 1.0f, 1.0f, 1.0f),
-					VP);
 
+				FDynamicFontAtlas* DebugAtlas = FFontManager::GetInstance().GetOrLoadAtlas("ThirdParty\\Pretendard-Regular.otf", 32);
+
+				if (DebugAtlas)
+				{
+					TextRenderer->RenderTextWorld(
+						Renderer.get(), Console->GetDebugTextString(),
+						TextWorldPos, CamRight, CamUp,
+						0.01f, 0.01f,
+						FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+						VP,
+						*DebugAtlas);
+				}
 			}
-				
 		}
-			
-		if (Console && Console->ConsumeAtlasDumpRequest())
-		{
-			TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
-		}
+
+		// DEBUG 용
+		// if (Console && Console->ConsumeAtlasDumpRequest())
+		// {
+		// 	TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
+		// }
+
+		// Gizmo는 항상 마지막에 그리기
+		Editor->RenderGizmo(VP, Renderer.get());
 
 		Renderer->EndFrame();
-	
+
+
 	}
 }
 
@@ -264,7 +287,7 @@ void Engine::Shutdown()
 			delete Object;
 		}
 	}
-		
+
 	Editor->Shutdown();
 	Renderer->Shutdown();
 }

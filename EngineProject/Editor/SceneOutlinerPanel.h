@@ -10,13 +10,14 @@ public:
 	void Tick(float DeltaTime)override;
 	void OnRender() override;
 
-	inline void SetContext(FEditorContext InContext) { Context = InContext; }
-	inline FEditorContext GetContext() { return Context; }
+	//inline void SetContext(FEditorContext InContext) { Context = InContext; }
+	//inline FEditorContext GetContext() { return Context; }
 
 	inline AActor* GetSelectedActor() { return SelectedActor; }
+	inline void SetSelectedActor(AActor* Actor) { SelectedActor = Actor; }
 
 private:
-	FEditorContext Context;
+	//FEditorContext Context;
 	AActor* SelectedActor = nullptr;
 
 };
