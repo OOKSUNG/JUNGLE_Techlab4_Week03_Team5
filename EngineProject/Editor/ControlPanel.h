@@ -45,6 +45,7 @@ public:
 		"Cone",
 		"Plane",
 		"Text",
+		// "UVPlane",
 	};
 
 	const char* ParticleItems[5] =
