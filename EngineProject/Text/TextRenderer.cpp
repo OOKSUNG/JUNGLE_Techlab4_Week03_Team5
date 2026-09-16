@@ -136,9 +136,10 @@ TArray<uint32> FTextRenderer::BuildQuadIndices(size_t VertexCount)
 /// @param ScaleY 세로 방향 배율
 /// @param InAtlas Font Atlas
 /// @return World 공간 정점 목록 (한 글자 당 4개)
-TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float ScaleX, float ScaleY, FDynamicFontAtlas& InAtlas)
+FTextRenderer::FTextVertexPageMap FTextRenderer::BuildTextQuadsWorld(const FString& Utf8Text, ID3D11DeviceContext* Context, const FVector& WorldPosition, const FVector& Right, const FVector& Up, float ScaleX, float ScaleY, FDynamicFontAtlas& InAtlas)
 {
-    TArray<FTextVertexWorld> Vertices;
+    TArray<FTextVertexWorld> FlatVertices;
+    TArray<int> QuadPage;       // 글자 하나 당 페이지 하나
     TArray<uint32> Codepoints = DecodeUTF8(Utf8Text);
 
     float PenX = 0.0f;
@@ -157,21 +158,21 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
             return WorldPosition + Right * LocalX + Up * LocalY;
         };
 
-        Vertices.push_back({ ToWorld(X0, Y0), {Glyph.U,               Glyph.V                }});
-        Vertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
-        Vertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
-        Vertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
+        FlatVertices.push_back({ ToWorld(X0, Y0), {Glyph.U,               Glyph.V                }});
+        FlatVertices.push_back({ ToWorld(X1, Y0), {Glyph.U + Glyph.Width, Glyph.V                }});
+        FlatVertices.push_back({ ToWorld(X0, Y1), {Glyph.U,               Glyph.V + Glyph.Height }});
+        FlatVertices.push_back({ ToWorld(X1, Y1), {Glyph.U + Glyph.Width, Glyph.V + Glyph.Height }});
 
         PenX += Glyph.Advance;
 
     }
 
     // 기즈모 피벗이 텍스트 중심에 오도록 정점 재배치
-    if (!Vertices.empty())
+    if (!FlatVertices.empty())
     {
-        FVector BoxMin = Vertices[0].Position;
-        FVector BoxMax = Vertices[0].Position;
-        for (const FTextVertexWorld& Vertex : Vertices)
+        FVector BoxMin = FlatVertices[0].Position;
+        FVector BoxMax = FlatVertices[0].Position;
+        for (const FTextVertexWorld& Vertex : FlatVertices)
         {
             BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
             BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
@@ -185,13 +186,19 @@ TArray<FTextVertexWorld> FTextRenderer::BuildTextQuadsWorld(const FString& Utf8T
         FVector Center = (BoxMax + BoxMin) * 0.5f;
         FVector Offset = WorldPosition - Center;
 
-        for (FTextVertexWorld& Vertex : Vertices)
-        {
+        for (FTextVertexWorld& Vertex : FlatVertices)
             Vertex.Position = Vertex.Position + Offset;
-        }
     }
 
-    return Vertices;
+    // 페이지별로 쿼드(4개) 단위로 묶기
+    FTextVertexPageMap Result;
+    for (size_t q = 0; q < QuadPage.size(); q++)
+    {
+        TArray<FTextVertexWorld>& Bucket = Result[QuadPage[q]];
+        for (int v = 0; v < 4; v++)
+            Bucket.push_back(FlatVertices[q * 4 + v]);
+    }
+    return Result;
 }
 
 /// @brief Screen 기준 텍스트 그린다. 카메라와 무관하게 화면에 고정 (UI, Debug용)
@@ -278,16 +285,8 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
                                     const FMatrix& VP, FDynamicFontAtlas& InAtlas)
 {
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
-    TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, ScaleX, ScaleY, InAtlas);
-    if (Vertices.empty())
-        return;
-
-    TArray<uint32> Indices = BuildQuadIndices(Vertices.size());
-
-    if (!VBWorld->Update(Context, Vertices.data(), static_cast<uint32>(sizeof(FTextVertexWorld) * Vertices.size())))
-        return;
-    if (!IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
-        return;
+    FTextVertexPageMap PageVertices = BuildTextQuadsWorld(Utf8Text, Context, WorldPosition, CameraRight, CameraUp, ScaleX, ScaleY, InAtlas);
+    if (PageVertices.empty()) return;
     
     struct FTextCBDataWorld
     {
@@ -313,23 +312,36 @@ void FTextRenderer::RenderTextWorld(FRenderer* Renderer, const FString& Utf8Text
     // 0xffffffff -> 전체 샘플에 다 적용
     Context->OMSetBlendState(BlendState.Get(), BlendFactor, 0xffffffff);
     // Test On, Write Off
-    // Renderer->SetDepthStencilEnabled(true);
     Context->OMSetDepthStencilState(Renderer->GetDepthTestOnlyState(), 0);  
     Context->RSSetState(NoCullState.Get());
 
     Renderer->BindShader(TextShaderWorld.get());
-    Renderer->BindVertexBuffer(VBWorld.get());
-    Renderer->BindIndexBuffer(IBWorld.get());
+
     Renderer->SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Vertex);
     Renderer->BindConstantBuffer(0, CBWorld.get(), EShaderBindFlagBits::Pixel);
-
-    ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV();
     ID3D11SamplerState* SamplerRaw = Sampler.Get();
-    Context->PSSetShaderResources(0, 1, &AtlasSRV);
     Context->PSSetSamplers(0, 1, &SamplerRaw);
 
-    Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+    for (auto& [PageIndex, Vertices] : PageVertices)
+    {
+        if (Vertices.empty()) continue;
+
+        TArray<uint32> Indices = BuildQuadIndices(Vertices.size());
+        if (!VBWorld->Update(Context, Vertices.data(), static_cast<uint32>(sizeof(FTextVertexWorld) * Vertices.size())))
+            continue;
+        if (!IBWorld->Update(Context, Indices.data(), static_cast<uint32>(Indices.size())))
+            continue;
+
+        Renderer->BindVertexBuffer(VBWorld.get());
+        Renderer->BindIndexBuffer(IBWorld.get());
+
+        ID3D11ShaderResourceView* AtlasSRV = InAtlas.GetAtlasSRV(PageIndex);
+        Context->PSSetShaderResources(0, 1, &AtlasSRV);
+
+        Renderer->DrawIndexed(static_cast<uint32>(Indices.size()));
+    }
+
     // Wtire On (다음 오브젝트를 위해 정상 depth 상태로 복귀)
     Renderer->SetDepthStencilEnabled(true);
     Context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
@@ -379,16 +391,18 @@ void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& Tex
         float ScaleRight = CompTransform->Scale.Y * UTextComponent::WorldScaleFactor;
         float ScaleUp = CompTransform->Scale.Z * UTextComponent::WorldScaleFactor;
 
-        TArray<FTextVertexWorld> Vertices = BuildTextQuadsWorld(TextComp->GetText(), Context,
+        FTextVertexPageMap PageVertices = BuildTextQuadsWorld(TextComp->GetText(), Context,
                                             CompTransform->Location, CompTransform->GetRight(), CompTransform->GetUp(),
                                             ScaleRight, ScaleUp, *Atlas);
+        
+        bool bHasVertex = false;
+        FVector BoxMin, BoxMax;
 
-        if (!Vertices.empty())
+        for (auto& [PageIndex, Vertices] : PageVertices)
         {
-            FVector BoxMin = Vertices[0].Position;
-            FVector BoxMax = Vertices[0].Position;
             for (const FTextVertexWorld& Vertex : Vertices)
             {
+                if (!bHasVertex) { BoxMin = BoxMax = Vertex.Position; bHasVertex = true; continue; }
                 BoxMin.X = (Vertex.Position.X < BoxMin.X) ? Vertex.Position.X : BoxMin.X;
                 BoxMin.Y = (Vertex.Position.Y < BoxMin.Y) ? Vertex.Position.Y : BoxMin.Y;
                 BoxMin.Z = (Vertex.Position.Z < BoxMin.Z) ? Vertex.Position.Z : BoxMin.Z;
@@ -396,7 +410,10 @@ void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& Tex
                 BoxMax.Y = (Vertex.Position.Y > BoxMax.Y) ? Vertex.Position.Y : BoxMax.Y;
                 BoxMax.Z = (Vertex.Position.Z > BoxMax.Z) ? Vertex.Position.Z : BoxMax.Z;
             }
+        }
 
+        if (bHasVertex)
+        {
             FVector Diagonal = BoxMax - BoxMin;
             float HalfWidth = FVector::DotProduct(Diagonal, CompTransform->GetRight()) * 0.5f / ScaleRight;
             float HalfHeight = FVector::DotProduct(Diagonal, CompTransform->GetUp()) * 0.5f / ScaleUp;
