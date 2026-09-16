@@ -18,7 +18,7 @@ private:
 	FNamePool();
 	~FNamePool();
 
-	void Rehash();
+	void Rehash(int32* Table, int32& TableSize, TArray<FString> StringList);
 
 	// Comparison
 	int32* ComparisonHashTable;

@@ -70,27 +70,27 @@ int32 FNamePool::FindOrAddComparison(FString str)
 	return FindOrAddComparison(str.c_str());
 }
 
-void FNamePool::Rehash()
+void FNamePool::Rehash(int32* HashTable, int32& TableSize, TArray<FString> StringList)
 {
 	// 크기 두 배로 설정
-	ComparisonTableSize *= 2;
-	delete[] ComparisonHashTable;
-	ComparisonHashTable = new int32[ComparisonTableSize];
-	std::fill(ComparisonHashTable, ComparisonHashTable + ComparisonTableSize, -1);
+	TableSize *= 2;
+	delete[] HashTable;
+	HashTable = new int32[TableSize];
+	std::fill(HashTable, HashTable + TableSize, -1);
 
 	// 기존 문자열들 재배치
-	for (int i = 0; i < ComparisonStringList.size(); ++i)
+	for (int i = 0; i < StringList.size(); ++i)
 	{
-		FString String = ComparisonStringList[i];
+		FString String = StringList[i];
 		uint32 HashValue = XXH32(String.c_str(), String.length(), 0);
-		uint32 NewSlot = HashValue % ComparisonTableSize;
+		uint32 NewSlot = HashValue % TableSize;
 
-		while (ComparisonHashTable[NewSlot] != -1)
+		while (HashTable[NewSlot] != -1)
 		{
-			NewSlot = (NewSlot + 1) % ComparisonTableSize;
+			NewSlot = (NewSlot + 1) % TableSize;
 		}
 
-		ComparisonHashTable[NewSlot] = i;
+		HashTable[NewSlot] = i;
 	}
 }
 
