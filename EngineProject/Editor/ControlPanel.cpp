@@ -116,7 +116,7 @@ void FControlPanel::OnRender()
 
 	ImGui::Separator();
 	ImGui::SetNextItemWidth(130.0f);
-	ImGui::Combo("Particle Actor", &SelectedParticleIndex, ParticleItems, IM_ARRAYSIZE(ParticleItems));
+	ImGui::Combo("Actor", &SelectedParticleIndex, ParticleItems, IM_ARRAYSIZE(ParticleItems));
 	ImGui::SameLine();
 	ImGui::Text("Particle");
 	if (ImGui::SmallButton("Spawn Particle")) { AddParticleActor(SelectedParticleIndex); }

@@ -105,9 +105,6 @@ namespace
 		case EPrimitiveType::Text:
 			return "Text";
 			break;
-		case EPrimitiveType::UVPlane:
-			return "UVPlane";
-			break;
 		default:
 			return "";
 			break;
