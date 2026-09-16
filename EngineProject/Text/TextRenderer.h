@@ -46,7 +46,26 @@ private:
                                                 const FVector& Up, float ScaleX,  float ScaleY, FDynamicFontAtlas& InAtlas);
     TArray<uint32> BuildQuadIndices(size_t VertexCount);
 
+    // Caching & Batching
+    void DrawTextPageMap(FRenderer* Renderer, const FTextVertexPageMap& PageVertices, FVector4 Color,
+                        const FMatrix& VP, FDynamicFontAtlas& InAtlas);
+    void DrawTextBatch(FRenderer* Renderer, const TArray<FTextVertexWorld>& Vertices, FVector4 Color,
+                        const FMatrix& VP, FDynamicFontAtlas& InAtlas, int PageIndex);
+
     FDynamicFontAtlas Atlas;
+    
+    // Component 별 마지막으로 빌드한 vertex 캐시
+    struct FTextRenderCache
+    {
+        FTextVertexPageMap PageVertices;
+        FVector LastLocation;
+        FVector LastRight;
+        FVector LastUp;
+        float LastScaleRight = 0.0f;
+        float LastScaleUp = 0.0f;
+    };
+
+    TMap<UTextComponent*, FTextRenderCache> ComponentVertexCache;
 
     TSharedPtr<FShader> TextShader;
     TSharedPtr<FDynamicVertexBuffer> VB;
