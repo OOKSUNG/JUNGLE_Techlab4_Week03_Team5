@@ -508,6 +508,8 @@ void FRenderer::DrawTexturePacket(const FRenderPacket& Packet, FMatrix VP, UPrim
 {
 	if (!Packet.bIsVisible || !Packet.TextureSRV) return;
 
+	//Microsoft::WRL::ComPtr<ID3D11RasterizerState> PrevRSState;
+	//DeviceContext->RSGetState(PrevRSState.GetAddressOf());
 	DeviceContext->RSSetState(RasterizerState.Get());
 	DeviceContext->OMSetBlendState(ParticleAlphaBlendState.Get(), nullptr, 0xffffffff);
 	DeviceContext->OMSetDepthStencilState(DepthStencilState.Get(), 0);

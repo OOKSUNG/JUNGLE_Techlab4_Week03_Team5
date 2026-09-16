@@ -12,6 +12,10 @@
 #include "Text/TextRenderer.h"
 #include "Editor/EditorSetting.h"
 #include "Component/TextComponent.h"
+#include "Component/ParticleSubUVComponent.h"
+
+#include "Editor/AtlasTexture.h"
+#include "Editor/AtlasTextureManager.h"
 
 
 UWorld::~UWorld()
@@ -125,6 +129,7 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 		USceneComponent* Primitive = Actor->GetRootComponent();
 		
 		if (Primitive == nullptr) continue;
+
 		
 		uint32 UUID = Actor->GetUUID();
 		SceneData.UUIDs.push_back(UUID);
@@ -146,6 +151,12 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 				TextData.FontPixelSize = TextComp->GetFontPixelSize();
 				TextData.Color = TextComp->GetColor();
 				SceneData.TextDatas.insert(std::make_pair(UUID, TextData));
+			}
+			if (UParticleSubUVComponent* ParticleComp = Cast<UParticleSubUVComponent>(Primitive))
+			{
+				FParticleMetaData ParticleData;
+				ParticleData.ParticlePath = ParticleComp->GetTextureName();
+				SceneData.ParticleDatas.insert(std::make_pair(UUID, ParticleData));
 			}
 		}
 		else if (Cast<UCameraComponent>(Primitive))
@@ -209,6 +220,16 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 				TextComp->SetFontPath(TextData.FontPath);
 				TextComp->SetFontPixelSize(TextData.FontPixelSize);
 				TextComp->SetColor(TextData.Color);
+			}
+			if (Type == EPrimitiveType::UVPlane && Data.ParticleDatas.count(UUID))
+			{
+				const FParticleMetaData& particleData = Data.ParticleDatas.at(UUID);
+				UParticleSubUVComponent* SubUVComp = Cast<UParticleSubUVComponent>(Actor->GetRootComponent());
+				FAtlasTexture* Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap[particleData.ParticlePath].get();
+				Texture->SetParticleSamplerState();
+				SubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+				SubUVComp->SetAtlasInfo(16, 1, 10.f);
+				SubUVComp->SetTexturePath(particleData.ParticlePath);
 			}
 		}
 		catch (const std::out_of_range& e)
