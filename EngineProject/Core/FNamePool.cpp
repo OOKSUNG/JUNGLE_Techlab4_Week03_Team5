@@ -4,28 +4,38 @@
 #include "Types.h"
 #include "FNamePool.h"
 #include "ThirdParty/xxHash/xxhash.h"
-#include <iostream>
+
+FNamePool& FNamePool::Get()
+{
+	static FNamePool instance;
+	return instance;
+}
 
 FNamePool::FNamePool()
 {
+	// Comparison Initialization
 	ComparisonHashTable = new int32[ComparisonTableSize];
 	std::fill(ComparisonHashTable, ComparisonHashTable + ComparisonTableSize, -1);
 	
 	// 0번째는 None 문자열로 고정
 	ComparisonStringList.push_back("none");
 	ComparisonHashTable[XXH32("none", 4, 0) % ComparisonTableSize] = 0;
+
+	// Display Initialization
+	DisplayHashTable = new int32[DisplayTableSize];
+	std::fill(DisplayHashTable, DisplayHashTable + DisplayTableSize, -1);
+
+	DisplayStringList.push_back("none");
+	DisplayHashTable[XXH32("none", 4, 0) % DisplayTableSize] = 0;
 }
 
 FNamePool::~FNamePool()
 {
 	delete[] ComparisonHashTable;
 	ComparisonStringList.clear();
-}
 
-FNamePool& FNamePool::Get()
-{
-	static FNamePool instance;
-	return instance;
+	delete[] DisplayHashTable;
+	DisplayStringList.clear();
 }
 
 int32 FNamePool::FindOrAddComparison(const char* pStr)
@@ -70,6 +80,46 @@ int32 FNamePool::FindOrAddComparison(FString str)
 	return FindOrAddComparison(str.c_str());
 }
 
+int32 FNamePool::FindOrAddDisplay(const char* pStr)
+{
+	if (DisplayStringList.size() >= DisplayTableSize * 0.6)
+	{
+		Rehash(DisplayHashTable, DisplayTableSize, DisplayStringList);
+	}
+
+	// 해시값 기반 슬롯 계산
+	uint32 HashValue = XXH32(pStr, strlen(pStr), 0);
+	uint32 Slot = HashValue % DisplayTableSize;
+
+	// 해당 슬롯이 이미 차있다면
+	while (DisplayHashTable[Slot] != -1)
+	{
+		int32 StringIndex = DisplayHashTable[Slot];
+		FString Stored = DisplayStringList[StringIndex];
+
+		// 같은 문자열이면 재사용
+		if (Stored == pStr)
+		{
+			return StringIndex;
+		}
+
+		// 해시 충돌 발생
+		else
+		{
+			Slot = (Slot + 1) % DisplayTableSize;
+		}
+	}
+
+	DisplayStringList.push_back(pStr);
+	uint32 StringIndex = DisplayStringList.size() - 1;
+	DisplayHashTable[Slot] = StringIndex;
+	return StringIndex;
+}
+
+int32 FNamePool::FindOrAddDisplay(FString str)
+{
+	return FindOrAddDisplay(str.c_str());
+}
 
 void FNamePool::Rehash(int32*& HashTable, int32& TableSize, TArray<FString>& StringList)
 {
@@ -95,7 +145,7 @@ void FNamePool::Rehash(int32*& HashTable, int32& TableSize, TArray<FString>& Str
 	}
 }
 
-FString FNamePool::GetString(int32 Index) const
+FString FNamePool::GetString(int32 DisplayIndex) const
 {
-	return ComparisonStringList[Index];
+	return DisplayStringList[DisplayIndex];
 }

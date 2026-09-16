@@ -11,6 +11,7 @@ struct FName
 	bool operator==(const FName&) const;
 
 	int32 ComparisonIndex = 0;
+	int32 DisplayIndex = 0;
 	int32 Number = -1;
 
 	FString GetString();

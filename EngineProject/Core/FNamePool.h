@@ -12,6 +12,10 @@ public:
 
 	int32 FindOrAddComparison(const char* pStr);
 	int32 FindOrAddComparison(FString str);
+
+	int32 FindOrAddDisplay(const char* pStr);
+	int32 FindOrAddDisplay(FString str);
+
 	FString GetString(int32 Index) const;
 
 private:
@@ -25,7 +29,8 @@ private:
 	TArray<FString> ComparisonStringList;
 	int32 ComparisonTableSize = 8192;
 
-	int32* HashTable;
-	TArray<FString> StringList;
-	int32 TableSize = 8192;
+	// Display
+	int32* DisplayHashTable;
+	TArray<FString> DisplayStringList;
+	int32 DisplayTableSize = 8192;
 };
