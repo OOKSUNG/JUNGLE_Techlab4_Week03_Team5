@@ -31,6 +31,45 @@ FMeshData FGeometryGenerator::CreatePlane(float Size, const FVector4& Color)
 	return PlaneMeshData;
 }
 
+FMeshData FGeometryGenerator::CreateUVPlane(float Size, const FVector4& Color)
+{
+	FMeshData UVPlaneMeshData;
+
+	float HalfSize = Size / 2.0f;
+
+	TArray<FVector> positions =
+	{
+		FVector(-HalfSize, HalfSize, 0.0f),
+		FVector(HalfSize, HalfSize, 0.0f),
+		FVector(HalfSize, -HalfSize, 0.0f),
+		FVector(-HalfSize, -HalfSize, 0.0f),
+	};
+
+	TArray<FVector2> UVs =
+	{
+		FVector2(0.0f, 0.0f),
+		FVector2(1.0f, 0.0f),
+		FVector2(1.0f, 1.0f),
+		FVector2(0.0f, 1.0f)
+	};
+
+	for (int32 i = 0; i < positions.size(); i++)
+	{
+		UVPlaneMeshData.UVVertices.push_back({ positions[i], Color, UVs[i]});
+	}
+
+	UVPlaneMeshData.Indices.push_back(0);
+	UVPlaneMeshData.Indices.push_back(1);
+	UVPlaneMeshData.Indices.push_back(2);
+	
+	UVPlaneMeshData.Indices.push_back(0);
+	UVPlaneMeshData.Indices.push_back(2);
+	UVPlaneMeshData.Indices.push_back(3);
+
+	return UVPlaneMeshData;
+}
+
+
 FMeshData FGeometryGenerator::CreateCone(float Radius, float Height, int Segments, const FVector4& Color)
 {
 	FMeshData ConeMeshData;
@@ -377,6 +416,10 @@ FMeshData FGeometryGenerator::GetMeshData(const FString& InName)
 		return CreateSphere(1.0f, 20, 10, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	else if (InName == FString("Plane"))
+	{
+		return CreatePlane(1.0f, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+	else if (InName == FString("UVPlane"))
 	{
 		return CreatePlane(1.0f, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}

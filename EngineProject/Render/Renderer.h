@@ -38,6 +38,7 @@ public:
 	void CreateFrameBuffer();
 	void CreateRasterizerState();
 	void CreateDepthStencilBufferAndState();
+	void CreateBlendState();
 	void CreateConstantBuffer();
 	void CreateDefaultShader();
 	void BindMainRenderTarget();
@@ -79,6 +80,7 @@ public:
 
 	void RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitiveComponent* SelectedTarget);
 	void DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget);
+	void DrawTexturePacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget);
 
 	void Shutdown();
 
@@ -92,7 +94,10 @@ public:
 	// inline Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetRenderTargetSRV() { return FrameBufferSRV; }
 
 	// Depth Test ONLY
-	inline ID3D11DepthStencilState* GetDepthTestOnlyState() const { return DepthTestOnlyState.Get(); }
+	inline ID3D11DepthStencilState* GetDepthTestOnlyState() const { return DepthTestOnlyState.Get(); } // Return ReadOnly(TestOnly)State 
+	// AlphaBlendState
+	inline ID3D11BlendState* GetFontAlphaBlendState() const { return FontAlphaBlendState.Get(); } // Return AlphaBlendState 
+	inline ID3D11BlendState* GetParticleAlphaBlendState() const { return ParticleAlphaBlendState.Get(); } // Return AlphaBlendState 
 
 private:
 	// Camera 
@@ -101,6 +106,15 @@ private:
 		FMatrix MVP; 			// 64 byte
 		uint32 bHighlightEdge;	// 4  byte
 		float EdgeColor[3]; 	// 12 byte
+	};
+
+	struct FSubUVConstantBufferData
+	{
+		FMatrix MVP;
+		int32 bHighlightEdge;
+		float EdgeColor[3];
+		FVector2 UVOffset;
+		FVector2 UVScale;
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
@@ -115,9 +129,10 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthStencilState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthDisabledState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthTestOnlyState;		// Test ON, Wirte OFF
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> DepthTestOnlyState;		// Test ON, Wirte OFF (ReadOnly)
 
-
+	Microsoft::WRL::ComPtr<ID3D11BlendState> FontAlphaBlendState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> ParticleAlphaBlendState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;
 
 	Microsoft::WRL::ComPtr <ID3D11Buffer> ConstantBuffer;

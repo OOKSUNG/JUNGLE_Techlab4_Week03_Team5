@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <d3d11.h>
 #include "Render/Renderer.h"
-#include "FontManager.h"
+#include "AtlasTextureManager.h"
 #include "Camera/CameraComponent.h"
 #include "Render/Buffer.h"
 
@@ -41,8 +41,8 @@ public:
 	void RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCameraComponent* Camera);
 private:
 	FRenderer* Renderer;
-	float BaseFontSize;
-	FFontTexture* FontTexture;
+	//float BaseFontSize;
+	FAtlasTexture* FontTexture;
 
 	TSharedPtr<FShader> Shader;
 	TSharedPtr<FConstantBuffer> CB;

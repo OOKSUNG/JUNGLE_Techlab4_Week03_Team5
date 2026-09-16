@@ -1,19 +1,19 @@
 #include "EnginePCH.h"
-#include "FontTexture.h"
+#include "AtlasTexture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../ThirdParty/stb_image/stb_image.h"
 
-FFontTexture::FFontTexture()
+FAtlasTexture::FAtlasTexture()
 {
 }
 
-void FFontTexture::Init()
+void FAtlasTexture::Init()
 {
 }
 
 // TODO:: 용도에 따라 텍스처 로드 방식 다르게 하기
-bool FFontTexture::LoadTexture(FRenderer* InRenderer, char const* filename)
+bool FAtlasTexture::LoadTexture(FRenderer* InRenderer, char const* filename)
 {
 	Renderer = InRenderer;
 	ID3D11Device* Device = Renderer->GetDevice();
@@ -61,7 +61,7 @@ bool FFontTexture::LoadTexture(FRenderer* InRenderer, char const* filename)
 	return hr;
 }
 
-void FFontTexture::SetSamplerState()
+void FAtlasTexture::SetSamplerState()
 {
 	D3D11_SAMPLER_DESC SamplerStateDesc;
 	SamplerStateDesc = {};
@@ -76,13 +76,29 @@ void FFontTexture::SetSamplerState()
 	Renderer->GetDevice()->CreateSamplerState(&SamplerStateDesc, SamplerState.GetAddressOf());
 }
 
-ID3D11SamplerState* FFontTexture::GetSamplerState()
+void FAtlasTexture::SetParticleSamplerState()
+{
+	D3D11_SAMPLER_DESC SamplerStateDesc;
+	SamplerStateDesc = {};
+	SamplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	SamplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	SamplerStateDesc.MinLOD = 0;
+	SamplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	Renderer->GetDevice()->CreateSamplerState(&SamplerStateDesc, SamplerState.GetAddressOf());
+}
+
+
+ID3D11SamplerState* FAtlasTexture::GetSamplerState()
 {
 	return (SamplerState.Get());
 }
 
 
-ID3D11ShaderResourceView* FFontTexture::GetTextureSRV()
+ID3D11ShaderResourceView* FAtlasTexture::GetTextureSRV()
 {
 	return (TextureSRV.Get());
 }

@@ -8,7 +8,7 @@
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
 #include "FontRenderer.h"
-#include "FontManager.h"
+#include "AtlasTextureManager.h"
 #include "UUIDBillboardRenderer.h"
 
 
@@ -113,8 +113,8 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
-	FEditorFontManager::GetIntance().Init(InRenderer);
-	FEditorFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	FAtlasTextureManager::GetIntance().Init(InRenderer);
+	FAtlasTextureManager::GetIntance().LoadAtlasTexture("Default", "Font\\Default.png");
 	
 	return true;
 
@@ -184,10 +184,13 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
-
-	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
-	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	if (ShowFlags.IsSet(EShowFlagBits::UUID))
+	{
+		UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
+		FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	}
 	Renderer->SetDepthStencilEnabled(true);
+
 
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))

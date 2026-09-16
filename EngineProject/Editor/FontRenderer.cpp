@@ -73,7 +73,7 @@ void FFontRenderer::Shutdown()
 void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCameraComponent* Camera)
 {
 	if (TextItemArray.empty()) return;
-	FontTexture = FEditorFontManager::GetIntance().FontTextureMap["Default"].get();
+	FontTexture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Default"].get();
 	ID3D11DeviceContext* DeviceContext = Renderer->GetDeviceContext();
 	TArray<FFontVertex> Vertices;
 	for (const FWorldTextItem& TextItem : TextItemArray)
@@ -121,7 +121,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	uint32 DataSize = static_cast<uint32>(sizeof(FFontVertex) * Vertices.size());
 	if (!VB->Update(DeviceContext, Vertices.data(), DataSize))
 	{
-		true;
+		return;
 	}
 
 	DeviceContext->RSSetState(RasterizerState.Get());

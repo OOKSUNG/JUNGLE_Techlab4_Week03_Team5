@@ -12,6 +12,7 @@ enum class EPrimitiveType
 	Cube,
 	Cone,
 	Plane,
+	UVPlane,
 	Text
 };
 
@@ -26,7 +27,7 @@ public:
 
 	void SetMeshData(const FMeshData& data);
 	void SetMeshShader(FMesh* InMesh, FShader* InShader) { Mesh = InMesh; Shader = InShader; }
-	void SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue);
+	virtual void SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue);
 
 	const FMeshData& GetMeshData() const { return MeshData; }
 	void SetMesh(FMesh* InMesh);

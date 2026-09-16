@@ -7,6 +7,8 @@
 #include "Input/InputSystem.h"
 #include "ShowFlags.h"
 #include "Editor/EditorSetting.h"
+#include "Component/ParticleSubUVComponent.h"
+#include "Editor/AtlasTextureManager.h"
 
 bool FControlPanel::Init()
 {
@@ -47,13 +49,39 @@ void FControlPanel::AddActor(EPrimitiveType Type)
 
 	LOG(Editor, Info, "Name : {}" , Actor->GetFName().GetString());
 
-	ActorNum = Context.World->GetActorNum() - 1;
+	//ActorNum = Context.World->GetActorNum() - 1;
+}
+
+void FControlPanel::AddParticleActor(int TypeNum)
+{
+	FTransform Transform;
+	AActor* ParticleActor = Context.World->SpawnActor<AActor>(&Transform);
+	FString NewName = FString("Particle") + FString("_") + std::to_string(ParticleActor->GetUUID());
+	ParticleActor->SetFName(NewName);
+	UParticleSubUVComponent* SubUVComp = Cast<UParticleSubUVComponent>(ParticleActor->AddPrimitiveComponent(EPrimitiveType::UVPlane, Transform));
+	FAtlasTexture* Texture = nullptr;
+	if (TypeNum == 0)
+		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Storm"].get();
+	else if (TypeNum == 1)
+		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Astral"].get();
+	else if (TypeNum == 2)
+		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Axe"].get();
+	else if (TypeNum == 3)
+		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Core"].get();
+	else if (TypeNum == 4)
+		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Moonphase"].get();
+	else
+		return;
+	Texture->SetParticleSamplerState();
+	SubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+	SubUVComp->SetAtlasInfo(16, 1, 10.f);
 }
 
 
 void FControlPanel::OnRender()
 {
 	ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
+	ActorNum = Context.World->GetActorNum() - 1;
 	ImGui::Begin("Jungle Control Panel");
 
 	ImGui::Text("Hello Jungle World");
@@ -70,14 +98,19 @@ void FControlPanel::OnRender()
 	ImGui::Text("Primitive");
 	//EngineTimer::GetDeltaTime();
 	if (ImGui::SmallButton("Spawn")) { AddActor(static_cast<EPrimitiveType>(SelectedIndex)); }
+
+	ImGui::Separator();
+	ImGui::SetNextItemWidth(130.0f);
+	ImGui::Combo("Particle Actor", &SelectedParticleIndex, ParticleItems, IM_ARRAYSIZE(ParticleItems));
 	ImGui::SameLine();
+	ImGui::Text("Particle");
+	if (ImGui::SmallButton("Spawn Particle")) { AddParticleActor(SelectedParticleIndex); }
+	ImGui::Separator();
 	ImGui::SetNextItemWidth(80.0f);
 	ImGui::InputInt("##N", &ActorNum, 0, 0, ImGuiInputTextFlags_ReadOnly);
 	ImGui::SameLine();
 	ImGui::Text("Number of spawn");
-
 	ImGui::Separator();
-
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
 	if (ImGui::Button("New Scene", ImVec2(100.0f, 25.0f))) 
@@ -204,6 +237,12 @@ void FControlPanel::OnRender()
 	if (ImGui::Checkbox("Bounding Box", &bBoundingBox))
 	{
 		ShowFlags->Set(EShowFlagBits::BoundingBox, bBoundingBox);
+	}
+	ImGui::SameLine();
+	bool bUUID = ShowFlags->IsSet(EShowFlagBits::UUID);
+	if (ImGui::Checkbox("UUID", &bUUID))
+	{
+		ShowFlags->Set(EShowFlagBits::UUID, bUUID);
 	}
 	ImGui::Text("ShowFlagPreset");
 	if (ImGui::Button("Default"))

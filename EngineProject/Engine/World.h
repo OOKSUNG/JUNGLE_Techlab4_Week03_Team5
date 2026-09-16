@@ -128,6 +128,10 @@ namespace
 		{
 			return EPrimitiveType::Text;
 		}
+		if (string == "UVPlane")
+		{
+			return EPrimitiveType::UVPlane;
+		}
 		return EPrimitiveType::Cube;
 	}
 }
