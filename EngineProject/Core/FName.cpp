@@ -20,34 +20,34 @@ FName::FName(const char* pStr)
 		}
 	}
 
-	std::string LowerStr(pStr);
+	std::string Str(pStr);
 
 	// 맨뒤 Number 있는지 검사 후 나누기
-	size_t LastSeparator = LowerStr.find_last_of("_");
+	size_t LastSeparator = Str.find_last_of("_");
 	if (LastSeparator != std::string::npos)
 	{
-		FString Remaining = LowerStr.substr(LastSeparator + 1, LowerStr.length());
+		FString Remaining = Str.substr(LastSeparator + 1, Str.length());
 		int32 Num = ExtractNumber(Remaining);
 
 		if (Num >= 0)
 		{
 			Number = Num;
-			LowerStr = LowerStr.substr(0, LastSeparator);
+			Str = Str.substr(0, LastSeparator);
 		}
 	}
 
 	FNamePool& NamePool = FNamePool::Get();
 	// FNamePool FindOrAddDisplay 호출
-	DisplayIndex = NamePool.FindOrAddDisplay(LowerStr);
+	DisplayIndex = NamePool.FindOrAddDisplay(Str);
 
 	// 문자열 소문자로 변환
-	for (char& C : LowerStr)
+	for (char& C : Str)
 	{
 		C = static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
 	}
 
 	// FNamePool FindOrAddComparison 호출
-	ComparisonIndex = NamePool.FindOrAddComparison(LowerStr);
+	ComparisonIndex = NamePool.FindOrAddComparison(Str);
 }
 
 FName::FName(FString str) : FName(str.c_str())
