@@ -20,69 +20,16 @@ void FSceneOutlinerPanel::OnRender()
     if (ImGui::Begin("Scene Outliner"))
     {
         ImGuiTreeNodeFlags SceneFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-
+        ImGui::SetCursorPosY(50.0f);
         if (ImGui::TreeNodeEx("Scene", SceneFlags))
         {
-            //for (AActor* Actor : Context.World->GetActors())
-            //{
-            //    if (!Actor)
-            //    {
-            //        continue;
-            //    }
-
-            //    ImGui::PushID(Actor->GetUUID());
-
-            //    FString ActorName = Actor->GetFName().GetString();
-
-            //    ImGuiTreeNodeFlags ActorFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-
-            //    // 자식 Component가 없으면 Leaf
-            //    if (Actor->GetComponents().empty())
-            //    {
-            //        ActorFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            //    }
-
-            //    bool bActorOpen = ImGui::TreeNodeEx(ActorName.c_str(), ActorFlags);
-
-            //    // Actor 선택
-            //    if (ImGui::IsItemClicked())
-            //    {
-            //        SelectedActor = (SelectedActor == Actor) ? nullptr : Actor;
-            //    }
-
-            //    // Component 목록
-            //    if (bActorOpen)
-            //    {
-            //        for (UActorComponent* Component : Actor->GetComponents())
-            //        {
-            //            if (!Component)
-            //            {
-            //                continue;
-            //            }
-
-            //            ImGui::PushID(Component);
-
-            //            FString ComponentName = Component->GetFName().GetString();
-
-            //            ImGui::TreeNodeEx(
-            //                ComponentName.c_str(),
-            //                ImGuiTreeNodeFlags_Leaf |
-            //                ImGuiTreeNodeFlags_NoTreePushOnOpen |
-            //                ImGuiTreeNodeFlags_SpanAvailWidth
-            //            );
-
-            //            ImGui::PopID();
-            //        }
-
-            //        ImGui::TreePop();
-            //    }
-
-            //    ImGui::PopID();
-            //}
 
             for (AActor* Actor : Context.World->GetActors())
             {
-                if (!Actor) continue;
+                if (!Actor)
+                {
+                    continue;
+                }
 
                 ImGui::PushID(Actor->GetUUID());
 
@@ -93,8 +40,12 @@ void FSceneOutlinerPanel::OnRender()
                 {
                     ImGui::SetKeyboardFocusHere();
 
-                    if (ImGui::InputText( "##Rename", RenameBuffer, IM_ARRAYSIZE(RenameBuffer),
-                        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+                    if (ImGui::InputText(
+                        "##Rename",
+                        RenameBuffer,
+                        IM_ARRAYSIZE(RenameBuffer),
+                        ImGuiInputTextFlags_EnterReturnsTrue |
+                        ImGuiInputTextFlags_AutoSelectAll))
                     {
                         if (RenameBuffer[0] != '\0')
                         {
@@ -112,17 +63,54 @@ void FSceneOutlinerPanel::OnRender()
                 }
                 else
                 {
-                    if (ImGui::Selectable( ActorName.c_str(), Actor == SelectedActor))
+
+                    ImGuiTreeNodeFlags ActorFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+                    if (Actor->GetComponents().empty())
+                    {
+                        ActorFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    }
+
+                    bool bActorOpen = ImGui::TreeNodeEx( ActorName.c_str(), ActorFlags);
+
+                    if (ImGui::IsItemClicked())
                     {
                         SelectedActor = (SelectedActor == Actor) ? nullptr : Actor;
                     }
 
-                    // 더블 클릭하면 이름 변경
                     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                     {
                         RenameTarget = Actor;
+
                         FString CurrentName = Actor->GetFName().GetString();
-                        strcpy_s(RenameBuffer, sizeof(RenameBuffer), CurrentName.c_str());
+
+                        strcpy_s( RenameBuffer, sizeof(RenameBuffer), CurrentName.c_str());
+                    }
+
+                    if (bActorOpen)
+                    {
+                        for (UActorComponent* Component : Actor->GetComponents())
+                        {
+                            if (!Component)
+                            {
+                                continue;
+                            }
+
+                            ImGui::PushID(Component);
+
+                            FString ComponentName = Component->GetFName().GetString();
+
+                            ImGui::TreeNodeEx(
+                                ComponentName.c_str(),
+                                ImGuiTreeNodeFlags_Leaf |
+                                ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                                ImGuiTreeNodeFlags_SpanAvailWidth
+                            );
+
+                            ImGui::PopID();
+                        }
+
+                        ImGui::TreePop();
                     }
                 }
 
@@ -130,6 +118,16 @@ void FSceneOutlinerPanel::OnRender()
             }
 
             ImGui::TreePop();
+        }
+
+        ImGui::SetCursorPosY(25.0f);
+
+        if (ImGui::Button("Delete Actor"))
+        {
+            if (SelectedActor && ActorDeleteCallback)
+            {
+                ActorDeleteCallback(SelectedActor);
+            }
         }
     }
 

@@ -61,6 +61,8 @@ public:
 	TArray<UPrimitiveComponent*> GetPrimitiveComponents() { return (PrimitiveComponents); };
 
 	const TArray<AActor*>& GetActors() const { return Actors; };
+
+	void DestroyActor(AActor* Actor);
 private:
 	TArray<AActor*> Actors;
 

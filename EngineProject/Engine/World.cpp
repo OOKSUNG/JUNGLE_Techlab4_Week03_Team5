@@ -354,3 +354,35 @@ void UWorld::UpdateTextComponentBounds(FTextRenderer* TextRenderer, ID3D11Device
 {
 	TextRenderer->UpdateTextComponentBounds(TextComponents, Context);
 }
+
+void UWorld::DestroyActor(AActor* Actor)
+{
+	if (!Actor)
+	{
+		return;
+	}
+
+	// Actor가 가진 PrimitiveComponent를 World에서 제거
+	for (UActorComponent* Component : Actor->GetComponents())
+	{
+		if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
+		{
+			auto PrimitiveIt = std::find( PrimitiveComponents.begin(), PrimitiveComponents.end(), Primitive);
+
+			if (PrimitiveIt != PrimitiveComponents.end())
+			{
+				PrimitiveComponents.erase(PrimitiveIt);
+			}
+		}
+	}
+
+
+	auto It = std::find(Actors.begin(), Actors.end(), Actor);
+
+	if (It != Actors.end())
+	{
+		Actors.erase(It);
+	}
+
+	delete Actor;
+}
