@@ -20,13 +20,7 @@ FName::FName(const char* pStr)
 		}
 	}
 
-	// 문자열 소문자로 변환
 	std::string LowerStr(pStr);
-
-	for (char& C : LowerStr) 
-	{
-		C = static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
-	}
 
 	// 맨뒤 Number 있는지 검사 후 나누기
 	size_t LastSeparator = LowerStr.find_last_of("_");
@@ -42,8 +36,18 @@ FName::FName(const char* pStr)
 		}
 	}
 
-	// FNamePool FindOrAdd 호출
-	ComparisonIndex = FNamePool::Get().FindOrAdd(LowerStr);
+	FNamePool& NamePool = FNamePool::Get();
+	// FNamePool FindOrAddDisplay 호출
+	DisplayIndex = NamePool.FindOrAddDisplay(LowerStr);
+
+	// 문자열 소문자로 변환
+	for (char& C : LowerStr)
+	{
+		C = static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
+	}
+
+	// FNamePool FindOrAddComparison 호출
+	ComparisonIndex = NamePool.FindOrAddComparison(LowerStr);
 }
 
 FName::FName(FString str) : FName(str.c_str())
@@ -74,14 +78,12 @@ bool FName::operator==(const FName& Other) const
 bool FName::IsNone()
 {
 	// 인덱스가 0이거나 Number가 -1 이면 NoneName
-	return ComparisonIndex == 0 && Number == -1;
+	return ComparisonIndex == 0 && DisplayIndex == 0 && Number == -1;
 }
 
 FString FName::GetString()
 {
-	//return FNamePool::Get().GetString(ComparisonIndex);
-
-	FString Result = FNamePool::Get().GetString(ComparisonIndex);
+	FString Result = FNamePool::Get().GetString(DisplayIndex);
 
 	if (Number >= 0)
 	{
