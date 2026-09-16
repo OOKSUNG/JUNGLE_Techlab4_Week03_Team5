@@ -70,7 +70,8 @@ int32 FNamePool::FindOrAddComparison(FString str)
 	return FindOrAddComparison(str.c_str());
 }
 
-void FNamePool::Rehash(int32* HashTable, int32& TableSize, TArray<FString> StringList)
+
+void FNamePool::Rehash(int32*& HashTable, int32& TableSize, TArray<FString>& StringList)
 {
 	// 크기 두 배로 설정
 	TableSize *= 2;
