@@ -49,7 +49,7 @@ void FControlPanel::AddActor(EPrimitiveType Type)
 
 	LOG(Editor, Info, "Name : {}" , Actor->GetFName().GetString());
 
-	ActorNum = Context.World->GetActorNum() - 1;
+	//ActorNum = Context.World->GetActorNum() - 1;
 }
 
 void FControlPanel::AddParticleActor(int TypeNum)
@@ -81,6 +81,7 @@ void FControlPanel::AddParticleActor(int TypeNum)
 void FControlPanel::OnRender()
 {
 	ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
+	ActorNum = Context.World->GetActorNum() - 1;
 	ImGui::Begin("Jungle Control Panel");
 
 	ImGui::Text("Hello Jungle World");
@@ -97,11 +98,6 @@ void FControlPanel::OnRender()
 	ImGui::Text("Primitive");
 	//EngineTimer::GetDeltaTime();
 	if (ImGui::SmallButton("Spawn")) { AddActor(static_cast<EPrimitiveType>(SelectedIndex)); }
-	ImGui::SameLine();
-	ImGui::SetNextItemWidth(80.0f);
-	ImGui::InputInt("##N", &ActorNum, 0, 0, ImGuiInputTextFlags_ReadOnly);
-	ImGui::SameLine();
-	ImGui::Text("Number of spawn");
 
 	ImGui::Separator();
 	ImGui::SetNextItemWidth(130.0f);
@@ -109,6 +105,11 @@ void FControlPanel::OnRender()
 	ImGui::SameLine();
 	ImGui::Text("Particle");
 	if (ImGui::SmallButton("Spawn Particle")) { AddParticleActor(SelectedParticleIndex); }
+	ImGui::Separator();
+	ImGui::SetNextItemWidth(80.0f);
+	ImGui::InputInt("##N", &ActorNum, 0, 0, ImGuiInputTextFlags_ReadOnly);
+	ImGui::SameLine();
+	ImGui::Text("Number of spawn");
 	ImGui::Separator();
 	// 씬 생성 세이브 로드
 	ImGui::SetNextItemWidth(165.0f);
