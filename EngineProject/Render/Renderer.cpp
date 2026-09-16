@@ -552,6 +552,8 @@ void FRenderer::DrawTexturePacket(const FRenderPacket& Packet, FMatrix VP, UPrim
 	DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
 	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 	DeviceContext->OMSetDepthStencilState(nullptr, 0);
+	ViewModeState->Apply(this);
+
 }
 
 void FRenderer::Shutdown()
