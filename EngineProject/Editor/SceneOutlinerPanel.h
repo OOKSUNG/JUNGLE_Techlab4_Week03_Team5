@@ -20,5 +20,7 @@ private:
 	//FEditorContext Context;
 	AActor* SelectedActor = nullptr;
 
+	AActor* RenameTarget = nullptr;
+	char RenameBuffer[256] = {};
 };
 
