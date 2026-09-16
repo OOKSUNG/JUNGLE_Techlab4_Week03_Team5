@@ -9,15 +9,10 @@
 
 #include "Collision/Ray.h"
 #include "Core/FBoxBounds.h"
+#include "Text/TextRenderer.h"
 #include "Editor/EditorSetting.h"
+#include "Component/TextComponent.h"
 
-
-//UPrimitiveComponent* UWorld::SpawnPrimitive(FClass* Class)
-//{
-//	UPrimitiveComponent* Component = FObjectFactory::ConstructObject<UPrimitiveComponent>();
-//	Primitives.push_back(Component);
-//	return Component;
-//}
 
 UWorld::~UWorld()
 {
@@ -93,6 +88,7 @@ void UWorld::OnRender(FRenderer* Renderer)
 void UWorld::ClearScene()
 {
 	PrimitiveComponents.clear();
+	TextComponents.clear();
 	while (!BeginPlayList.empty()) BeginPlayList.pop();
 
 	for (AActor* Actor : Actors) delete Actor;
@@ -126,10 +122,7 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 	{
 		USceneComponent* Primitive = Actor->GetRootComponent();
 		
-		if (Primitive == nullptr)
-		{
-			continue;
-		}
+		if (Primitive == nullptr) continue;
 
 		uint32 UUID = Primitive->GetUUID();
 		SceneData.UUIDs.push_back(UUID);
@@ -140,6 +133,17 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 		if (Cast<UPrimitiveComponent>(Primitive))
 		{
 			SceneData.Types.insert(std::make_pair(UUID, PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType())));
+			
+			// Text Component면 Text Meta Data 저장
+			if (UTextComponent* TextComp = Cast<UTextComponent>(Primitive))
+			{
+				FTextMetaData TextData;
+				TextData.Text = TextComp->GetText();
+				TextData.FontPath = TextComp->GetFontPath();
+				TextData.FontPixelSize = TextComp->GetFontPixelSize();
+				TextData.Color = TextComp->GetColor();
+				SceneData.TextDatas.insert(std::make_pair(UUID, TextData));
+			}
 		}
 		else if (Cast<UCameraComponent>(Primitive))
 		{
@@ -158,10 +162,7 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 {
 	FEngineStatics::NextUUID = Data.NextUUID;
 
-	if (Data.UUIDs.empty())
-	{
-		return true;
-	}
+	if (Data.UUIDs.empty()) return true;
 
 	for (auto& UUID : Data.UUIDs)
 	{
@@ -184,8 +185,7 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 				continue;
 			}
 
-			if (TypeString == "Other")
-				continue;
+			if (TypeString == "Other") continue;
 
 			EPrimitiveType Type = FStringToPrimitiveType(TypeString);
 
@@ -193,6 +193,17 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 			AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
 			Actor->AddPrimitiveComponent(Type, Transform);
 			Actor->SetUUID(UUID);
+
+			// Text Component면 Text Meta Data 로드
+			if (Type == EPrimitiveType::Text && Data.TextDatas.count(UUID))
+			{
+				const FTextMetaData& TextData = Data.TextDatas.at(UUID);
+				UTextComponent* TextComp = Cast<UTextComponent>(Actor->GetRootComponent());
+				TextComp->SetText(TextData.Text);
+				TextComp->SetFontPath(TextData.FontPath);
+				TextComp->SetFontPixelSize(TextData.FontPixelSize);
+				TextComp->SetColor(TextData.Color);
+			}
 		}
 		catch (const std::out_of_range& e)
 		{
@@ -230,6 +241,21 @@ AActor* UWorld::GetPickingPrimitive(uint32 ScreenW, uint32 ScreenH)
 
 		if (AABBInspection(Ray, Bounds, MinT) && TriangleInspection(Ray, *Primitive, MinT))
 		{
+			PickingActor = Actor;
+		}
+	}
+
+	// text는 삼각형 메쉬가 없어서 RayIntersectsAABB로 박스 히트만 판정
+	for (AActor* Actor : Actors)
+	{
+		if (!Actor) continue;
+		UTextComponent* TextComp = Cast<UTextComponent>(Actor->GetRootComponent());
+		if (!TextComp) continue;
+
+		float RayT{};
+		if (RayIntersectsAABB(Ray, TextComp->GetBounds(), RayT) && RayT < MinT)
+		{
+			MinT = RayT;
 			PickingActor = Actor;
 		}
 	}
@@ -315,4 +341,16 @@ void UWorld::SetMainCamera(ACameraActor* Camera)
 ACameraActor* UWorld::GetMainCamera() const
 {
 	return MainCamera;
+}
+
+// Text Renderer
+void UWorld::RenderTextComponents(FTextRenderer* TextRenderer, FRenderer* Renderer, const FMatrix& VP)
+{
+	TextRenderer->RenderTextComponents(TextComponents, Renderer, VP);
+}
+
+
+void UWorld::UpdateTextComponentBounds(FTextRenderer* TextRenderer, ID3D11DeviceContext* Context)
+{
+	TextRenderer->UpdateTextComponentBounds(TextComponents, Context);
 }

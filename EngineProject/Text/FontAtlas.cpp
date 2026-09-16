@@ -140,7 +140,7 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
     // 현재 선반이 꽉 찼을 경우
     if (CursorX + GlyphW + GlyphPadding > AtlasSize)
     {
-        LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render in next shelf.", Codepoint);
+        // LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render in next shelf.", Codepoint);
         CursorX = 0;
         CursorY += CurrentShelfHeight;
         CurrentShelfHeight = 0;

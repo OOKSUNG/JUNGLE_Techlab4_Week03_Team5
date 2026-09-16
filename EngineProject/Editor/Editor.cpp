@@ -113,8 +113,8 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
-	FFontManager::GetIntance().Init(InRenderer);
-	FFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	FEditorFontManager::GetIntance().Init(InRenderer);
+	FEditorFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
 	
 	return true;
 
@@ -183,14 +183,7 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
-		OutlineRenderer->OnRender(*Outline, VP, CamLoc);	
-
-	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
-	{
-		Renderer->SetDepthStencilEnabled(false);
-		GizmoRenderer->OnRender(*Gizmo, VP);
-	}
-
+		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
 
 	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
 	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
@@ -218,6 +211,17 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	EditorUI->OnRender();
 
 	ImGuiRenderer->End();
+}
+
+// Gizmo Render 함수 분리
+void FEditor::RenderGizmo(FMatrix VP, FRenderer* Renderer)
+{
+	if (Gizmo->GetTarget() && ShowFlags.IsSet(EShowFlagBits::Gizmo))
+	{
+		Renderer->SetDepthStencilEnabled(false);
+		GizmoRenderer->OnRender(*Gizmo, VP);
+		Renderer->SetDepthStencilEnabled(true);
+	}
 }
 
 void FEditor::Shutdown()

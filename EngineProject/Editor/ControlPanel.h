@@ -36,12 +36,13 @@ public:
 	int32 SelectedIndex = 0;
 	int32 ActorNum = 0;
 
-	const char* Items[4] =
+	const char* Items[5] =
 	{
 		"Sphere",
 		"Cube",
 		"Cone",
 		"Plane",
+		"Text",
 	};
 	// View Mode
 	FRenderer* Renderer;
