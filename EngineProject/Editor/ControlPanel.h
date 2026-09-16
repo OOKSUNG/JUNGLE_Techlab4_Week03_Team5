@@ -32,8 +32,10 @@ public:
 
 
 	void AddActor(EPrimitiveType Type);
+	void AddParticleActor(int TypeNum);
 
 	int32 SelectedIndex = 0;
+	int32 SelectedParticleIndex = 0;
 	int32 ActorNum = 0;
 
 	const char* Items[5] =
@@ -44,6 +46,16 @@ public:
 		"Plane",
 		"Text",
 	};
+
+	const char* ParticleItems[5] =
+	{
+		"Storm",
+		"Astral",
+		"Axe",
+		"Core",
+		"Moonphase",
+	};
+
 	// View Mode
 	FRenderer* Renderer;
 	inline void SetRenderer(FRenderer* InRenderer) { Renderer = InRenderer; };

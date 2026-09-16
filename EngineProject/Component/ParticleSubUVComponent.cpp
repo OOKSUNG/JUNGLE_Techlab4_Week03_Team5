@@ -19,18 +19,27 @@ void UParticleSubUVComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
 
-    ElapsedTime += DeltaTime;
+    ElapsedTime += DeltaTime *PlayRate;
     int TotalFrames = Cols * Rows;
-    if (TotalFrames > 0)
+    int DesiredFrame = static_cast<int>(ElapsedTime * FPS);
+    if (bLoop)
     {
-        CurrentFrame = static_cast<int>(ElapsedTime * FPS) % TotalFrames;
-
-        float CellW = 1.0f / Cols;
-        float CellH = 1.0f / Rows;
-        UVOffset.X = (CurrentFrame % Cols) * CellW;
-        UVOffset.Y = (CurrentFrame / Cols) * CellH;
-        UVScale = FVector2(CellW, CellH);
+        CurrentFrame = DesiredFrame % TotalFrames;
     }
+    else
+    {
+        if (DesiredFrame >= TotalFrames)
+            CurrentFrame = TotalFrames - 1;
+        else
+            CurrentFrame = DesiredFrame;
+    }
+
+     float CellW = 1.0f / Cols;
+     float CellH = 1.0f / Rows;
+     UVOffset.X = (CurrentFrame % Cols) * CellW;
+     UVOffset.Y = (CurrentFrame / Cols) * CellH;
+     UVScale = FVector2(CellW, CellH);
+   
 }
 
 void UParticleSubUVComponent::SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue)
@@ -92,4 +101,3 @@ void UParticleSubUVComponent::SetTexture(ID3D11ShaderResourceView* InSRV, ID3D11
     TextureSRV = InSRV;
     SamplerState = InSampler;
 }
-

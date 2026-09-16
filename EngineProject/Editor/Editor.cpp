@@ -114,7 +114,7 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer->Init(InRenderer);
 
 	FAtlasTextureManager::GetIntance().Init(InRenderer);
-	FAtlasTextureManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	FAtlasTextureManager::GetIntance().LoadAtlasTexture("Default", "Font\\Default.png");
 	
 	return true;
 
@@ -184,9 +184,11 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
-
-	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
-	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	if (ShowFlags.IsSet(EShowFlagBits::UUID))
+	{
+		UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
+		FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	}
 	Renderer->SetDepthStencilEnabled(true);
 
 

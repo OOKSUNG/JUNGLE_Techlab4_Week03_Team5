@@ -14,10 +14,11 @@ public:
 		return Instance;
 	}
 	void Init(FRenderer* InRenderer);
-	void LoadFontTexture(char const* KeyName, char const* FileName);
+	void LoadAtlasTexture(char const* KeyName, char const* FileName);
 
-	TMap<FString, TSharedPtr<FAtlasTexture>> FontTextureMap;
+	TMap<FString, TSharedPtr<FAtlasTexture>> AtlasTextureMap;
 	FAtlasTextureManager& operator=(FAtlasTextureManager&) = delete;
+	void LoadSampleAtlasTextures();
 private:
 	FRenderer* Renderer = nullptr;
 	FAtlasTextureManager() = default;

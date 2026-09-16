@@ -14,7 +14,7 @@ void FUUIDBillboardRenderer::SetUUIDTextItemList(UCameraComponent* Camera)
 	for (AActor* Actor : World->GetActors())
 	{
 		UPrimitiveComponent* Primitive = Actor->GetPrimitiveComponent();
-		if (!Primitive || !Primitive->GetVisible()) continue;
+		if (!Primitive ) continue;
 		FString Text = "UUID: " + std::to_string(Actor->GetUUID());
 		FVector WorldStartPosBB = Primitive->GetBounds().GetMax() + FVector(0.5f);
 		//FVector WorldStartPos = Primitive->GetTransform()->Location + FVector(0.5f);

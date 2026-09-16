@@ -1,6 +1,7 @@
 #include "EnginePCH.h"
 #include "PropertyPanel.h"
 #include "Component/TextComponent.h"
+#include "Component/ParticleSubUVComponent.h"
 #include "Text/FontManager.h"
 
 #include "imgui_internal.h"
@@ -126,6 +127,19 @@ void FPropertyPanel::OnRender()
 			if (ImGui::Checkbox("IsVisible", &bIsVisible))
 			{
 				TargetPrimitive->SetVisible(bIsVisible);
+			}
+		}
+		if (UParticleSubUVComponent* TargetParticle = Cast<UParticleSubUVComponent>(Target))
+		{
+			bool bLoop = TargetParticle->GetLoop();
+			if (ImGui::Checkbox("Loop", &bLoop))
+			{
+				TargetParticle->SetLoop(bLoop);
+			}
+			float PlayRate = TargetParticle->GetPlayRate();
+			if (ImGui::DragFloat("PlayRate", &PlayRate, 0.05f, 0.1f, 5.0f, "%.2f"))
+			{
+				TargetParticle->SetPlayRate(PlayRate);
 			}
 		}
 
