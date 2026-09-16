@@ -214,7 +214,8 @@ void Engine::Run()
 		Renderer->BindMainRenderTarget();
 
 		// Text Component Render
-		World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
+		if (Editor->GetShowFlags().IsSet(EShowFlagBits::Primitives))
+			World->RenderTextComponents(TextRenderer.get(), Renderer.get(), VP);
 
 		FConsolePanel* Console = Editor->GetConsolePanel();
 
@@ -251,8 +252,11 @@ void Engine::Run()
 		// 	TextRenderer->SaveAtlasDebugBMP(Renderer.get(), "atlas_dump.bmp");
 		// }
 
-		// Gizmo는 항상 마지막에 그리기
+		// Gizmo는 editor 마지막에 그리기
 		Editor->RenderGizmo(VP, Renderer.get());
+
+		// UI Flush
+		Editor->PresentUI();
 
 		Renderer->EndFrame();
 

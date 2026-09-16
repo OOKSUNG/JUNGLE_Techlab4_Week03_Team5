@@ -23,4 +23,5 @@ struct FSceneMetaData
 	TMap<uint32, FTransform> Transforms;
 	TMap<uint32, FString> Types;
 	TMap<uint32, FTextMetaData> TextDatas;	// Text property
+	TMap<uint32, FString> Names;	
 };

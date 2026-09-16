@@ -79,7 +79,7 @@ void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCame
 	for (const FWorldTextItem& TextItem : TextItemArray)
 	{
 		float Distance = sqrt(TextItem.DistSqr);
-		float CharWidth = 32.0f * 0.002f * Distance * TextItem.Scale;
+		float CharWidth = 16.0f * 0.002f * Distance * TextItem.Scale;
 		float HeightHalf = CharWidth * 0.5f;
 
 		FVector Cursor = TextItem.WorldStartPos;

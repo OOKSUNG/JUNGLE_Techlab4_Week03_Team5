@@ -12,8 +12,8 @@ enum class EPrimitiveType
 	Cube,
 	Cone,
 	Plane,
-	UVPlane,
-	Text
+	Text,
+	UVPlane
 };
 
 class UPrimitiveComponent :public USceneComponent

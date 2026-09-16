@@ -1,4 +1,4 @@
-   #include "EnginePCH.h"
+#include "EnginePCH.h"
 #include "World.h"
 
 #include "ObjectSystem/ObjectFactory.h"
@@ -101,10 +101,12 @@ bool UWorld::NewScene()
 	ACameraActor* GetCamera = SpawnActor<ACameraActor>(nullptr);
 	// Camera 초기 위치 수정
 	GetCamera->GetCameraComponent()->SetLocation(FVector(-8.0f, -0.1f, 2.0f));
-	
+	FString NewName = FString("Camera_") + std::to_string(GetCamera->GetUUID());
+
 	if (GetCamera)
 	{
 		SetMainCamera(GetCamera);
+		GetCamera->SetFName(NewName);
 	}
 	MainCamera = GetCamera;
 
@@ -123,12 +125,13 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 		USceneComponent* Primitive = Actor->GetRootComponent();
 		
 		if (Primitive == nullptr) continue;
-
-		uint32 UUID = Primitive->GetUUID();
+		
+		uint32 UUID = Actor->GetUUID();
 		SceneData.UUIDs.push_back(UUID);
-
+		
 		const FTransform* Transform = Primitive->GetTransform();
 		SceneData.Transforms.insert(std::make_pair(UUID, *Transform));
+		SceneData.Names.insert({UUID, Actor->GetFName().GetString()});
 
 		if (Cast<UPrimitiveComponent>(Primitive))
 		{
@@ -178,6 +181,7 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 				if (GetCamera)
 				{
 					SetMainCamera(GetCamera);
+					GetCamera->SetFName(Data.Names.at(UUID));
 				}
 				MainCamera = GetCamera;
 				MainCamera->GetRootComponent()->SetTransform(Transform);
@@ -193,6 +197,8 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 			AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
 			Actor->AddPrimitiveComponent(Type, Transform);
 			Actor->SetUUID(UUID);
+
+			if (Data.Names.count(UUID)) Actor->SetFName(Data.Names.at(UUID));
 
 			// Text Component면 Text Meta Data 로드
 			if (Type == EPrimitiveType::Text && Data.TextDatas.count(UUID))
@@ -372,6 +378,15 @@ void UWorld::DestroyActor(AActor* Actor)
 			if (PrimitiveIt != PrimitiveComponents.end())
 			{
 				PrimitiveComponents.erase(PrimitiveIt);
+			}
+		}
+		if (UTextComponent* Text = Cast<UTextComponent>(Component))
+		{
+			auto TextIt = std::find(TextComponents.begin(), TextComponents.end(), Text);
+
+			if (TextIt != TextComponents.end())
+			{
+				TextComponents.erase(TextIt);
 			}
 		}
 	}

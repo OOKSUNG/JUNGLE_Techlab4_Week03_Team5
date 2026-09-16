@@ -41,11 +41,7 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
     char PathBuf[260];
     errno_t err = wcstombs_s(&ConvertedChars, PathBuf, sizeof(PathBuf), InFontPath, _TRUNCATE);
 
-    if (err != 0)
-    {
-        // 변환 실패
-        return false;
-    }
+    if (err != 0) return false;
 
     if (FT_New_Face(FTLibrary, PathBuf, 0, &FTFace) != 0) return false;
 
@@ -55,8 +51,26 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
     MsdfFont = msdfgen::adoptFreetypeFont(FTFace);
     if (!MsdfFont) assert(false, "MsdfFont Error");
 
+    if (CreatePage() < 0) return false;
+
+    return true;
+}
+
+int FDynamicFontAtlas::CreatePage()
+{
+    if (static_cast<int>(Pages.size()) >= MaxPages)
+    {
+        if (!bPageLimitWarned)
+        {
+            LOG(Renderer, Error, "Font atlas reached MaxPages({}) limit! New glyphs will render blank.", MaxPages);
+            bPageLimitWarned = true;
+        }
+        return -1;
+    } 
+
+    FAtlasPage Page;
     // CPU AtlasBuffer (RGBA - msdf 3채널 + 패딩)
-    AtlasBuffer.resize(AtlasSize * AtlasSize * BytesPerPixel, 0);
+    Page.Buffer.resize(AtlasSize * AtlasSize * BytesPerPixel, 0);
 
     // GPU 텍스처
     D3D11_TEXTURE2D_DESC Desc = {};
@@ -71,20 +85,22 @@ bool FDynamicFontAtlas::Init(ID3D11Device* InDevice, const wchar_t* InFontPath, 
     Desc.CPUAccessFlags = 0;
 
     D3D11_SUBRESOURCE_DATA InitData = {};
-    InitData.pSysMem = AtlasBuffer.data();
+    InitData.pSysMem = Page.Buffer.data();
     InitData.SysMemPitch = AtlasSize * BytesPerPixel;
 
-    if (FAILED(Device->CreateTexture2D(&Desc, &InitData, &AtlasTexture))) return false;
-    if (FAILED(Device->CreateShaderResourceView(AtlasTexture, nullptr, &AtlasSRV))) return false;
+    if (FAILED(Device->CreateTexture2D(&Desc, &InitData, &Page.Texture))) return -1;
+    if (FAILED(Device->CreateShaderResourceView(Page.Texture, nullptr, &Page.SRV))) return -1;
 
     // Shelf Packing 상태 초기화
-    CursorX = 0;
-    CursorY = 0;
-    CurrentShelfHeight = 0;
+    Pages.push_back(Page);
 
-    return true;
+    // Page Limit(6) 알려주기
+    LOG(Renderer, Info, "Font atlas created page {} / {}.", Pages.size(), MaxPages);
+
+    return static_cast<int>(Pages.size()) - 1;
 
 }
+
 
 // Codepoint에 대한 Glyph 정보 반환 (없으면 Rasterizing)
 const FGlyphInfo& FDynamicFontAtlas::GetOrCreateGlyph(uint32 Codepoint, ID3D11DeviceContext* Context)
@@ -136,28 +152,50 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
     }
 
     // Shelf Packing
+    int PageIndex = static_cast<int>(Pages.size()) - 1;
+    FAtlasPage* Page = &Pages[PageIndex];
 
     // 현재 선반이 꽉 찼을 경우
-    if (CursorX + GlyphW + GlyphPadding > AtlasSize)
+    if (Page->CursorX + GlyphW + GlyphPadding > AtlasSize)
     {
         // LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render in next shelf.", Codepoint);
-        CursorX = 0;
-        CursorY += CurrentShelfHeight;
-        CurrentShelfHeight = 0;
+        Page->CursorX = 0;
+        Page->CursorY += Page->CurrentShelfHeight;
+        Page->CurrentShelfHeight = 0;
     }
-    // 전체 선반이 꽉 찼을 경우
-    if (CursorY + GlyphH + GlyphPadding > AtlasSize)
-    {
-        LOG(Renderer, Error, "Font Atlas is full! Codepoint {} will render blank.", Codepoint);
+    // 전체 선반이 꽉 찼을 경우 (Atlas가 꽉 찼을 경우)
+    if (Page->CursorY + GlyphH + GlyphPadding > AtlasSize)
+    {   
+        // glyph 자체가 페이지보다 큰 경우 (진짜 실패)
+        if (GlyphW > AtlasSize | GlyphH > AtlasSize)
+        {
+            LOG(Renderer, Error, "Glyph {} is larger than atlas page!", Codepoint);
+            
+            FGlyphInfo FallbackInfo{};
+            FallbackInfo.Advance = static_cast<float>(Advance * FontPixelSize);
+            auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
+            return Result.first->second;
+        }
+
+        PageIndex = CreatePage();
         
-        FGlyphInfo FallbackInfo{};
-        FallbackInfo.Advance = static_cast<float>(Advance * FontPixelSize);
-        auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
-        return Result.first->second;
+        if (PageIndex <0)
+        {
+            // MaxPage 도달 - CreatePage에서 경고 로그 남김
+            LOG(Renderer, Error, "Failed to allocate new atlas page for codepoint {}!", Codepoint);
+            FGlyphInfo FallbackInfo{};
+            FallbackInfo.Advance = static_cast<float>(Advance * FontPixelSize);
+            auto Result = GlyphCache.emplace(Codepoint, FallbackInfo);
+            return Result.first->second;
+        }
+        
+        // 다음 Atlas 페이지 생성
+        Page = &Pages[PageIndex];
+        LOG(Renderer, Warning, "Atlas page full, created page {} for codepoint {}.", PageIndex, Codepoint);
     }
     
-    int DestX = CursorX;
-    int DestY = CursorY;
+    int DestX = Page->CursorX;
+    int DestY = Page->CursorY;
     
     // 3. MSDF 생성
     msdfgen::Bitmap<float, 3> Msdf(GlyphW, GlyphH);
@@ -176,22 +214,23 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
         {
             const float* Px = Msdf(x, GlyphH -1 - y);
             int DstIndex = ((DestY + y) * AtlasSize + (DestX + x)) * BytesPerPixel;
-            AtlasBuffer[DstIndex + 0] = static_cast<uint8>(std::clamp(Px[0], 0.0f, 1.0f) * 255.0f);
-            AtlasBuffer[DstIndex + 1] = static_cast<uint8>(std::clamp(Px[1], 0.0f, 1.0f) * 255.0f);
-            AtlasBuffer[DstIndex + 2] = static_cast<uint8>(std::clamp(Px[2], 0.0f, 1.0f) * 255.0f);
-            AtlasBuffer[DstIndex + 3] = 255;
+            Page->Buffer[DstIndex + 0] = static_cast<uint8>(std::clamp(Px[0], 0.0f, 1.0f) * 255.0f);
+            Page->Buffer[DstIndex + 1] = static_cast<uint8>(std::clamp(Px[1], 0.0f, 1.0f) * 255.0f);
+            Page->Buffer[DstIndex + 2] = static_cast<uint8>(std::clamp(Px[2], 0.0f, 1.0f) * 255.0f);
+            Page->Buffer[DstIndex + 3] = 255;
         }
     }
     
     // 선반 커서 갱신
-    CursorX += GlyphW + GlyphPadding;
-    CurrentShelfHeight = std::max(CurrentShelfHeight, GlyphH + GlyphPadding);
+    Page->CursorX += GlyphW + GlyphPadding;
+    Page->CurrentShelfHeight = std::max(Page->CurrentShelfHeight, GlyphH + GlyphPadding);
     
     // GPU 텍스처에 업로드
-    UploadAtlasToGPU(Context, DestX, DestY, GlyphW, GlyphH);
+    UploadAtlasToGPU(Context, PageIndex, DestX, DestY, GlyphW, GlyphH);
     
     // UV 계산 및 캐시에 등록
     FGlyphInfo Info;
+    Info.PageIndex = PageIndex;
     Info.U = static_cast<float>(DestX) / AtlasSize;
     Info.V = static_cast<float>(DestY) / AtlasSize;
     Info.Width = static_cast<float>(GlyphW) / AtlasSize;
@@ -209,8 +248,9 @@ const FGlyphInfo& FDynamicFontAtlas::RasterizeAndPack(uint32 Codepoint, ID3D11De
     
 }
 
-void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int DirtyX, int DirtyY, int DirtyW, int DirtyH)
+void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int PageIndex, int DirtyX, int DirtyY, int DirtyW, int DirtyH)
 {
+    FAtlasPage& Page = Pages[PageIndex];
     D3D11_BOX Box;
     Box.left = DirtyX;
     Box.top = DirtyY;
@@ -219,12 +259,12 @@ void FDynamicFontAtlas::UploadAtlasToGPU(ID3D11DeviceContext* Context, int Dirty
     Box.bottom = DirtyY + DirtyH;
     Box.back = 1;
 
-    const uint8* SrcData = &AtlasBuffer[(DirtyY * AtlasSize + DirtyX) * BytesPerPixel];
-    Context->UpdateSubresource(AtlasTexture, 0, &Box, SrcData, AtlasSize * BytesPerPixel, 0);
+    const uint8* SrcData = &Page.Buffer[(DirtyY * AtlasSize + DirtyX) * BytesPerPixel];
+    Context->UpdateSubresource(Page.Texture, 0, &Box, SrcData, AtlasSize * BytesPerPixel, 0);
 }
 
 
-bool FDynamicFontAtlas::SaveDebugBMP(FRenderer* Renderer, const char* FilePath) const
+bool FDynamicFontAtlas::SaveDebugBMP(FRenderer* Renderer, const char* FilePath, int PageIndex) const
 {
     ID3D11Device* Device = Renderer->GetDevice();
     ID3D11DeviceContext* Context = Renderer->GetDeviceContext();
@@ -249,7 +289,7 @@ bool FDynamicFontAtlas::SaveDebugBMP(FRenderer* Renderer, const char* FilePath) 
     }
 
     // 2. GPU 원본 아틀라스 -> STAGING 복사
-    Context->CopyResource(StagingTex, AtlasTexture);
+    Context->CopyResource(StagingTex, Pages[PageIndex].Texture);
 
     // 3. Map해서 CPU로 픽셀 읽기
     D3D11_MAPPED_SUBRESOURCE Mapped;
