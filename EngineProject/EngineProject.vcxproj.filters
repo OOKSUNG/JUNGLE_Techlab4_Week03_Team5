@@ -21,6 +21,9 @@
     <FxCompile Include="Shader\DefaultShader.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\FontShader.hlsl">
+      <Filter>Shader Files</Filter>
+    </FxCompile>
     <FxCompile Include="Shader\GizmoShader.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
@@ -28,6 +31,7 @@
       <Filter>Shader Files</Filter>
     </FxCompile>
     <FxCompile Include="Shader\OutlineShader.hlsl" />
+    <FxCompile Include="Shader\ShaderLine.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera\CameraActor.cpp">
@@ -189,7 +193,12 @@
     <ClCompile Include="Core\FName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-<<<<<<< HEAD
+    <ClCompile Include="Core\FNamePool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\EditorFileUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Editor\ContentBrowser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,11 +206,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\EditorSelection.cpp">
-=======
-    <ClCompile Include="Core\FNamePool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\EditorSetting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\LineRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\FontManager.cpp">
@@ -216,11 +226,25 @@
     <ClCompile Include="Render\FViewModeState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Text\FontAtlas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Text\StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Text\TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ThirdParty\xxHash\xxhash.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Text\FontManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\TextComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Editor\UUIDBillboardRenderer.cpp">
->>>>>>> d33049297ae9fdc8cd32691d92b2724d78664ed9
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -450,7 +474,9 @@
     <ClInclude Include="Core\FName.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-<<<<<<< HEAD
+    <ClInclude Include="Core\FBoxBounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Editor\ContentBrowser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -458,14 +484,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\EditorSelection.h">
-=======
-    <ClInclude Include="..\..\..\..\..\Downloads\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\FNamePool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Editor\BoundingBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\EditorFileUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Editor\EditorSetting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\ShowFlags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SceneMetaData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\LineRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\ViewModeState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\FontAtlas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\TextRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\FontManager.h">
@@ -477,20 +528,19 @@
     <ClInclude Include="Editor\FontTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Editor\ShowFlags.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\ViewModeState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ThirdParty\stb_image\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ThirdParty\xxHash\xxhash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Text\FontManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\TextComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Editor\UUIDBillboardRenderer.h">
->>>>>>> d33049297ae9fdc8cd32691d92b2724d78664ed9
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

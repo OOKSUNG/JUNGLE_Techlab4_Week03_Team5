@@ -29,6 +29,10 @@ public:
 	bool Init(FRenderer* InRenderer, UWorld* World, HWND hwnd);
 	void Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint32 WinWidth, uint32 WinHeight);
 	void OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* InRenderer);
+
+	// OnRender에서 분리한 함수 (Gizmo)
+	void RenderGizmo(FMatrix VP, FRenderer* InRenderer);
+
 	void Shutdown();
 
 	void SetTarget(UPrimitiveComponent* PickedComponent);

@@ -5,6 +5,16 @@
 #include "Math/Transform.h"
 #include "Core/EngineString.h"
 
+
+// Text 내용, 폰트, 사이즈, 컬러 저장
+struct FTextMetaData
+{
+	FString Text;
+	FString FontPath;
+	int FontPixelSize;
+	FVector4 Color;
+};
+
 struct FSceneMetaData
 {
 	int Version;
@@ -12,4 +22,5 @@ struct FSceneMetaData
 	TArray<uint32> UUIDs;
 	TMap<uint32, FTransform> Transforms;
 	TMap<uint32, FString> Types;
+	TMap<uint32, FTextMetaData> TextDatas;	// Text property
 };

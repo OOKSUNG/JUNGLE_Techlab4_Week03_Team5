@@ -5,21 +5,21 @@
 #include "FontTexture.h"
 
 
-class FFontManager
+class FEditorFontManager
 {
 public:
-	static FFontManager& GetIntance()
+	static FEditorFontManager& GetIntance()
 	{
-		static FFontManager Instance;
+		static FEditorFontManager Instance;
 		return Instance;
 	}
 	void Init(FRenderer* InRenderer);
 	void LoadFontTexture(char const* KeyName, char const* FileName);
-	
+
 	TMap<FString, TSharedPtr<FFontTexture>> FontTextureMap;
-	FFontManager& operator=(FFontManager&) = delete;
+	FEditorFontManager& operator=(FEditorFontManager&) = delete;
 private:
 	FRenderer* Renderer = nullptr;
-	FFontManager() = default;
-	~FFontManager() = default;
+	FEditorFontManager() = default;
+	~FEditorFontManager() = default;
 };
