@@ -42,7 +42,7 @@ private:
     TArray<uint32> Indices;
 
 
-    float FadeStart = 10.0f;
+    float FadeStart = 800.0f;
     float FadeEnd = 1000.0f;
 
 };

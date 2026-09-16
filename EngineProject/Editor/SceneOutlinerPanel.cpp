@@ -44,10 +44,53 @@ void FSceneOutlinerPanel::OnRender()
                     ImGuiTreeNodeFlags_SpanAvailWidth
                 );*/
 
-                if (ImGui::Selectable(ActorName.c_str(), Actor == SelectedActor))
+                //if (ImGui::Selectable(ActorName.c_str(), Actor == SelectedActor))
+                //{
+                //    SelectedActor = (SelectedActor == Actor) ? nullptr : Actor;
+                //    // SelectedActor = Actor;
+                //}
+
+                ImGuiTreeNodeFlags ActorFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+                // 자식 Component가 없으면 Leaf
+                if (Actor->GetComponents().empty())
+                {
+                    ActorFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                }
+
+                bool bActorOpen = ImGui::TreeNodeEx(ActorName.c_str(), ActorFlags);
+
+                // Actor 선택
+                if (ImGui::IsItemClicked())
                 {
                     SelectedActor = (SelectedActor == Actor) ? nullptr : Actor;
-                    // SelectedActor = Actor;
+                }
+
+                // Component 목록
+                if (bActorOpen)
+                {
+                    for (UActorComponent* Component : Actor->GetComponents())
+                    {
+                        if (!Component)
+                        {
+                            continue;
+                        }
+
+                        ImGui::PushID(Component);
+
+                        FString ComponentName = Component->GetFName().GetString();
+
+                        ImGui::TreeNodeEx(
+                            ComponentName.c_str(),
+                            ImGuiTreeNodeFlags_Leaf |
+                            ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                            ImGuiTreeNodeFlags_SpanAvailWidth
+                        );
+
+                        ImGui::PopID();
+                    }
+
+                    ImGui::TreePop();
                 }
 
                 ImGui::PopID();
