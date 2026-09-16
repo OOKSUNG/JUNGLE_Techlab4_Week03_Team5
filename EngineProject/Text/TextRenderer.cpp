@@ -425,8 +425,6 @@ void FTextRenderer::RenderTextComponents(const TArray<UTextComponent*>& TextComp
 
         uint32 ColorKey = PackColor(TextComp->GetColor());
 
-        LOG(Renderer, Warning, "[TextBatch] {} component(s) -> {} draw batch(es)", TextComponents.size(), Batches.size());
-
         for (auto& [PageIndex, Vertices] : It->second.PageVertices)
         {
             FTextBatchKey Key{ Atlas, PageIndex, ColorKey };
@@ -536,7 +534,6 @@ void FTextRenderer::UpdateTextComponentBounds(const TArray<UTextComponent*>& Tex
             || CacheIt->second.LastScaleUp != ScaleUp;
 
 
-        LOG(Renderer, Warning, "[TextCache] Rebuild '{}' (content={}, transform={})", TextComp->GetText().c_str(), bContentDirty, bTransformChanged);
 
         if (!bContentDirty && !bTransformChanged) continue;   // 내용도 transform도 안 바뀜 -> 스킵
 

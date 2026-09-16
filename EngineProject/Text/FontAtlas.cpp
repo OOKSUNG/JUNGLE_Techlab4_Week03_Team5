@@ -95,7 +95,7 @@ int FDynamicFontAtlas::CreatePage()
     Pages.push_back(Page);
 
     // Page Limit(6) 알려주기
-    LOG(Renderer, Warning, "Font atlas created page {} / {}.", Pages.size(), MaxPages);
+    LOG(Renderer, Info, "Font atlas created page {} / {}.", Pages.size(), MaxPages);
 
     return static_cast<int>(Pages.size()) - 1;
 
