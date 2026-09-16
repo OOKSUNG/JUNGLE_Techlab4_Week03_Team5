@@ -164,6 +164,22 @@ bool FEditorFileUtils::LoadSceneFromFileSelection(FSceneMetaData& SceneData)
 
 		FString TypeString = PrimitiveJson["Type"].get<FString>();
 
+		// Text면 아래 property도 가져와서 함께 로드
+		if (TypeString == "Text")
+		{
+			FTextMetaData TextData;
+			TextData.Text = PrimitiveJson["Text"].get<FString>();
+			TextData.FontPath = PrimitiveJson["FontPath"].get<FString>();
+			TextData.FontPixelSize = PrimitiveJson["FontPixelSize"].get<int>();
+			TextData.Color.X = PrimitiveJson["Color"][0].get<float>();
+			TextData.Color.Y = PrimitiveJson["Color"][1].get<float>();
+			TextData.Color.Z = PrimitiveJson["Color"][2].get<float>();
+			TextData.Color.W = PrimitiveJson["Color"][3].get<float>();
+			
+			SceneData.TextDatas.insert(std::make_pair(UUID, TextData));
+		
+		}
+
 		SceneData.UUIDs.push_back(UUID);
 		SceneData.Transforms.insert(std::make_pair(UUID, Transform));
 		SceneData.Types.insert(std::make_pair(UUID, TypeString));
@@ -262,6 +278,16 @@ bool FEditorFileUtils::SaveSceneWithFileBrowser(FSceneMetaData& SceneData)
 			pJson["Rotation"] = { Transform.Rotation.Roll, Transform.Rotation.Pitch, Transform.Rotation.Yaw };
 			pJson["Scale"] = { Transform.Scale.X, Transform.Scale.Y, Transform.Scale.Z };
 			pJson["Type"] = TypeString;
+
+			// Text
+			if (TypeString == "Text" && SceneData.TextDatas.count(UUID))
+			{
+				const FTextMetaData& TextData = SceneData.TextDatas.at(UUID);
+				pJson["Text"] = TextData.Text;
+				pJson["FontPath"] = TextData.FontPath;
+				pJson["FontPixelSize"] = TextData.FontPixelSize;
+				pJson["Color"] = { TextData.Color.X, TextData.Color.Y, TextData.Color.Z, TextData.Color.W };
+			}
 
 			Json["Primitives"][std::to_string(UUID)] = pJson;
 		}

@@ -31,6 +31,9 @@ namespace
 		case EPrimitiveType::Plane:
 			return "Plane";
 			break;
+		case EPrimitiveType::Text:
+			return "Text";
+			break;
 		default:
 			return "";
 			break;
@@ -54,6 +57,10 @@ namespace
 		if (string == "Plane")
 		{
 			return EPrimitiveType::Plane;
+		}
+		if (string == "Text")
+		{
+			return EPrimitiveType::Text;
 		}
 		return EPrimitiveType::Cube;
 	}
@@ -133,6 +140,7 @@ void UWorld::OnRender(FRenderer* Renderer)
 void UWorld::ClearScene()
 {
 	PrimitiveComponents.clear();
+	TextComponents.clear();
 	while (!BeginPlayList.empty()) BeginPlayList.pop();
 
 	for (AActor* Actor : Actors) delete Actor;
@@ -166,10 +174,7 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 	{
 		USceneComponent* Primitive = Actor->GetRootComponent();
 		
-		if (Primitive == nullptr)
-		{
-			continue;
-		}
+		if (Primitive == nullptr) continue;
 
 		uint32 UUID = Primitive->GetUUID();
 		SceneData.UUIDs.push_back(UUID);
@@ -180,6 +185,17 @@ bool UWorld::SaveScene(FSceneMetaData& SceneData)
 		if (Cast<UPrimitiveComponent>(Primitive))
 		{
 			SceneData.Types.insert(std::make_pair(UUID, PrimitiveTypeToString(Cast<UPrimitiveComponent>(Primitive)->GetType())));
+			
+			// Text Component면 Text Meta Data 저장
+			if (UTextComponent* TextComp = Cast<UTextComponent>(Primitive))
+			{
+				FTextMetaData TextData;
+				TextData.Text = TextComp->GetText();
+				TextData.FontPath = TextComp->GetFontPath();
+				TextData.FontPixelSize = TextComp->GetFontPixelSize();
+				TextData.Color = TextComp->GetColor();
+				SceneData.TextDatas.insert(std::make_pair(UUID, TextData));
+			}
 		}
 		else if (Cast<UCameraComponent>(Primitive))
 		{
@@ -198,10 +214,7 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 {
 	FEngineStatics::NextUUID = Data.NextUUID;
 
-	if (Data.UUIDs.empty())
-	{
-		return true;
-	}
+	if (Data.UUIDs.empty()) return true;
 
 	for (auto& UUID : Data.UUIDs)
 	{
@@ -224,8 +237,7 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 				continue;
 			}
 
-			if (TypeString == "Other")
-				continue;
+			if (TypeString == "Other") continue;
 
 			EPrimitiveType Type = FStringToPrimitiveType(TypeString);
 
@@ -233,6 +245,17 @@ bool UWorld::LoadScene(const FSceneMetaData& Data)
 			AActor* Actor = SpawnActor(AActor::StaticClass(), &Transform);
 			Actor->AddPrimitiveComponent(Type, Transform);
 			Actor->SetUUID(UUID);
+
+			// Text Component면 Text Meta Data 로드
+			if (Type == EPrimitiveType::Text && Data.TextDatas.count(UUID))
+			{
+				const FTextMetaData& TextData = Data.TextDatas.at(UUID);
+				UTextComponent* TextComp = Cast<UTextComponent>(Actor->GetRootComponent());
+				TextComp->SetText(TextData.Text);
+				TextComp->SetFontPath(TextData.FontPath);
+				TextComp->SetFontPixelSize(TextData.FontPixelSize);
+				TextComp->SetColor(TextData.Color);
+			}
 		}
 		catch (const std::out_of_range& e)
 		{
