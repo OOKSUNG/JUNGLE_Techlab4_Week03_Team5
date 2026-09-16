@@ -180,6 +180,16 @@ bool FEditorFileUtils::LoadSceneFromFileSelection(FSceneMetaData& SceneData)
 		
 		}
 
+		// Particle
+		if (TypeString == "UVPlane")
+		{
+			FParticleMetaData ParticleData;
+			ParticleData.ParticlePath = PrimitiveJson["ParticlePath"].get<FString>();
+
+			SceneData.ParticleDatas.insert(std::make_pair(UUID, ParticleData));
+
+		}
+
 		SceneData.UUIDs.push_back(UUID);
 		SceneData.Transforms.insert(std::make_pair(UUID, Transform));
 		SceneData.Types.insert(std::make_pair(UUID, TypeString));
@@ -287,6 +297,13 @@ bool FEditorFileUtils::SaveSceneWithFileBrowser(FSceneMetaData& SceneData)
 				pJson["FontPath"] = TextData.FontPath;
 				pJson["FontPixelSize"] = TextData.FontPixelSize;
 				pJson["Color"] = { TextData.Color.X, TextData.Color.Y, TextData.Color.Z, TextData.Color.W };
+			}
+
+			// Particle
+			if (TypeString == "UVPlane" && SceneData.ParticleDatas.count(UUID))
+			{
+				const FParticleMetaData& ParticleData = SceneData.ParticleDatas.at(UUID);
+				pJson["ParticlePath"] = ParticleData.ParticlePath;
 			}
 
 			Json["Primitives"][std::to_string(UUID)] = pJson;

@@ -61,15 +61,30 @@ void FControlPanel::AddParticleActor(int TypeNum)
 	UParticleSubUVComponent* SubUVComp = Cast<UParticleSubUVComponent>(ParticleActor->AddPrimitiveComponent(EPrimitiveType::UVPlane, Transform));
 	FAtlasTexture* Texture = nullptr;
 	if (TypeNum == 0)
+	{
 		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Storm"].get();
+		SubUVComp->SetTexturePath("Storm");
+	}
 	else if (TypeNum == 1)
+	{
 		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Astral"].get();
+		SubUVComp->SetTexturePath("Astral");
+	}
 	else if (TypeNum == 2)
+	{
 		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Axe"].get();
+		SubUVComp->SetTexturePath("Axe");
+	}
 	else if (TypeNum == 3)
+	{
 		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Core"].get();
+		SubUVComp->SetTexturePath("Core");
+	}
 	else if (TypeNum == 4)
+	{
 		Texture = FAtlasTextureManager::GetIntance().AtlasTextureMap["Moonphase"].get();
+		SubUVComp->SetTexturePath("Moonphase");
+	}
 	else
 		return;
 	Texture->SetParticleSamplerState();

@@ -22,6 +22,8 @@ public:
     void SetBillboard(bool bEnable) { bUseBillboard = bEnable; }
     void SetLoop(bool bLoop) { this->bLoop = bLoop; }
     void SetPlayRate(float PlayRate) { this->PlayRate = PlayRate; }
+    void SetTexturePath(FString TextureName) { this->TexturePath = TextureName; }
+    FString GetTextureName() { return TexturePath; }
 
     bool GetLoop() { return bLoop; }
     float GetPlayRate() { return PlayRate; }
@@ -41,4 +43,5 @@ private:
     FVector2 UVScale = FVector2(1.0f, 1.0f);
     bool bLoop = true;
     bool bUseBillboard = true;
+    FString TexturePath;
 };
