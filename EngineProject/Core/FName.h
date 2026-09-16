@@ -19,5 +19,3 @@ struct FName
 private:
 	int32 ExtractNumber(FString From);
 };
-
-extern TArray<FString> StringArray;
