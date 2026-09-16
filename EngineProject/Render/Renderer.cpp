@@ -33,6 +33,7 @@ bool FRenderer::Init(HWND hWindow)
 	CreateDepthStencilBufferAndState();
 	CreateConstantBuffer();
 	CreateDefaultShader();
+	CreateBlendState();
 
 	// View Mode 상태 저장
 	ViewModeState = MakeShared<FViewModeState>(this);
@@ -99,6 +100,31 @@ void FRenderer::CreateRasterizerState()
 	Device->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
 }
 
+void FRenderer::CreateBlendState()
+{
+	D3D11_BLEND_DESC TextBlendDesc = {};
+	TextBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	TextBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	TextBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	TextBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	TextBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	TextBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	TextBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	TextBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	Device->CreateBlendState(&TextBlendDesc, FontAlphaBlendState.GetAddressOf());
+
+	D3D11_BLEND_DESC BlendDesc = {};
+	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	Device->CreateBlendState(&BlendDesc, ParticleAlphaBlendState.GetAddressOf());
+}
+
 void FRenderer::CreateDepthStencilBufferAndState()
 {
 	D3D11_TEXTURE2D_DESC DepthDesc{};
@@ -154,6 +180,8 @@ void FRenderer::CreateDepthStencilBufferAndState()
 	testOnlyDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	testOnlyDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	Device->CreateDepthStencilState(&testOnlyDesc, &DepthTestOnlyState);
+
+
 
 }
 
@@ -236,7 +264,23 @@ TSharedPtr<FMesh> FRenderer::CreateMesh(const FMeshData& InMeshData)
 {
 	TSharedPtr<FMesh> Mesh = MakeShared<FMesh>();
 
-	Mesh->VertexBuffer = CreateVertexBuffer(InMeshData.Vertices.data(), sizeof(FVertex) * InMeshData.Vertices.size(), sizeof(FVertex));
+	if (!InMeshData.UVVertices.empty())
+	{
+		Mesh->VertexBuffer = CreateVertexBuffer(
+			InMeshData.UVVertices.data(),
+			sizeof(FUVVertex) * InMeshData.UVVertices.size(),
+			sizeof(FUVVertex)
+		);
+
+	}
+	else
+	{
+	Mesh->VertexBuffer = CreateVertexBuffer(
+		InMeshData.Vertices.data(), 
+		sizeof(FVertex) * InMeshData.Vertices.size(), 
+		sizeof(FVertex));
+	}
+
 	Mesh->IndexBuffer = CreateIndexBuffer(InMeshData.Indices.data(), InMeshData.Indices.size());
 	
 	return Mesh;
@@ -371,6 +415,34 @@ void FRenderer::DrawIndexed(uint32 IndexCount)
 	DeviceContext->DrawIndexed(IndexCount, 0, 0);
 }
 
+void FRenderer::CreateAlphaBlendState()
+{
+	D3D11_BLEND_DESC BlendDesc{};
+	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+
+	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask =
+		D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	HRESULT hr = Device->CreateBlendState(&BlendDesc, AlphaBlendState.GetAddressOf());
+}
+
+void FRenderer::SetBlendState(ID3D11BlendState* BlendState)
+{
+	DeviceContext->OMSetBlendState(
+		BlendState,
+		nullptr,
+		0xffffffff
+	);
+}
+
 //void FRenderer::Prepare()
 //{
 //	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -393,7 +465,14 @@ void FRenderer::RenderAll(TQueue<FRenderPacket>& InQueue, FMatrix VP, UPrimitive
 	while (!InQueue.empty())
 	{
 		FRenderPacket Packet = InQueue.front();
-		DrawPacket(Packet, VP, SelectedTarget);
+		if (Packet.TextureSRV != nullptr)
+		{
+			DrawTexturePacket(Packet, VP, SelectedTarget);
+		}
+		else
+		{
+			DrawPacket(Packet, VP, SelectedTarget);
+		}
 		InQueue.pop();
 	}
 
@@ -423,6 +502,56 @@ void FRenderer::DrawPacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveCo
 	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
 
+}
+
+void FRenderer::DrawTexturePacket(const FRenderPacket& Packet, FMatrix VP, UPrimitiveComponent* SelectedTarget)
+{
+	if (!Packet.bIsVisible || !Packet.TextureSRV) return;
+
+	DeviceContext->RSSetState(RasterizerState.Get());
+	DeviceContext->OMSetBlendState(ParticleAlphaBlendState.Get(), nullptr, 0xffffffff);
+	DeviceContext->OMSetDepthStencilState(DepthStencilState.Get(), 0);
+
+	// 2. 셰이더 및 정적 Plane 메시 바인딩
+	BindShader(Packet.shader);
+	BindMesh(Packet.mesh);
+
+	// 3. SubUV 상수 버퍼 업로드 (MVP + UVOffset/Scale)
+	FMatrix MVP = Packet.model * VP;
+	bool bHighlight = (ViewModeState->GetMode() == EViewModeIndex::Wireframe)
+		&& Packet.Owner != nullptr
+		&& Packet.Owner == SelectedTarget;
+
+	if (ConstantBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE MSR;
+		DeviceContext->Map(ConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MSR);
+		FSubUVConstantBufferData* CB = (FSubUVConstantBufferData*)MSR.pData;
+		{
+			CB->MVP = MVP.GetTransposed();
+			CB->bHighlightEdge = bHighlight ? 1 : 0;
+			CB->EdgeColor[0] = 1.0f; CB->EdgeColor[1] = 0.7f; CB->EdgeColor[2] = 0.0f;
+			CB->UVOffset = Packet.UVOffset;
+			CB->UVScale = Packet.UVScale;
+		}
+		DeviceContext->Unmap(ConstantBuffer.Get(), 0);
+		DeviceContext->VSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
+		DeviceContext->PSSetConstantBuffers(0, 1, ConstantBuffer.GetAddressOf());
+	}
+
+	// 4. 텍스처(t0) 및 샘플러(s0) 바인딩
+	DeviceContext->PSSetShaderResources(0, 1, &Packet.TextureSRV);
+	DeviceContext->PSSetSamplers(0, 1, &Packet.SamplerState);
+
+	// 5. 드로우 콜 실행
+	SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DrawIndexed(Packet.mesh->IndexBuffer->GetIndexCount());
+
+	// 6. 파이프라인 상태 복원
+	ID3D11ShaderResourceView* NullSRV = nullptr;
+	DeviceContext->PSSetShaderResources(0, 1, &NullSRV);
+	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+	DeviceContext->OMSetDepthStencilState(nullptr, 0);
 }
 
 void FRenderer::Shutdown()

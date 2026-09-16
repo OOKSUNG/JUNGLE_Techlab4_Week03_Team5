@@ -32,9 +32,10 @@ public:
 
 	UPrimitiveComponent* GetPrimitiveComponent() const { return Cast<UPrimitiveComponent>(RootComponent); }
 	UTextComponent* GetTextComponent() const;
-	void AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform);
+	UPrimitiveComponent* AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform);
 	void SetRootComponent(USceneComponent* SceneComponent);
 	USceneComponent* GetRootComponent();
+	TArray<UActorComponent*> GetComponents() { return Components; }
 
 	friend class UWorld;
 protected:

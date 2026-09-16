@@ -31,6 +31,9 @@ bool FResourceManager::Init(FRenderer* InRenderer)
     FMeshData PlaneData = FGeometryGenerator::CreatePlane(1.0f,FVector4(1.0f, 1.0f, 1.0f, 1.0f));
     MeshMap[FString("Plane")] = Renderer->CreateMesh(PlaneData);
 
+    FMeshData UVPlaneData = FGeometryGenerator::CreateUVPlane(1.0f, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+    MeshMap[FString("UVPlane")] = Renderer->CreateMesh(UVPlaneData);
+
     return true;
 }
 
@@ -50,7 +53,17 @@ FMesh* FResourceManager::GetMesh(FString InName)
     if (it == MeshMap.end())
     {
         FMeshData Data = FGeometryGenerator::GetMeshData(InName);
-        TSharedPtr<FVertexBuffer> vb = Renderer->CreateVertexBuffer(Data.Vertices.data(), sizeof(FVertex) * (UINT)Data.Vertices.size(), sizeof(FVertex));
+        TSharedPtr<FVertexBuffer> vb = nullptr;
+
+        if (!Data.UVVertices.empty())
+        {
+            vb = Renderer->CreateVertexBuffer(Data.Vertices.data(), sizeof(FUVVertex) * (UINT)Data.UVVertices.size(), sizeof(FUVVertex));
+        }
+        else
+        {
+            vb = Renderer->CreateVertexBuffer(Data.Vertices.data(), sizeof(FVertex) * (UINT)Data.Vertices.size(), sizeof(FVertex));
+        }
+        
         TSharedPtr<FIndexBuffer> ib = Renderer->CreateIndexBuffer(Data.Indices.data(), Data.Indices.size());
 
         VertexBufferMap[InName] = vb;
@@ -74,13 +87,26 @@ FShader* FResourceManager::GetShader(FString InName)
     {
         std::wstring wstr(InName.begin(), InName.end());
 
-        D3D11_INPUT_ELEMENT_DESC inputDesc[] =
+        if (InName.find("SubUV") != std::string::npos)
         {
-            {"POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        };
+            D3D11_INPUT_ELEMENT_DESC inputDesc[] =
+            {
+                { "POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,  D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+            };
+            ShaderMap[InName] = Renderer->CreateShader(wstr.c_str(), inputDesc, 3);
+        }
+        else
+        {
+            D3D11_INPUT_ELEMENT_DESC inputDesc[] =
+            {
+                {"POSITION" , 0 , DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+                {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+            };
 
-        ShaderMap[InName] = Renderer->CreateShader(wstr.c_str(), inputDesc, 2);
+            ShaderMap[InName] = Renderer->CreateShader(wstr.c_str(), inputDesc, 2);
+        }
     }
     return ShaderMap[InName].get();
 }

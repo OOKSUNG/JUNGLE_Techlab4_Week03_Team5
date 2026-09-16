@@ -155,7 +155,11 @@
     <ClCompile Include="Camera\CameraActor.cpp" />
     <ClCompile Include="Camera\CameraComponent.cpp" />
     <ClCompile Include="Collision\Ray.cpp" />
+    <ClCompile Include="Component\ActorComponent.cpp" />
+    <ClCompile Include="Component\ConeComponent.cpp" />
     <ClCompile Include="Component\CubeComponent.cpp" />
+    <ClCompile Include="Component\ParticleSubUVComponent.cpp" />
+    <ClCompile Include="Component\PlaneComponent.cpp" />
     <ClCompile Include="Component\PrimitiveComponent.cpp" />
     <ClCompile Include="Component\SceneComponent.cpp" />
     <ClCompile Include="Component\SphereComponent.cpp" />
@@ -168,25 +172,26 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Core\Window.cpp" />
+    <ClCompile Include="Editor\AtlasTexture.cpp" />
+    <ClCompile Include="Editor\AtlasTextureManagerr.cpp" />
     <ClCompile Include="Editor\ConsolePanel.cpp" />
     <ClCompile Include="Editor\ContentBrowser.cpp" />
     <ClCompile Include="Editor\ControlPanel.cpp" />
+    <ClCompile Include="Editor\Editor.cpp" />
     <ClCompile Include="Editor\EditorFileUtils.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Editor\EditorSelection.cpp" />
     <ClCompile Include="Editor\EditorSetting.cpp" />
     <ClCompile Include="Editor\EditorUI.cpp" />
-    <ClCompile Include="Editor\FontManager.cpp">
-      <ObjectFileName>$(IntDir)Editor\</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="Editor\FontRenderer.cpp" />
     <ClCompile Include="Editor\Gizmo.cpp" />
     <ClCompile Include="Editor\GizmoRenderer.cpp" />
     <ClCompile Include="Editor\GridRenderer.cpp" />
+    <ClCompile Include="Editor\LineRenderer.cpp" />
     <ClCompile Include="Editor\OutLineRenderer.cpp" />
     <ClCompile Include="Editor\PropertyPanel.cpp" />
-    <ClCompile Include="Editor\FontTexture.cpp" />
+    <ClCompile Include="Editor\SceneOutlinerPanel.cpp" />
     <ClCompile Include="Editor\UUIDBillboardRenderer.cpp" />
     <ClCompile Include="EnginePCH.cpp">
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MultiProcessorCompilation>
@@ -197,7 +202,6 @@
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\ResourceManager.cpp" />
     <ClCompile Include="Engine\World.cpp" />
-    <ClCompile Include="Editor\Editor.cpp" />
     <ClCompile Include="GameFramework\Actor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -205,7 +209,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Input\InputSystem.cpp" />
-    <ClCompile Include="Editor\LineRenderer.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -219,7 +222,6 @@
     <ClCompile Include="ObjectSystem\Class.cpp" />
     <ClCompile Include="ObjectSystem\Object.cpp" />
     <ClCompile Include="ObjectSystem\ObjectFactory.cpp" />
-    <ClCompile Include="Component\PlaneComponent.cpp" />
     <ClCompile Include="Render\Buffer.cpp" />
     <ClCompile Include="Render\FViewModeState.cpp" />
     <ClCompile Include="Render\GeometryGenerator.cpp" />
@@ -229,14 +231,13 @@
     <ClCompile Include="Render\Vertex.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Editor\SceneOutlinerPanel.cpp" />
-    <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Text\FontAtlas.cpp" />
     <ClCompile Include="Text\FontManager.cpp">
       <ObjectFileName>$(IntDir)Text\</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Text\StringUtils.cpp" />
     <ClCompile Include="Text\TextRenderer.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="ThirdParty\ImGui\backends\imgui_impl_dx11.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -265,7 +266,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Component\ConeComponent.cpp" />
     <ClCompile Include="ThirdParty\xxHash\xxhash.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -275,6 +275,14 @@
     <ClInclude Include="Camera\CameraComponent.h" />
     <ClInclude Include="Collision\Ray.h" />
     <ClInclude Include="Component\ActorComponent.h" />
+    <ClInclude Include="Component\ConeComponent.h" />
+    <ClInclude Include="Component\CubeComponent.h" />
+    <ClInclude Include="Component\ParticleSubUVComponent.h" />
+    <ClInclude Include="Component\PlaneComponent.h" />
+    <ClInclude Include="Component\PrimitiveComponent.h" />
+    <ClInclude Include="Component\SceneComponent.h" />
+    <ClInclude Include="Component\SphereComponent.h" />
+    <ClInclude Include="Component\TextComponent.h" />
     <ClInclude Include="Core\Containers.h" />
     <ClInclude Include="Core\EngineLog.h" />
     <ClInclude Include="Core\EngineStatics.h" />
@@ -285,10 +293,13 @@
     <ClInclude Include="Core\FNamePool.h" />
     <ClInclude Include="Core\Types.h" />
     <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Editor\AtlasTexture.h" />
+    <ClInclude Include="Editor\AtlasTextureManager.h" />
     <ClInclude Include="Editor\BoundingBox.h" />
     <ClInclude Include="Editor\ConsolePanel.h" />
     <ClInclude Include="Editor\ContentBrowser.h" />
     <ClInclude Include="Editor\ControlPanel.h" />
+    <ClInclude Include="Editor\Editor.h" />
     <ClInclude Include="Editor\EditorContext.h" />
     <ClInclude Include="Editor\EditorFileUtils.h" />
     <ClInclude Include="Editor\EditorPanel.h" />
@@ -297,32 +308,34 @@
     <ClInclude Include="Editor\EditorUI.h" />
     <ClInclude Include="Editor\FontManager.h" />
     <ClInclude Include="Editor\FontRenderer.h" />
+    <ClInclude Include="Editor\FontTexture.h" />
     <ClInclude Include="Editor\Gizmo.h" />
     <ClInclude Include="Editor\GizmoRenderer.h" />
     <ClInclude Include="Editor\GridRenderer.h" />
     <ClInclude Include="Editor\GuizmoRenderer.h" />
+    <ClInclude Include="Editor\LineRenderer.h" />
     <ClInclude Include="Editor\Outline.h" />
     <ClInclude Include="Editor\OutLineRenderer.h" />
     <ClInclude Include="Editor\PropertyPanel.h" />
-    <ClInclude Include="Editor\FontTexture.h" />
+    <ClInclude Include="Editor\SceneOutlinerPanel.h" />
+    <ClInclude Include="Editor\ShowFlags.h" />
     <ClInclude Include="Editor\UUIDBillboardRenderer.h" />
+    <ClInclude Include="EnginePCH.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\ResourceManager.h" />
-    <ClInclude Include="Editor\ShowFlags.h" />
     <ClInclude Include="Engine\SceneMetaData.h" />
     <ClInclude Include="Engine\World.h" />
-    <ClInclude Include="Editor\Editor.h" />
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="ImGuiRenderer.h" />
     <ClInclude Include="Input\InputSystem.h" />
     <ClInclude Include="Input\KeyCode.h" />
     <ClInclude Include="Input\MouseButton.h" />
-    <ClInclude Include="Editor\LineRenderer.h" />
     <ClInclude Include="Math\EngineMath.h" />
     <ClInclude Include="Math\FMath.h" />
     <ClInclude Include="Math\Matrix.h" />
     <ClInclude Include="Math\MatrixRegister.h" />
     <ClInclude Include="Math\Quat.h" />
+    <ClInclude Include="Math\Rotator.h" />
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="Math\TVector.h" />
     <ClInclude Include="Math\Vector.h" />
@@ -330,20 +343,11 @@
     <ClInclude Include="Math\Vector4.h" />
     <ClInclude Include="Math\VectorRegister.h" />
     <ClInclude Include="Math\VectorRegister_SSE.h" />
-    <ClInclude Include="Math\Rotator.h" />
     <ClInclude Include="ObjectSystem\Casts.h" />
     <ClInclude Include="ObjectSystem\Class.h" />
     <ClInclude Include="ObjectSystem\Object.h" />
     <ClInclude Include="ObjectSystem\ObjectFactory.h" />
     <ClInclude Include="ObjectSystem\Property.h" />
-    <ClInclude Include="Component\CubeComponent.h" />
-    <ClInclude Include="Component\PrimitiveComponent.h" />
-    <ClInclude Include="Component\SceneComponent.h" />
-    <ClInclude Include="Component\SphereComponent.h" />
-    <ClInclude Include="Component\TextComponent.h" />
-    <ClInclude Include="EnginePCH.h" />
-    <ClInclude Include="json.hpp" />
-    <ClInclude Include="Component\PlaneComponent.h" />
     <ClInclude Include="Render\Buffer.h" />
     <ClInclude Include="Render\GeometryGenerator.h" />
     <ClInclude Include="Render\Mesh.h" />
@@ -352,13 +356,11 @@
     <ClInclude Include="Render\Shader.h" />
     <ClInclude Include="Render\Vertex.h" />
     <ClInclude Include="Render\ViewModeState.h" />
-    <ClInclude Include="Editor\SceneOutlinerPanel.h" />
-    <ClInclude Include="ThirdParty\stb_image\stb_image.h" />
-    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Text\FontAtlas.h" />
     <ClInclude Include="Text\FontManager.h" />
     <ClInclude Include="Text\StringUtils.h" />
     <ClInclude Include="Text\TextRenderer.h" />
+    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="ThirdParty\ImGui\backends\imgui_impl_win32.h" />
     <ClInclude Include="ThirdParty\ImGui\imconfig.h" />
@@ -367,8 +369,9 @@
     <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
-    <ClInclude Include="Component\ConeComponent.h" />
+    <ClInclude Include="ThirdParty\stb_image\stb_image.h" />
     <ClInclude Include="ThirdParty\xxHash\xxhash.h" />
+    <ClInclude Include="json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\DefaultShader.hlsl">

@@ -8,7 +8,7 @@
 #include "EditorContext.h"
 #include "Core/FBoxBounds.h"
 #include "FontRenderer.h"
-#include "FontManager.h"
+#include "AtlasTextureManager.h"
 #include "UUIDBillboardRenderer.h"
 
 
@@ -96,6 +96,16 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 		}
 	);
 
+	FSceneOutlinerPanel* OutlinerPanel = EditorUI->GetEditorPanel<FSceneOutlinerPanel>();
+
+	OutlinerPanel->SetActorDeleteCallback([&](AActor* Actor)
+		{
+			DeleteActor(Actor );
+
+		}
+	);
+
+
 	LineRenderer = MakeUnique<FLineRenderer>();
 	LineRenderer->Init(InRenderer);
 
@@ -113,8 +123,8 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
-	FEditorFontManager::GetIntance().Init(InRenderer);
-	FEditorFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	FAtlasTextureManager::GetIntance().Init(InRenderer);
+	FAtlasTextureManager::GetIntance().LoadAtlasTexture("Default", "Font\\Default.png");
 	
 	return true;
 
@@ -177,6 +187,48 @@ void FEditor::Update(float DeltaTime, UCameraComponent* Camera, FMatrix VP, uint
 	
 }
 
+void FEditor::ClearActorReference(AActor* Actor)
+{
+	if (!Actor)
+	{
+		return;
+	}
+
+	// 현재 선택된 Actor가 삭제 대상이면 선택 해제
+	if (PickedActor == Actor)
+	{
+		PickedActor = nullptr;
+		PickedComponent = nullptr;
+	}
+
+	// Outliner 선택 해제
+	if (FSceneOutlinerPanel* Outliner = EditorUI->GetEditorPanel<FSceneOutlinerPanel>())
+	{
+		if (Outliner->GetSelectedActor() == Actor)
+		{
+			Outliner->SetSelectedActor(nullptr);
+		}
+	}
+
+	// Gizmo Target 해제
+	Gizmo->SetTarget(nullptr);
+
+	// 기타 Actor를 참조하는 Editor 객체들도 여기서 해제
+	// Outline->SetTarget(nullptr);
+}
+
+void FEditor::DeleteActor(AActor* Actor)
+{
+	if (!Actor)
+	{
+		return;
+	}
+
+	ClearActorReference(Actor);
+
+	Context.World->DestroyActor(Actor);
+}
+
 void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer)
 {
 	const FVector CamLoc = Camera->GetLocation();
@@ -184,10 +236,13 @@ void FEditor::OnRender(FMatrix VP, UCameraComponent* Camera, FRenderer* Renderer
 	if (Outline->GetTarget() && ShowFlags.IsSet(EShowFlagBits::OutLine) && ShowFlags.IsSet(EShowFlagBits::Primitives)
 	&& Renderer->GetViewMode() != EViewModeIndex::Wireframe)
 		OutlineRenderer->OnRender(*Outline, VP, CamLoc);
-
-	UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
-	FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	if (ShowFlags.IsSet(EShowFlagBits::UUID))
+	{
+		UUIDBillboardRenderer->SetUUIDTextItemList(Camera);
+		FontRenderer->RenderBatchTexts(UUIDBillboardRenderer->GetUUIDTextItemList(), Camera);
+	}
 	Renderer->SetDepthStencilEnabled(true);
+
 
 
 	if (ShowFlags.IsSet(EShowFlagBits::Grid))

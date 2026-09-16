@@ -23,6 +23,8 @@
 
 #include "Editor/EditorSetting.h"
 
+#include "Component/ParticleSubUVComponent.h"
+
 class Engine
 {
 public:

@@ -3,6 +3,9 @@
 #include "../ObjectSystem/Object.h"
 #include "ObjectSystem/Class.h"
 
+class AActor;
+class UWorld;
+
 class UActorComponent : public UObject
 {
 	DECLARE_CLASS(UActorComponent, UObject)
@@ -12,6 +15,12 @@ class UActorComponent : public UObject
 public:
 	virtual void BeginPlay() {};
 	virtual void TickComponent(float DeltaTime) {};
-private:
+
+	void SetOwner(AActor* InOwner);
+	AActor* GetOwner() const;
+
+	UWorld* GetWorld() const;
+protected:
+	AActor* Owner = nullptr;
 
 };

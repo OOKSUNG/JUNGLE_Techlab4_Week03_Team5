@@ -54,6 +54,12 @@ public:
 	void ClearSceneTargetsAndFlags();
 
 	static FConsolePanel* GetConsolePanel() { return ConsolePanel; }
+
+
+	void ClearActorReference(AActor* Actor);
+
+	void DeleteActor(AActor* Actor);
+
 private:
 	TUniquePtr<FImGuiRenderer> ImGuiRenderer;
 	TUniquePtr<FGizmoRenderer> GizmoRenderer;

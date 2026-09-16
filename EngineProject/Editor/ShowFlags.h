@@ -8,10 +8,10 @@ enum class EShowFlagBits : uint64
 	Grid = 1ULL << 1,
 	OutLine = 1ULL << 2,
 	Gizmo = 1ULL <<3,
-	//UUID = 1ULL << 3,
-	BoundingBox = 1ULL << 4,
+	UUID = 1ULL << 4,
+	BoundingBox = 1ULL << 5,
 
-	Default = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo) | static_cast<uint64>(BoundingBox),
+	Default = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo) | static_cast<uint64>(UUID) | static_cast<uint64>(BoundingBox),
 	All = static_cast<uint64>(Primitives) | static_cast<uint64>(Grid) | static_cast<uint64>(OutLine) | static_cast<uint64>(Gizmo) | static_cast<uint64>(BoundingBox)
 };
 
