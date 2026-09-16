@@ -10,6 +10,7 @@ public:
 	~FFontTexture() = default;
 	bool LoadTexture(FRenderer* InRenderer, char const* filename);
 	void SetSamplerState();
+	void SetParticleSamplerState();
 	ID3D11ShaderResourceView* GetTextureSRV();
 	ID3D11SamplerState* GetSamplerState();
 	float GetWidth() const { return Width; };

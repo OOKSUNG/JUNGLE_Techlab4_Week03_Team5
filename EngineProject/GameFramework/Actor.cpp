@@ -9,6 +9,7 @@
 #include "../Component/SphereComponent.h"
 #include "../Component/ConeComponent.h"
 #include "../Component/PlaneComponent.h"
+#include "../Component/ParticleSubUVComponent.h"
 #include "../Engine/ResourceManager.h"
 
 AActor::AActor()
@@ -51,32 +52,40 @@ void AActor::Tick(float DeltaTime)
 	}
 }
 
-void AActor::AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform)
+UPrimitiveComponent* AActor::AddPrimitiveComponent(EPrimitiveType Type, FTransform Transform)
 {
+	UPrimitiveComponent* NewComp = nullptr;
 	switch (Type)
 	{
 	case EPrimitiveType::Sphere:
-		RootComponent = FObjectFactory::ConstructObject<USphereComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
+		NewComp = FObjectFactory::ConstructObject<USphereComponent>();
 		break;
 	case EPrimitiveType::Cube:
-		RootComponent = FObjectFactory::ConstructObject<UCubeComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
+		NewComp = FObjectFactory::ConstructObject<UCubeComponent>();
 		break;
 	case EPrimitiveType::Cone:
-		RootComponent = FObjectFactory::ConstructObject<UConeComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
+		NewComp = FObjectFactory::ConstructObject<UConeComponent>();
 		break;
 	case EPrimitiveType::Plane:
-		RootComponent = FObjectFactory::ConstructObject<UPlaneComponent>();
-		Cast<UPrimitiveComponent>(RootComponent)->SetType(Type);
+		NewComp = FObjectFactory::ConstructObject<UPlaneComponent>();
+		break;
+	case EPrimitiveType::UVPlane:
+		NewComp = FObjectFactory::ConstructObject<UParticleSubUVComponent>();
 		break;
 	default:
 		break;
 	break;
 	}
-	RootComponent->SetTransform(Transform);
-	Components.push_back(RootComponent);
+	if (NewComp)
+	{
+		NewComp->SetType(Type);
+		NewComp->SetOwner(this);
+		NewComp->SetTransform(Transform);
+
+		RootComponent = NewComp;
+		Components.push_back(RootComponent);
+	}
+	return (NewComp);
 }
 
 void AActor::SetRootComponent(USceneComponent* SceneComponent)

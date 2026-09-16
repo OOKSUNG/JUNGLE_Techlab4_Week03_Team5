@@ -111,8 +111,8 @@ bool FEditor::Init(FRenderer* InRenderer, UWorld* World, HWND hwnd)
 	FontRenderer = MakeUnique<FFontRenderer>();
 	FontRenderer->Init(InRenderer);
 
-	FFontManager::GetIntance().Init(InRenderer);
-	FFontManager::GetIntance().LoadFontTexture("Default", "Font\\Default.png");
+	FFontManager::GetInstance().Init(InRenderer);
+	FFontManager::GetInstance().LoadFontTexture("Default", "Font\\Default.png");
 	
 	return true;
 

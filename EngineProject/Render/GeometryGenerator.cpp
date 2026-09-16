@@ -31,7 +31,7 @@ FMeshData FGeometryGenerator::CreatePlane(float Size, const FVector4& Color)
 	return PlaneMeshData;
 }
 
-FMeshData CreateUVPlane(float Size, const FVector4& Color)
+FMeshData FGeometryGenerator::CreateUVPlane(float Size, const FVector4& Color)
 {
 	FMeshData UVPlaneMeshData;
 
@@ -59,12 +59,12 @@ FMeshData CreateUVPlane(float Size, const FVector4& Color)
 	}
 
 	UVPlaneMeshData.Indices.push_back(0);
-	UVPlaneMeshData.Indices.push_back(2);
 	UVPlaneMeshData.Indices.push_back(1);
+	UVPlaneMeshData.Indices.push_back(2);
 	
 	UVPlaneMeshData.Indices.push_back(0);
-	UVPlaneMeshData.Indices.push_back(3);
 	UVPlaneMeshData.Indices.push_back(2);
+	UVPlaneMeshData.Indices.push_back(3);
 
 	return UVPlaneMeshData;
 }
@@ -416,6 +416,10 @@ FMeshData FGeometryGenerator::GetMeshData(const FString& InName)
 		return CreateSphere(1.0f, 20, 10, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	else if (InName == FString("Plane"))
+	{
+		return CreatePlane(1.0f, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+	else if (InName == FString("UVPlane"))
 	{
 		return CreatePlane(1.0f, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 	}

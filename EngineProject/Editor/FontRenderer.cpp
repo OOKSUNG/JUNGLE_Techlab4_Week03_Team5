@@ -73,7 +73,7 @@ void FFontRenderer::Shutdown()
 void FFontRenderer::RenderBatchTexts(TArray<FWorldTextItem> TextItemArray, UCameraComponent* Camera)
 {
 	if (TextItemArray.empty()) return;
-	FontTexture = FFontManager::GetIntance().FontTextureMap["Default"].get();
+	FontTexture = FFontManager::GetInstance().FontTextureMap["Default"].get();
 	ID3D11DeviceContext* DeviceContext = Renderer->GetDeviceContext();
 	TArray<FFontVertex> Vertices;
 	for (const FWorldTextItem& TextItem : TextItemArray)

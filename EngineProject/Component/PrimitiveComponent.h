@@ -11,7 +11,8 @@ enum class EPrimitiveType
 	Sphere,
 	Cube,
 	Cone,
-	Plane
+	Plane,
+	UVPlane
 };
 
 class UPrimitiveComponent :public USceneComponent
@@ -25,7 +26,7 @@ public:
 
 	void SetMeshData(const FMeshData& data);
 	void SetMeshShader(FMesh* InMesh, FShader* InShader) { Mesh = InMesh; Shader = InShader; }
-	void SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue);
+	virtual void SubmitToRenderQueue(TQueue<FRenderPacket>& RenderQueue);
 
 	const FMeshData& GetMeshData() const { return MeshData; }
 	void SetMesh(FMesh* InMesh);

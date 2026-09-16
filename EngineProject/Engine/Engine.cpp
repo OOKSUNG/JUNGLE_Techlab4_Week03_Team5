@@ -79,6 +79,80 @@ bool Engine::Init(HINSTANCE hInstance)
 	}
 	LOG(Engine, Info, "Success!");
 
+
+	FTransform SpawnTransform;
+	AActor* StormEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* StormSubUVComp = Cast<UParticleSubUVComponent>(StormEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (StormSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Storm","Font\\Storm.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Storm"].get();
+		Texture->SetParticleSamplerState();
+		StormSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		StormSubUVComp->SetAtlasInfo(16, 1, 30.f);
+	}
+
+	AActor* AstralEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* AstralSubUVComp = Cast<UParticleSubUVComponent>(AstralEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (AstralSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Astral", "Font\\Astral.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Astral"].get();
+		Texture->SetParticleSamplerState();
+		AstralSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		AstralSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	}
+
+	AActor* AxeEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* AxeSubUVComp = Cast<UParticleSubUVComponent>(AxeEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (AxeSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Axe", "Font\\Axe.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Axe"].get();
+		Texture->SetParticleSamplerState();
+		AxeSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		AxeSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	}
+
+	AActor* CoreEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* CoreSubUVComp = Cast<UParticleSubUVComponent>(CoreEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (CoreSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Core", "Font\\Core.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Core"].get();
+		Texture->SetParticleSamplerState();
+		CoreSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		CoreSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	}
+
+	AActor* MoonphaseEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* MoonphaseSubUVComp = Cast<UParticleSubUVComponent>(MoonphaseEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (MoonphaseSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Moonphase", "Font\\Moonphase.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Moonphase"].get();
+		Texture->SetParticleSamplerState();
+		MoonphaseSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		MoonphaseSubUVComp->SetAtlasInfo(16, 1, 10.f);
+	}
+
+	AActor* ExplosionEffect = World->SpawnActor<AActor>(&SpawnTransform);
+	UParticleSubUVComponent* ExplosionSubUVComp = Cast<UParticleSubUVComponent>(ExplosionEffect->AddPrimitiveComponent(EPrimitiveType::UVPlane, SpawnTransform));
+	if (ExplosionSubUVComp)
+	{
+		FFontManager::GetInstance().Init(Renderer.get());
+		FFontManager::GetInstance().LoadFontTexture("Explosion", "Font\\Explosion.png");
+		FFontTexture* Texture = FFontManager::GetInstance().FontTextureMap["Explosion"].get();
+		Texture->SetParticleSamplerState();
+		ExplosionSubUVComp->SetTexture(Texture->GetTextureSRV(), Texture->GetSamplerState());
+		ExplosionSubUVComp->SetAtlasInfo(3, 3, 5.0f);
+	}
+
 	bIsRunning = true;
 
 	return true;

@@ -76,6 +76,22 @@ void FFontTexture::SetSamplerState()
 	Renderer->GetDevice()->CreateSamplerState(&SamplerStateDesc, SamplerState.GetAddressOf());
 }
 
+void FFontTexture::SetParticleSamplerState()
+{
+	D3D11_SAMPLER_DESC SamplerStateDesc;
+	SamplerStateDesc = {};
+	SamplerStateDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	SamplerStateDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerStateDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	SamplerStateDesc.MinLOD = 0;
+	SamplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	Renderer->GetDevice()->CreateSamplerState(&SamplerStateDesc, SamplerState.GetAddressOf());
+}
+
+
 ID3D11SamplerState* FFontTexture::GetSamplerState()
 {
 	return (SamplerState.Get());

@@ -111,6 +111,10 @@ namespace
 		{
 			return EPrimitiveType::Plane;
 		}
+		if (string == "UVPlane")
+		{
+			return EPrimitiveType::UVPlane;
+		}
 		return EPrimitiveType::Cube;
 	}
 }

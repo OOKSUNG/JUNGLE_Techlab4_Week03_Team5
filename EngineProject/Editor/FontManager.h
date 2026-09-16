@@ -8,7 +8,7 @@
 class FFontManager
 {
 public:
-	static FFontManager& GetIntance()
+	static FFontManager& GetInstance()
 	{
 		static FFontManager Instance;
 		return Instance;
